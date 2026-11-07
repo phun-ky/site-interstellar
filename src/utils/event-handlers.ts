@@ -14,6 +14,7 @@ import {
 } from '../features/celestial-bodies/utils/body-catalog';
 import { getBodyPosition } from '../features/celestial-bodies/utils/get-body-position';
 import { updateMinimap } from '../features/minimap/update-minimap';
+import { playZoomTick } from '../features/sound/sound';
 import { generateStarfield } from '../features/starfield/generate-star-field';
 import { initializeStarfield } from '../features/starfield/initialize-starfield';
 import { hideBodyInfo } from '../features/ui/body-info';
@@ -62,6 +63,7 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
     const prevScale = { value: SCALE.value };
 
     SCALE.value = newScale;
+    playZoomTick(newScale > prevScale.value);
 
     document.dispatchEvent(
       new CustomEvent('ZoomChanged', { detail: { SCALE } })
@@ -280,12 +282,14 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
 
     document.dispatchEvent(zoomEvent);
     SCALE.value *= ZOOM_FACTOR;
+    playZoomTick(true);
   };
   const zoomOut = () => {
     const zoomEvent = new CustomEvent('ZoomChanged', { detail: { SCALE } });
 
     document.dispatchEvent(zoomEvent);
     SCALE.value /= ZOOM_FACTOR;
+    playZoomTick(false);
   };
   const trajectoryTypeDropdown = document.getElementById(
     'toggleTrajectoryType'

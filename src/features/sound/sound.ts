@@ -1,4 +1,12 @@
-import { getSwitchTones } from './utils/get-switch-tones';
+import {
+  type ClickType,
+  getSwitchClicks,
+  getZoomTick,
+  isTickDue,
+  SWITCH_VOLUME,
+  ZOOM_TICK_VOLUME
+} from './utils/clicks';
+import { scheduleClick } from './utils/schedule-click';
 
 /** The background sound, relative to the site: Opus, and AAC for browsers without Opus. */
 const AMBIENCE_FILES = {
@@ -7,53 +15,30 @@ const AMBIENCE_FILES = {
 } as const;
 /** How loud the background sound plays, from 0 to 1. */
 const AMBIENCE_VOLUME = 0.5;
-/** How loud a switch sound plays, from 0 to 1: a quiet click under the ambience. */
-const SWITCH_VOLUME = 0.08;
-/** How long the click at the start of a switch sound lasts, in seconds. */
-const CLICK_DURATION = 0.004;
+
+/** Whether sound is on. Off on every visit: nothing is remembered. */
+let enabled = false;
+/** The page's audio context, made the first time sound is turned on. */
+let context: AudioContext | null = null;
+/** When the last zoom tick played, in milliseconds, or `null` if none has. */
+let lastTick: number | null = null;
+
 /**
- * Plays the sound of a switch: a short click, then two notes that rise when
- * it is turned on and fall when it is turned off. Synthesised, so nothing is
- * loaded.
+ * Plays clicks now, at a volume, while sound is on.
  *
- * @param {AudioContext} context - The page's audio context.
- * @param {boolean} on - Whether the switch was turned on.
+ * @param {ClickType[]} clicks - The clicks, timed from now.
+ * @param {number} volume - The volume they play at.
  */
-const playSwitch = (context: AudioContext, on: boolean): void => {
-  const now = context.currentTime;
+const playClicks = (clicks: ClickType[], volume: number): void => {
+  if (!context) return;
+
   const output = context.createGain();
 
-  output.gain.value = SWITCH_VOLUME;
+  output.gain.value = volume;
   output.connect(context.destination);
 
-  // The click: a burst of noise that dies away
-  const length = Math.ceil(context.sampleRate * CLICK_DURATION);
-  const noise = context.createBuffer(1, length, context.sampleRate);
-  const samples = noise.getChannelData(0);
-
-  for (let i = 0; i < length; i++) {
-    samples[i] = (Math.random() * 2 - 1) * (1 - i / length);
-  }
-
-  const click = context.createBufferSource();
-
-  click.buffer = noise;
-  click.connect(output);
-  click.start(now);
-
-  for (const { frequency, start, duration } of getSwitchTones(on)) {
-    const at = now + start;
-    const note = context.createOscillator();
-    const envelope = context.createGain();
-
-    note.type = 'triangle';
-    note.frequency.value = frequency;
-    envelope.gain.setValueAtTime(0, at);
-    envelope.gain.linearRampToValueAtTime(1, at + 0.005);
-    envelope.gain.exponentialRampToValueAtTime(0.001, at + duration);
-    note.connect(envelope).connect(output);
-    note.start(at);
-    note.stop(at + duration + 0.01);
+  for (const click of clicks) {
+    scheduleClick(context, output, click, context.currentTime);
   }
 };
 /**
@@ -81,14 +66,38 @@ const createAmbience = (root: Document): HTMLAudioElement => {
 };
 
 /**
+ * Ticks as the map zooms, while sound is on: at most one tick every
+ * `ZOOM_TICK_INTERVAL` milliseconds, so a fast wheel or pinch ticks evenly,
+ * a little higher zooming in than zooming out.
+ *
+ * @param {boolean} zoomingIn - Whether the zoom is in, not out.
+ *
+ * @example
+ * ```ts
+ * playZoomTick(newScale > oldScale);
+ * ```
+ */
+export const playZoomTick = (zoomingIn: boolean): void => {
+  if (!enabled) return;
+
+  const now = performance.now();
+
+  if (!isTickDue(now, lastTick)) return;
+
+  lastTick = now;
+  playClicks([getZoomTick(zoomingIn)], ZOOM_TICK_VOLUME);
+};
+
+/**
  * Sets up the Sound buttons: the one in the header on wide screens and the
  * one in the bottom bar on narrow screens, which stay in step through their
  * `aria-pressed` and on or off text.
  *
  * Sound is off on every visit and nothing is remembered. Turning it on plays
  * the ambience on a loop; while it is on, every Systems toggle, and the Sound
- * button itself, makes a switch sound as it is flicked. Turning it off
- * silences the page. The ambience pauses while the page is hidden.
+ * button itself, clicks like a switch as it is flicked, and zooming ticks
+ * (see `playZoomTick`). Turning it off silences the page. The ambience pauses
+ * while the page is hidden.
  *
  * @param {Document} [root=document] - The document holding the buttons.
  *
@@ -102,12 +111,10 @@ export const setupSound = (root: Document = document): void => {
     ...root.querySelectorAll<HTMLButtonElement>('button[data-sound]')
   ];
 
-  let enabled = false;
-  let context: AudioContext | null = null;
   let ambience: HTMLAudioElement | null = null;
 
   const playAmbience = () => {
-    // A browser may refuse, or fail to load the file; the switch sounds still work
+    // A browser may refuse, or fail to load the file; the clicks still work
     ambience?.play().catch(() => undefined);
   };
   const setEnabled = (on: boolean) => {
@@ -116,7 +123,7 @@ export const setupSound = (root: Document = document): void => {
 
     if (context.state === 'suspended') void context.resume();
 
-    playSwitch(context, on);
+    playClicks(getSwitchClicks(on), SWITCH_VOLUME);
     ambience ??= createAmbience(root);
 
     if (on) playAmbience();
@@ -138,11 +145,10 @@ export const setupSound = (root: Document = document): void => {
   root.getElementById('options')?.addEventListener('change', ({ target }) => {
     if (
       enabled &&
-      context &&
       target instanceof HTMLInputElement &&
       target.type === 'checkbox'
     ) {
-      playSwitch(context, target.checked);
+      playClicks(getSwitchClicks(target.checked), SWITCH_VOLUME);
     }
   });
 

@@ -4,31 +4,56 @@ import { openApp, recordFrames, toggle } from './helpers';
 
 declare global {
   interface Window {
-    /** The pitch of every note the page has synthesised, in order. */
-    __tones: number[];
+    /** Every click the page has played: its band, and when, in milliseconds. */
+    __clicks: { frequency: number; at: number }[];
   }
 }
 
-/** Records the pitch of every note the page synthesises. */
-const recordTones = (page: Page) =>
+/**
+ * Records every click the page synthesises: noise played through a band-pass
+ * filter, whose middle frequency tells which sound it is.
+ */
+const recordClicks = (page: Page) =>
   page.addInitScript(() => {
-    window.__tones = [];
+    window.__clicks = [];
 
-    const { start } = OscillatorNode.prototype;
+    const bands = new WeakMap<AudioNode, BiquadFilterNode>();
+    const connect = AudioNode.prototype.connect as (
+      this: AudioNode,
+      ...args: unknown[]
+    ) => AudioNode;
+    const { start } = AudioBufferSourceNode.prototype;
 
-    OscillatorNode.prototype.start = function (...args) {
-      window.__tones.push(this.frequency.value);
+    AudioNode.prototype.connect = function (
+      this: AudioNode,
+      ...args: unknown[]
+    ) {
+      if (args[0] instanceof BiquadFilterNode) bands.set(this, args[0]);
+
+      return connect.apply(this, args);
+    } as typeof AudioNode.prototype.connect;
+
+    AudioBufferSourceNode.prototype.start = function (...args) {
+      window.__clicks.push({
+        frequency: bands.get(this)?.frequency.value ?? 0,
+        at: performance.now()
+      });
 
       return start.apply(this, args);
     };
   });
 
-/** The notes played since the last call. */
-const takeTones = (page: Page): Promise<number[]> =>
-  page.evaluate(() => window.__tones.splice(0));
+/** The bands of the clicks played since the last call. */
+const takeClicks = async (page: Page): Promise<number[]> =>
+  (await page.evaluate(() => window.__clicks.splice(0))).map(
+    ({ frequency }) => frequency
+  );
 
-const RISING = [660, 990];
-const FALLING = [990, 660];
+/** A switch: the press, then the release, higher for on and lower for off. */
+const SWITCH_ON = [1800, 3200];
+const SWITCH_OFF = [3200, 1800];
+const TICK_IN = 5200;
+const TICK_OUT = 4200;
 
 /** Whether the ambience is playing: started, not paused, and moving. */
 const ambiencePlays = (page: Page) =>
@@ -56,7 +81,7 @@ const audioRequests = (page: Page): string[] => {
 
 test.beforeEach(async ({ page }) => {
   await recordFrames(page);
-  await recordTones(page);
+  await recordClicks(page);
 });
 
 test.describe('on a wide screen', () => {
@@ -80,12 +105,12 @@ test.describe('on a wide screen', () => {
 
     // Flicking a toggle while sound is off makes no sound
     await toggle(page, 'toggleMoons');
-    expect(await takeTones(page)).toEqual([]);
+    expect(await takeClicks(page)).toEqual([]);
     await expect(page.locator('#ambience')).toHaveCount(0);
     expect(requested).toEqual([]);
   });
 
-  test('turning sound on plays the ambience and a rising switch sound', async ({
+  test('turning sound on plays the ambience and the click of a switch going on', async ({
     page
   }) => {
     const requested = audioRequests(page);
@@ -98,7 +123,7 @@ test.describe('on a wide screen', () => {
     await expect(sound).toHaveAttribute('aria-pressed', 'true');
     await expect(sound).toHaveText(/Sound\s*on/);
     await ambiencePlays(page);
-    expect(await takeTones(page)).toEqual(RISING);
+    expect(await takeClicks(page)).toEqual(SWITCH_ON);
     // Opus, which Chrome plays, and nothing else
     expect(requested.every((url) => url.endsWith('/audio/ambience.webm'))).toBe(
       true
@@ -106,10 +131,10 @@ test.describe('on a wide screen', () => {
     expect(requested.length).toBeGreaterThan(0);
     expect(await page.evaluate(() => window.__violations)).toEqual([]);
 
-    // Off again: silence, after a falling switch sound
+    // Off again: silence, after the click of a switch going off
     await sound.click();
     await expect(sound).toHaveAttribute('aria-pressed', 'false');
-    expect(await takeTones(page)).toEqual(FALLING);
+    expect(await takeClicks(page)).toEqual(SWITCH_OFF);
     expect(
       await page
         .locator('#ambience')
@@ -117,18 +142,89 @@ test.describe('on a wide screen', () => {
     ).toBe(true);
   });
 
-  test('with sound on, each toggle rises when switched on and falls when switched off', async ({
+  test('with sound on, each toggle clicks on and off like a switch', async ({
     page
   }) => {
     await openApp(page);
     await page.locator('#soundToggle').click();
-    await takeTones(page);
+    await takeClicks(page);
 
     await toggle(page, 'toggleMoons');
-    expect(await takeTones(page)).toEqual(RISING);
+    expect(await takeClicks(page)).toEqual(SWITCH_ON);
 
     await toggle(page, 'toggleMoons');
-    expect(await takeTones(page)).toEqual(FALLING);
+    expect(await takeClicks(page)).toEqual(SWITCH_OFF);
+  });
+});
+
+test.describe('zooming with the wheel', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  /**
+   * Spins the wheel fast for a second, over the middle of the map: a wheel
+   * event every 16 ms, as a fast flick or a trackpad sends them.
+   */
+  const spinWheel = (page: Page, deltaY: number) =>
+    page.evaluate(
+      (deltaY) =>
+        new Promise<void>((resolve) => {
+          const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+          const { left, top, width, height } = canvas.getBoundingClientRect();
+          let sent = 0;
+          const timer = setInterval(() => {
+            canvas.dispatchEvent(
+              new WheelEvent('wheel', {
+                deltaY,
+                clientX: left + width / 2,
+                clientY: top + height / 2,
+                bubbles: true,
+                cancelable: true
+              })
+            );
+
+            if (++sent === 60) {
+              clearInterval(timer);
+              resolve();
+            }
+          }, 16);
+        }),
+      deltaY
+    );
+
+  test('ticks evenly while sound is on, higher in than out', async ({
+    page
+  }) => {
+    await openApp(page);
+    await page.locator('#soundToggle').click();
+    await takeClicks(page);
+
+    await spinWheel(page, -100);
+
+    const ticks = await page.evaluate(() => window.__clicks.splice(0));
+
+    // 60 wheel events in a second, but a tick every 80 ms at most: tick tick tick
+    expect(ticks.length).toBeGreaterThanOrEqual(8);
+    expect(ticks.length).toBeLessThanOrEqual(14);
+    expect(ticks.every(({ frequency }) => frequency === TICK_IN)).toBe(true);
+
+    for (let i = 1; i < ticks.length; i++) {
+      expect(ticks[i].at - ticks[i - 1].at).toBeGreaterThanOrEqual(79);
+    }
+
+    await page.waitForTimeout(100);
+    await spinWheel(page, 100);
+
+    const out = await takeClicks(page);
+
+    expect(out.length).toBeGreaterThanOrEqual(8);
+    expect(out.every((frequency) => frequency === TICK_OUT)).toBe(true);
+  });
+
+  test('is silent while sound is off', async ({ page }) => {
+    await openApp(page);
+    await spinWheel(page, -100);
+
+    expect(await takeClicks(page)).toEqual([]);
   });
 });
 
