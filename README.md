@@ -31,8 +31,9 @@ system, moving in real time or faster:
 - Switch moons, asteroid belts, asteroids, comets, the starfield, arrows to
   off-screen bodies, labels and orbits on and off.
 - Hold the simulation, change its speed, or reset it to now.
-- Turn on Sound for a background ambience, a click as each layer is switched on
-  or off, and a tick as you zoom. It is off on every visit.
+- Turn sounds on in Settings, from the menu at the top right: a background
+  ambience, a click as each switch is flicked, and a tick as you zoom, each on
+  its own. They are off on every visit.
 
 The orbital mechanics come from
 [Interstellar Tools](https://phun-ky.net/interstellar-tools/).

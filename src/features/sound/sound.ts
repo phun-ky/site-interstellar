@@ -14,22 +14,36 @@ const AMBIENCE_FILES = {
   aac: 'audio/ambience.m4a'
 } as const;
 /** How loud the background sound plays, from 0 to 1: in the background. */
-const AMBIENCE_VOLUME = 0.3;
+const AMBIENCE_VOLUME = 0.05;
 
-/** Whether sound is on. Off on every visit: nothing is remembered. */
-let enabled = false;
+/** The sounds that can be turned on in Settings, by the id of their switch. */
+export const SOUND_SETTINGS = [
+  { id: 'soundAmbience', label: 'Background ambience' },
+  { id: 'soundClicks', label: 'Switch clicks' },
+  { id: 'soundTicks', label: 'Zoom ticks' }
+] as const;
+
+type SoundSettingIdType = (typeof SOUND_SETTINGS)[number]['id'];
+
+/** Which sounds are on. All off on every visit: nothing is remembered. */
+const on: Record<SoundSettingIdType, boolean> = {
+  soundAmbience: false,
+  soundClicks: false,
+  soundTicks: false
+};
+
 /**
  * Whether the page can be heard: shown, and its window in focus. Sound that
  * is on stays silent while someone is in another tab or window.
  */
 let present = true;
-/** The page's audio context, made the first time sound is turned on. */
+/** The page's audio context, made the first time clicks or ticks are turned on. */
 let context: AudioContext | null = null;
 /** When the last zoom tick played, in milliseconds, or `null` if none has. */
 let lastTick: number | null = null;
 
 /**
- * Plays clicks now, at a volume, while sound is on.
+ * Plays clicks now, at a volume, while the page can be heard.
  *
  * @param {ClickType[]} clicks - The clicks, timed from now.
  * @param {number} volume - The volume they play at.
@@ -49,7 +63,7 @@ const playClicks = (clicks: ClickType[], volume: number): void => {
 /**
  * The looping background sound, as an `<audio id="ambience">` at the end of
  * the page: Opus where the browser plays it, AAC elsewhere. Made the first
- * time sound is turned on, so nobody who leaves it off downloads it.
+ * time the ambience is turned on, so nobody who leaves it off downloads it.
  *
  * @param {Document} root - The document to add it to.
  * @returns {HTMLAudioElement} The audio element.
@@ -71,7 +85,7 @@ const createAmbience = (root: Document): HTMLAudioElement => {
 };
 
 /**
- * Ticks as the map zooms, while sound is on: at most one tick every
+ * Ticks as the map zooms, while zoom ticks are on: at most one tick every
  * `ZOOM_TICK_INTERVAL` milliseconds, so a fast wheel or pinch ticks evenly,
  * a little higher zooming in than zooming out.
  *
@@ -83,7 +97,7 @@ const createAmbience = (root: Document): HTMLAudioElement => {
  * ```
  */
 export const playZoomTick = (zoomingIn: boolean): void => {
-  if (!enabled) return;
+  if (!on.soundTicks) return;
 
   const now = performance.now();
 
@@ -94,18 +108,20 @@ export const playZoomTick = (zoomingIn: boolean): void => {
 };
 
 /**
- * Sets up the Sound buttons: the one in the header on wide screens and the
- * one in the bottom bar on narrow screens, which stay in step through their
- * `aria-pressed` and on or off text.
+ * Follows the sound switches in Settings (see `SOUND_SETTINGS`), each on its
+ * own:
  *
- * Sound is off on every visit and nothing is remembered. Turning it on plays
- * the ambience on a loop; while it is on, every Systems toggle, and the Sound
- * button itself, clicks like a switch as it is flicked, and zooming ticks
- * (see `playZoomTick`). Turning it off silences the page. While the page is
- * hidden, or its window is not in focus, it is silent too: the ambience
- * pauses and nothing clicks, until the page is back in focus.
+ * - Background ambience plays a recording on a loop.
+ * - Switch clicks make every switch, in Systems and in Settings, click like a
+ *   toggle switch as it is flicked. Its own switch clicks as it is turned off,
+ *   too, as the last sound it makes.
+ * - Zoom ticks tick as the map zooms (see `playZoomTick`).
  *
- * @param {Document} [root=document] - The document holding the buttons.
+ * All are off on every visit and nothing is remembered. While the page is
+ * hidden, or its window is not in focus, it is silent: the ambience pauses
+ * and nothing clicks, until the page is back in focus.
+ *
+ * @param {Document} [root=document] - The document holding the switches.
  *
  * @example
  * ```ts
@@ -113,47 +129,39 @@ export const playZoomTick = (zoomingIn: boolean): void => {
  * ```
  */
 export const setupSound = (root: Document = document): void => {
-  const buttons = [
-    ...root.querySelectorAll<HTMLButtonElement>('button[data-sound]')
-  ];
-
   let ambience: HTMLAudioElement | null = null;
 
   const playAmbience = () => {
     // A browser may refuse, or fail to load the file; the clicks still work
     if (present) ambience?.play().catch(() => undefined);
   };
-  const setEnabled = (on: boolean) => {
-    enabled = on;
-    context ??= new AudioContext();
+  /** Turns one sound on or off, from its switch. */
+  const set = (id: SoundSettingIdType, value: boolean) => {
+    on[id] = value;
 
-    if (context.state === 'suspended') void context.resume();
+    if (id === 'soundAmbience') {
+      ambience ??= createAmbience(root);
 
-    playClicks(getSwitchClicks(on), SWITCH_VOLUME);
-    ambience ??= createAmbience(root);
+      if (value) playAmbience();
+      else ambience.pause();
+    } else if (value) {
+      // Made and resumed in a click, which browsers require before any sound
+      context ??= new AudioContext();
 
-    if (on) playAmbience();
-    else ambience.pause();
-
-    for (const button of buttons) {
-      button.setAttribute('aria-pressed', String(on));
-
-      const state = button.querySelector('.mc-sound-state');
-
-      if (state) state.textContent = on ? 'on' : 'off';
+      if (context.state === 'suspended') void context.resume();
     }
   };
 
-  for (const button of buttons) {
-    button.addEventListener('click', () => setEnabled(!enabled));
-  }
+  root.addEventListener('change', ({ target }) => {
+    if (!(target instanceof HTMLInputElement) || target.type !== 'checkbox') {
+      return;
+    }
 
-  root.getElementById('options')?.addEventListener('change', ({ target }) => {
-    if (
-      enabled &&
-      target instanceof HTMLInputElement &&
-      target.type === 'checkbox'
-    ) {
+    const setting = SOUND_SETTINGS.find(({ id }) => id === target.id);
+
+    if (setting) set(setting.id, target.checked);
+
+    if (on.soundClicks || target.id === 'soundClicks') {
       playClicks(getSwitchClicks(target.checked), SWITCH_VOLUME);
     }
   });
@@ -162,7 +170,7 @@ export const setupSound = (root: Document = document): void => {
   const followPresence = () => {
     present = !root.hidden && root.hasFocus();
 
-    if (!enabled || !ambience) return;
+    if (!on.soundAmbience || !ambience) return;
 
     if (present) playAmbience();
     else ambience.pause();

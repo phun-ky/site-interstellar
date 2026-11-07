@@ -14,6 +14,7 @@ const LINKS: [string, string, boolean][] = [
 ];
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Main' });
+const menu = (page: Page) => nav(page).getByRole('button', { name: 'Menu' });
 
 test('the brand links to the map', async ({ page, baseURL }) => {
   await page.goto('./');
@@ -27,8 +28,14 @@ test('the brand links to the map', async ({ page, baseURL }) => {
   );
 });
 
-test('the header links go where the issue says, in order', async ({ page }) => {
+test('the menu holds Settings, then the links, in order', async ({ page }) => {
   await page.goto('./');
+  await menu(page).click();
+
+  const items = nav(page).getByRole('listitem');
+
+  await expect(items.first()).toHaveText('Settings');
+  await expect(items).toHaveCount(LINKS.length + 1);
 
   const links = nav(page).getByRole('link');
 
@@ -48,14 +55,32 @@ test('the header links go where the issue says, in order', async ({ page }) => {
 test.describe('on a wide screen', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('shows the links and no menu button', async ({ page }) => {
+  test('the menu button at the top right opens a dropdown under it', async ({
+    page
+  }) => {
     await page.goto('./');
 
-    await expect(nav(page).getByRole('button', { name: 'Menu' })).toBeHidden();
+    const button = menu(page);
+    const links = page.locator('#mainMenu');
+
+    await expect(button).toBeVisible();
+    await expect(links).toBeHidden();
+    await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
 
     for (const [name] of LINKS) {
       await expect(nav(page).getByRole('link', { name })).toBeVisible();
     }
+
+    // Right under the header, in line with the button's right edge
+    const buttonBox = await button.boundingBox();
+    const linksBox = await links.boundingBox();
+
+    expect(linksBox?.y).toBe(64);
+    expect(Math.round((linksBox?.x ?? 0) + (linksBox?.width ?? 0))).toBe(
+      Math.round((buttonBox?.x ?? 0) + (buttonBox?.width ?? 0))
+    );
+    expect(linksBox?.width).toBeLessThan(400);
 
     // The header stays one 64 px bar, where the canvas starts
     expect(
@@ -72,14 +97,14 @@ test.describe('on a narrow screen', () => {
   test('the menu button opens and closes the links', async ({ page }) => {
     await page.goto('./');
 
-    const menu = nav(page).getByRole('button', { name: 'Menu' });
+    const button = menu(page);
     const tools = nav(page).getByRole('link', { name: 'Tools' });
 
-    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
     await expect(tools).toBeHidden();
 
-    await menu.click();
-    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
 
     for (const [name] of LINKS) {
       await expect(nav(page).getByRole('link', { name })).toBeVisible();
@@ -88,19 +113,19 @@ test.describe('on a narrow screen', () => {
     // Escape closes the menu and returns focus to its button
     await tools.focus();
     await page.keyboard.press('Escape');
-    await expect(menu).toHaveAttribute('aria-expanded', 'false');
-    await expect(menu).toBeFocused();
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await expect(button).toBeFocused();
     await expect(tools).toBeHidden();
 
     // A click outside the navigation closes it too
-    await menu.click();
+    await button.click();
     await page.mouse.click(200, 600);
-    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('the open menu has no axe findings', async ({ page }) => {
     await page.goto('./');
-    await nav(page).getByRole('button', { name: 'Menu' }).click();
+    await menu(page).click();
 
     const { violations } = await new AxeBuilder({ page })
       .include('.mc-header')

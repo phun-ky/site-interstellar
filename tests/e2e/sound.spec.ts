@@ -109,6 +109,23 @@ const audioRequests = (page: Page): string[] => {
   return urls;
 };
 
+/** Opens Settings from the header menu. */
+const openSettings = async (page: Page) => {
+  await page.locator('#menuToggle').click();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
+};
+
+/** Turns sounds on or off in Settings, then closes it. */
+const setSounds = async (page: Page, ...ids: string[]) => {
+  await openSettings(page);
+
+  for (const id of ids) await toggle(page, id);
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#settings')).toBeHidden();
+};
+
 test.beforeEach(async ({ page }) => {
   await recordFrames(page);
   await recordClicks(page);
@@ -117,21 +134,19 @@ test.beforeEach(async ({ page }) => {
 test.describe('on a wide screen', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('sound is off, and no audio is loaded, until it is turned on', async ({
+  test('every sound is off, and no audio is loaded, until one is turned on', async ({
     page
   }) => {
     const requested = audioRequests(page);
 
     await openApp(page);
+    await openSettings(page);
 
-    const sound = page.locator('.mc-header').getByRole('button', {
-      name: 'Sound'
-    });
+    for (const id of ['soundAmbience', 'soundClicks', 'soundTicks']) {
+      await expect(page.locator(`#${id}`)).not.toBeChecked();
+    }
 
-    await expect(sound).toBeVisible();
-    await expect(sound).toHaveAttribute('aria-pressed', 'false');
-    await expect(sound).toHaveText(/Sound\s*off/);
-    await expect(page.locator('#soundDock')).toBeHidden();
+    await page.keyboard.press('Escape');
 
     // Flicking a toggle while sound is off makes no sound
     await toggle(page, 'toggleMoons');
@@ -140,20 +155,15 @@ test.describe('on a wide screen', () => {
     expect(requested).toEqual([]);
   });
 
-  test('turning sound on plays the ambience and the click of a switch going on', async ({
+  test('Background ambience plays on a loop, quietly, and nothing else', async ({
     page
   }) => {
     const requested = audioRequests(page);
 
     await openApp(page);
-
-    const sound = page.locator('#soundToggle');
-
-    await sound.click();
-    await expect(sound).toHaveAttribute('aria-pressed', 'true');
-    await expect(sound).toHaveText(/Sound\s*on/);
+    await openSettings(page);
+    await toggle(page, 'soundAmbience');
     await ambiencePlays(page);
-    expect(await takeClicks(page)).toEqual(SWITCH_ON);
     // On a loop, in the background
     expect(
       await page.locator('#ambience').evaluate((audio) => {
@@ -161,7 +171,7 @@ test.describe('on a wide screen', () => {
 
         return { loop, volume };
       })
-    ).toEqual({ loop: true, volume: 0.3 });
+    ).toEqual({ loop: true, volume: 0.05 });
     // Opus, which Chrome plays, and nothing else
     expect(requested.every((url) => url.endsWith('/audio/ambience.webm'))).toBe(
       true
@@ -169,29 +179,40 @@ test.describe('on a wide screen', () => {
     expect(requested.length).toBeGreaterThan(0);
     expect(await page.evaluate(() => window.__violations)).toEqual([]);
 
-    // Off again: silence, after the click of a switch going off
-    await sound.click();
-    await expect(sound).toHaveAttribute('aria-pressed', 'false');
-    expect(await takeClicks(page)).toEqual(SWITCH_OFF);
-    expect(
-      await page
-        .locator('#ambience')
-        .evaluate((audio) => (audio as HTMLAudioElement).paused)
-    ).toBe(true);
+    // Off again: silence. Switch clicks are off, so nothing clicked
+    await toggle(page, 'soundAmbience');
+    expect(await ambiencePaused(page)).toBe(true);
+    expect(await takeClicks(page)).toEqual([]);
   });
 
-  test('with sound on, each toggle clicks on and off like a switch', async ({
+  test('Switch clicks click every switch, their own as it goes off too', async ({
     page
   }) => {
     await openApp(page);
-    await page.locator('#soundToggle').click();
-    await takeClicks(page);
+    await openSettings(page);
 
+    // Its own switch, then the other switches in Settings
+    await toggle(page, 'soundClicks');
+    expect(await takeClicks(page)).toEqual(SWITCH_ON);
+    await toggle(page, 'soundTicks');
+    expect(await takeClicks(page)).toEqual(SWITCH_ON);
+    await toggle(page, 'soundTicks');
+    expect(await takeClicks(page)).toEqual(SWITCH_OFF);
+    await page.keyboard.press('Escape');
+
+    // The Systems toggles
     await toggle(page, 'toggleMoons');
     expect(await takeClicks(page)).toEqual(SWITCH_ON);
-
     await toggle(page, 'toggleMoons');
     expect(await takeClicks(page)).toEqual(SWITCH_OFF);
+    // Without the ambience, which is not even loaded
+    await expect(page.locator('#ambience')).toHaveCount(0);
+
+    // Turned off, it clicks a last time, then the toggles are silent
+    await setSounds(page, 'soundClicks');
+    expect(await takeClicks(page)).toEqual(SWITCH_OFF);
+    await toggle(page, 'toggleMoons');
+    expect(await takeClicks(page)).toEqual([]);
   });
 });
 
@@ -202,17 +223,14 @@ test.describe('away from the page', () => {
     page
   }) => {
     await openApp(page);
-    await page.locator('#soundToggle').click();
+    await setSounds(page, 'soundAmbience', 'soundClicks');
     await ambiencePlays(page);
     await takeClicks(page);
 
     await setFocused(page, false);
     expect(await ambiencePaused(page)).toBe(true);
     // Sound stays on, but nothing clicks
-    await expect(page.locator('#soundToggle')).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+    await expect(page.locator('#soundAmbience')).toBeChecked();
     await page.locator('#toggleMoons').evaluate((input) => {
       (input as HTMLInputElement).click();
     });
@@ -228,7 +246,7 @@ test.describe('away from the page', () => {
     page
   }) => {
     await openApp(page);
-    await page.locator('#soundToggle').click();
+    await setSounds(page, 'soundAmbience');
     await ambiencePlays(page);
 
     await setHidden(page, true);
@@ -273,12 +291,13 @@ test.describe('zooming with the wheel', () => {
       deltaY
     );
 
-  test('ticks evenly while sound is on, higher in than out', async ({
+  test('ticks evenly while zoom ticks are on, higher in than out', async ({
     page
   }) => {
     await openApp(page);
-    await page.locator('#soundToggle').click();
-    await takeClicks(page);
+    await setSounds(page, 'soundTicks');
+    // Switch clicks are off: turning ticks on made no sound
+    expect(await takeClicks(page)).toEqual([]);
 
     await spinWheel(page, -100);
 
@@ -289,8 +308,10 @@ test.describe('zooming with the wheel', () => {
     expect(ticks.length).toBeLessThanOrEqual(14);
     expect(ticks.every(({ frequency }) => frequency === TICK_IN)).toBe(true);
 
+    // 80 ms apart when the tick is due; timed here as the sound starts, a
+    // moment later, so a busy machine can bring two a few milliseconds closer
     for (let i = 1; i < ticks.length; i++) {
-      expect(ticks[i].at - ticks[i - 1].at).toBeGreaterThanOrEqual(79);
+      expect(ticks[i].at - ticks[i - 1].at).toBeGreaterThanOrEqual(70);
     }
 
     await page.waitForTimeout(100);
@@ -302,8 +323,15 @@ test.describe('zooming with the wheel', () => {
     expect(out.every((frequency) => frequency === TICK_OUT)).toBe(true);
   });
 
-  test('is silent while sound is off', async ({ page }) => {
+  test('is silent while zoom ticks are off, even with switch clicks on', async ({
+    page
+  }) => {
     await openApp(page);
+    await spinWheel(page, -100);
+    expect(await takeClicks(page)).toEqual([]);
+
+    await setSounds(page, 'soundClicks');
+    await takeClicks(page);
     await spinWheel(page, -100);
 
     expect(await takeClicks(page)).toEqual([]);
@@ -313,26 +341,14 @@ test.describe('zooming with the wheel', () => {
 test.describe('on a phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-  test('Sound sits in the bottom bar and plays the ambience', async ({
+  test('Settings opens from the menu and plays the ambience', async ({
     page
   }) => {
     await openApp(page);
-
-    await expect(page.locator('#soundToggle')).toBeHidden();
-
-    const sound = page
-      .locator('.mc-dock')
-      .getByRole('button', { name: 'Sound' });
-
-    await sound.tap();
-    await expect(sound).toHaveAttribute('aria-pressed', 'true');
-    // Cyan when on, as the Systems button is when open, even under the finger
-    await expect(sound).toHaveCSS('color', 'rgb(79, 239, 249)');
+    await page.locator('#menuToggle').tap();
+    await page.getByRole('button', { name: 'Settings' }).tap();
+    await page.locator('label[for="soundAmbience"]').tap();
+    await expect(page.locator('#soundAmbience')).toBeChecked();
     await ambiencePlays(page);
-    // The header button follows, for when the screen widens
-    await expect(page.locator('#soundToggle')).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
   });
 });

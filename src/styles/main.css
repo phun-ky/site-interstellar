@@ -164,7 +164,7 @@ canvas {
 }
 
 .int.mc-brand:focus-visible,
-.int.mc-nav a.int:focus-visible,
+.int.mc-nav li > .int:focus-visible,
 .int.mc-menu:focus-visible {
   outline: 2px solid var(--int-color-cyan);
   outline-offset: 2px;
@@ -242,46 +242,11 @@ canvas {
 
 /* ---------- Navigation ---------- */
 
-/* As on the Interstellar Tools site: mono uppercase links, a divider, then
-   the icon links */
-.int.mc-nav-links {
-  display: flex;
-  align-items: center;
-  list-style: none;
-}
-
-.int.mc-nav a.int {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 10px;
-  min-height: 40px;
-  font-family: var(--int-font-family-mono);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--int-color-text);
-  text-decoration: none;
-}
-
-.int.mc-nav a.int:hover {
-  color: var(--int-color-cyan);
-}
-
-.int.mc-external {
-  font-size: 11px;
-  color: var(--int-color-muted);
-}
-
-.int.mc-nav-icon {
-  margin-left: 12px;
-  padding-left: 12px;
-  border-left: 1px solid var(--int-color-line);
-}
-
+/* The header menu: one button at the top right on every screen width, and a
+   dropdown under it holding Settings, then the links, in mono uppercase as
+   on the Interstellar Tools site */
 .int.mc-menu {
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
@@ -292,100 +257,128 @@ canvas {
   cursor: pointer;
 }
 
+.int.mc-menu:hover {
+  color: var(--int-color-cyan);
+}
+
 .int.mc-menu[aria-expanded='true'] {
   border-color: var(--int-color-cyan);
   color: var(--int-color-cyan);
 }
 
-/* Narrow screens: the links open from the menu button, as a panel under the
-   header */
-@media (max-width: 1023px) {
-  .int.mc-menu {
-    display: flex;
-  }
-
-  .int.mc-nav-links {
-    position: fixed;
-    top: var(--int-header-height);
-    left: 0;
-    right: 0;
-    display: none;
-    flex-direction: column;
-    align-items: stretch;
-    max-height: calc(100vh - var(--int-header-height));
-    padding: 8px var(--int-gutter) 24px;
-    overflow-y: auto;
-    background: var(--int-color-panel-solid);
-    border-bottom: 1px solid var(--int-color-line);
-  }
-
-  .int.mc-menu[aria-expanded='true'] + .int.mc-nav-links {
-    display: flex;
-  }
-
-  .int.mc-nav-links > li.int {
-    border-bottom: 1px solid var(--int-color-line);
-  }
-
-  .int.mc-nav a.int {
-    min-height: 48px;
-    padding: 0;
-  }
-
-  .int.mc-nav-icon {
-    margin: 0;
-    padding: 0;
-    border-left: 0;
-  }
+.int.mc-nav-links {
+  position: fixed;
+  top: var(--int-header-height);
+  right: var(--int-gutter);
+  display: none;
+  flex-direction: column;
+  width: 280px;
+  max-height: calc(100vh - var(--int-header-height));
+  padding: 8px 16px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--int-color-panel-solid);
+  border: 1px solid var(--int-color-line);
+  border-top: 0;
 }
 
-/* ---------- Sound (#99) ---------- */
+.int.mc-menu[aria-expanded='true'] + .int.mc-nav-links {
+  display: flex;
+}
 
-/* The header button on wide screens; the bottom bar has its own on narrow
-   screens. The icon shows a speaker struck through when off, sound waves
-   when on */
-.int.mc-sound {
+.int.mc-nav-links > li.int {
+  border-bottom: 1px solid var(--int-color-line);
+}
+
+.int.mc-nav-links > li.int:last-child {
+  border-bottom: 0;
+}
+
+/* Settings first, set apart from the links */
+.int.mc-nav-links > li.mc-nav-settings {
+  border-bottom: 2px solid var(--int-color-line-strong);
+}
+
+.int.mc-nav li > .int {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 0 12px;
-  border: 1px solid var(--int-color-line);
-  border-radius: 0;
-  background: transparent;
-  color: var(--int-color-text);
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  background: none;
   font-family: var(--int-font-family-mono);
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
+  color: var(--int-color-text);
+  text-decoration: none;
   cursor: pointer;
 }
 
-.int.mc-sound:hover {
+.int.mc-nav li > .int:hover {
   color: var(--int-color-cyan);
 }
 
-.int.mc-sound:focus-visible {
-  outline: 2px solid var(--int-color-cyan);
-  outline-offset: 2px;
+.int.mc-external {
+  font-size: 11px;
+  color: var(--int-color-muted);
 }
 
-.int.mc-sound[aria-pressed='true'] {
-  border-color: var(--int-color-cyan);
-  color: var(--int-color-cyan);
+/* Narrow screens: the dropdown spans the screen, under the header */
+@media (max-width: 1023px) {
+  .int.mc-nav-links {
+    left: 0;
+    right: 0;
+    width: auto;
+    padding: 8px var(--int-gutter) 24px;
+    border-width: 0 0 1px;
+  }
 }
 
-.int.mc-dock-sound {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+/* ---------- Settings dialog ---------- */
+
+/* Modal, in the middle of the screen, framed like the Systems panel */
+.int.mc-dialog {
+  width: min(420px, calc(100vw - 2 * var(--int-gutter)));
+  max-height: calc(100vh - 2 * var(--int-gutter));
+  margin: auto;
+  padding: 20px;
+  overflow-y: auto;
+  border: 1px solid rgba(79, 239, 249, 0.45);
+  border-top-width: 3px;
+  background: var(--int-color-space);
+  color: var(--int-color-muted);
 }
 
-[aria-pressed='false'] > .mc-sound-icon .mc-sound-waves,
-[aria-pressed='true'] > .mc-sound-icon .mc-sound-mute {
-  display: none;
+.int.mc-dialog::backdrop {
+  background: rgba(5, 8, 7, 0.7);
+}
+
+.int.mc-dialog .mc-ptitle {
+  flex: 1;
+  align-self: center;
+  margin: 0;
+  color: var(--int-color-teal);
+}
+
+.int.mc-fieldset {
+  min-width: 0;
+  border: 0;
+}
+
+.int.mc-fieldset legend {
+  margin-bottom: 4px;
+  font-family: var(--int-font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.int.mc-hint {
+  margin-top: 16px;
+  font-size: 13px;
 }
 
 /* ---------- Panels ---------- */
@@ -797,7 +790,7 @@ select.int:focus-visible,
     display: none;
   }
 
-  /* The bottom bar: Hold, Sound and the Systems sheet's button */
+  /* The bottom bar: Hold and the Systems sheet's button */
   .int.mc-dock {
     position: fixed;
     left: 0;
@@ -805,7 +798,7 @@ select.int:focus-visible,
     bottom: 0;
     z-index: 4;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
     height: var(--int-dock-height);
     padding: 10px var(--int-gutter) 12px;
@@ -817,12 +810,6 @@ select.int:focus-visible,
     margin: 0;
   }
 
-  /* Sound moves to the bottom bar */
-  .int.mc-header .mc-sound {
-    display: none;
-  }
-
-  .int.mc-dock #soundDock[aria-pressed='true'],
   .int.mc-dock #systemsToggle[aria-expanded='true'] {
     border-color: var(--int-color-cyan);
     color: var(--int-color-cyan);

@@ -30,6 +30,7 @@ import { initializeMinimap } from './features/minimap/initialize-minimap';
 import { updateMinimap } from './features/minimap/update-minimap';
 import { setupSound } from './features/sound/sound';
 import { setupMainMenu } from './features/ui/main-menu';
+import { setupSettings } from './features/ui/settings';
 import { setupUI } from './features/ui/setup-UI';
 import { setupSystemsSheet } from './features/ui/systems-sheet';
 import { updateBodiesInView } from './features/ui/update-bodies-in-view';
@@ -67,6 +68,7 @@ import { waitFor } from './utils/wait-for';
 const App = async (): Promise<void> => {
   setupUI();
   setupMainMenu();
+  setupSettings();
   setupSystemsSheet();
   setupSound();
 

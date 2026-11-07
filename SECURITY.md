@@ -38,8 +38,8 @@ security problem.
 What you can rely on:
 
 - **No data collection.** No analytics, no cookies, no local storage. The page
-  sends nothing anywhere. Sound starts off on every visit, since the choice is
-  not stored.
+  sends nothing anywhere. Every sound in Settings starts off on every visit,
+  since the choices are not stored.
 - **No outside input.** The page reads nothing from the URL, from storage or
   from the network. All HTML it builds comes from data bundled with the site,
   and the body names and facts in the info panel are escaped as well. No `eval`

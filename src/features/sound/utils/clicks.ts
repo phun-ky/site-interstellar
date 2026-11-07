@@ -14,12 +14,12 @@ export type ClickType = {
 
 /**
  * How loud a switch sounds. A narrow band of noise carries little energy, so
- * this lifts it to peaks of about a quarter of full scale, under the ambience.
+ * this lifts it to peaks of about a sixth of full scale.
  */
-export const SWITCH_VOLUME = 2.4;
+export const SWITCH_VOLUME = 1.4;
 
-/** How loud a zoom tick sounds: peaks of about an eighth of full scale. */
-export const ZOOM_TICK_VOLUME = 3;
+/** How loud a zoom tick sounds: barely there, at peaks of about a hundredth of full scale. */
+export const ZOOM_TICK_VOLUME = 0.2;
 
 /** The two bands a switch's clicks are in. */
 const LOW = 1800;
