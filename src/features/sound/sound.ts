@@ -13,11 +13,16 @@ const AMBIENCE_FILES = {
   opus: 'audio/ambience.webm',
   aac: 'audio/ambience.m4a'
 } as const;
-/** How loud the background sound plays, from 0 to 1. */
-const AMBIENCE_VOLUME = 0.5;
+/** How loud the background sound plays, from 0 to 1: in the background. */
+const AMBIENCE_VOLUME = 0.3;
 
 /** Whether sound is on. Off on every visit: nothing is remembered. */
 let enabled = false;
+/**
+ * Whether the page can be heard: shown, and its window in focus. Sound that
+ * is on stays silent while someone is in another tab or window.
+ */
+let present = true;
 /** The page's audio context, made the first time sound is turned on. */
 let context: AudioContext | null = null;
 /** When the last zoom tick played, in milliseconds, or `null` if none has. */
@@ -30,7 +35,7 @@ let lastTick: number | null = null;
  * @param {number} volume - The volume they play at.
  */
 const playClicks = (clicks: ClickType[], volume: number): void => {
-  if (!context) return;
+  if (!context || !present) return;
 
   const output = context.createGain();
 
@@ -96,8 +101,9 @@ export const playZoomTick = (zoomingIn: boolean): void => {
  * Sound is off on every visit and nothing is remembered. Turning it on plays
  * the ambience on a loop; while it is on, every Systems toggle, and the Sound
  * button itself, clicks like a switch as it is flicked, and zooming ticks
- * (see `playZoomTick`). Turning it off silences the page. The ambience pauses
- * while the page is hidden.
+ * (see `playZoomTick`). Turning it off silences the page. While the page is
+ * hidden, or its window is not in focus, it is silent too: the ambience
+ * pauses and nothing clicks, until the page is back in focus.
  *
  * @param {Document} [root=document] - The document holding the buttons.
  *
@@ -115,7 +121,7 @@ export const setupSound = (root: Document = document): void => {
 
   const playAmbience = () => {
     // A browser may refuse, or fail to load the file; the clicks still work
-    ambience?.play().catch(() => undefined);
+    if (present) ambience?.play().catch(() => undefined);
   };
   const setEnabled = (on: boolean) => {
     enabled = on;
@@ -152,10 +158,18 @@ export const setupSound = (root: Document = document): void => {
     }
   });
 
-  root.addEventListener('visibilitychange', () => {
+  /** Silences the page while it is hidden or out of focus, and resumes after. */
+  const followPresence = () => {
+    present = !root.hidden && root.hasFocus();
+
     if (!enabled || !ambience) return;
 
-    if (root.hidden) ambience.pause();
-    else playAmbience();
-  });
+    if (present) playAmbience();
+    else ambience.pause();
+  };
+
+  present = !root.hidden && root.hasFocus();
+  root.addEventListener('visibilitychange', followPresence);
+  root.defaultView?.addEventListener('blur', followPresence);
+  root.defaultView?.addEventListener('focus', followPresence);
 };

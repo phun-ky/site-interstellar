@@ -69,6 +69,36 @@ const ambiencePlays = (page: Page) =>
     )
     .toBe(true);
 
+/** Whether the ambience is paused. */
+const ambiencePaused = (page: Page) =>
+  page
+    .locator('#ambience')
+    .evaluate((audio) => (audio as HTMLAudioElement).paused);
+
+/**
+ * Makes the window lose or regain focus, as when someone clicks another
+ * window: headless pages always report focus, so `hasFocus` is set before
+ * the `blur` or `focus` event fires, and nothing else is.
+ */
+const setFocused = (page: Page, focused: boolean) =>
+  page.evaluate((focused) => {
+    document.hasFocus = () => focused;
+    window.dispatchEvent(new Event(focused ? 'focus' : 'blur'));
+  }, focused);
+
+/**
+ * Hides or shows the page, as when someone switches tab: `hidden` is set
+ * before the `visibilitychange` event fires, and nothing else is.
+ */
+const setHidden = (page: Page, hidden: boolean) =>
+  page.evaluate((hidden) => {
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      get: () => hidden
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, hidden);
+
 const audioRequests = (page: Page): string[] => {
   const urls: string[] = [];
 
@@ -124,6 +154,14 @@ test.describe('on a wide screen', () => {
     await expect(sound).toHaveText(/Sound\s*on/);
     await ambiencePlays(page);
     expect(await takeClicks(page)).toEqual(SWITCH_ON);
+    // On a loop, in the background
+    expect(
+      await page.locator('#ambience').evaluate((audio) => {
+        const { loop, volume } = audio as HTMLAudioElement;
+
+        return { loop, volume };
+      })
+    ).toEqual({ loop: true, volume: 0.3 });
     // Opus, which Chrome plays, and nothing else
     expect(requested.every((url) => url.endsWith('/audio/ambience.webm'))).toBe(
       true
@@ -154,6 +192,50 @@ test.describe('on a wide screen', () => {
 
     await toggle(page, 'toggleMoons');
     expect(await takeClicks(page)).toEqual(SWITCH_OFF);
+  });
+});
+
+test.describe('away from the page', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test('is silent while the window is out of focus, and plays again after', async ({
+    page
+  }) => {
+    await openApp(page);
+    await page.locator('#soundToggle').click();
+    await ambiencePlays(page);
+    await takeClicks(page);
+
+    await setFocused(page, false);
+    expect(await ambiencePaused(page)).toBe(true);
+    // Sound stays on, but nothing clicks
+    await expect(page.locator('#soundToggle')).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await page.locator('#toggleMoons').evaluate((input) => {
+      (input as HTMLInputElement).click();
+    });
+    expect(await takeClicks(page)).toEqual([]);
+
+    await setFocused(page, true);
+    await ambiencePlays(page);
+    await toggle(page, 'toggleMoons');
+    expect(await takeClicks(page)).toEqual(SWITCH_OFF);
+  });
+
+  test('is silent while the tab is hidden, and plays again when shown', async ({
+    page
+  }) => {
+    await openApp(page);
+    await page.locator('#soundToggle').click();
+    await ambiencePlays(page);
+
+    await setHidden(page, true);
+    expect(await ambiencePaused(page)).toBe(true);
+
+    await setHidden(page, false);
+    await ambiencePlays(page);
   });
 });
 
