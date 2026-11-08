@@ -65,7 +65,6 @@ See the [roadmap](ROADMAP.md) for what is planned next, and what is not.
 - Orbits are drawn flat: inclination is ignored until the map is 3D (see the
   [timeline](#timeline)).
 - [Stars in nested systems overlap at galaxy scale](https://github.com/phun-ky/site-interstellar/issues/13).
-- [Labels overlap at solar system scale](https://github.com/phun-ky/site-interstellar/issues/91).
 
 ## Development
 

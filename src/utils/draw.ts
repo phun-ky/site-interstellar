@@ -32,8 +32,9 @@ import { drawLockReticle } from '../features/celestial-bodies/draw-lock-reticle'
 import { drawOrbits } from '../features/celestial-bodies/orbits/draw';
 import { getAbsolutePosition } from '../features/celestial-bodies/utils/get-absolute-position';
 import { getBodyPosition } from '../features/celestial-bodies/utils/get-body-position';
-import { drawLabels } from '../features/labels/draw';
+import { drawLabels, getLabelCandidates } from '../features/labels/draw';
 import { drawGalaxyLabel } from '../features/labels/draw-galaxy-label';
+import { type LabelCandidateType } from '../features/labels/utils/place-labels';
 import { drawStarfield } from '../features/starfield/draw-starfield';
 import { initializeStarfield } from '../features/starfield/initialize-starfield';
 import { OrbitingBodyType } from '../types/orbiting-bodies';
@@ -173,6 +174,8 @@ export const draw = async (props: DrawPropsType) => {
     };
   };
   const sun = stars.find((star) => star.id === 'sun'); // Find the Sun
+  /** Every body label that could be drawn, placed together once the bodies are */
+  const labels: LabelCandidateType[] = [];
 
   // draw galaxy center
   drawGalaxy({
@@ -246,13 +249,14 @@ export const draw = async (props: DrawPropsType) => {
         });
 
         if (scale.value > THRESHOLD_PLANET_RENDER && OPTIONS_UI.labels) {
-          drawLabels({
-            celestialBodies: asteroids,
-            space,
-            scale,
-            referenceX: sunReferenceX,
-            referenceY: sunReferenceY
-          });
+          labels.push(
+            ...getLabelCandidates({
+              celestialBodies: asteroids,
+              scale,
+              referenceX: sunReferenceX,
+              referenceY: sunReferenceY
+            })
+          );
         }
       }
 
@@ -277,13 +281,14 @@ export const draw = async (props: DrawPropsType) => {
         });
 
         if (scale.value > THRESHOLD_COMET_LABEL && OPTIONS_UI.labels) {
-          drawLabels({
-            celestialBodies: comets,
-            space,
-            scale,
-            referenceX: sunReferenceX,
-            referenceY: sunReferenceY
-          });
+          labels.push(
+            ...getLabelCandidates({
+              celestialBodies: comets,
+              scale,
+              referenceX: sunReferenceX,
+              referenceY: sunReferenceY
+            })
+          );
         }
       }
 
@@ -298,13 +303,14 @@ export const draw = async (props: DrawPropsType) => {
         });
 
         if (scale.value > THRESHOLD_PLANET_LABEL && OPTIONS_UI.labels) {
-          drawLabels({
-            celestialBodies: planets,
-            space,
-            scale,
-            referenceX: sunReferenceX,
-            referenceY: sunReferenceY
-          });
+          labels.push(
+            ...getLabelCandidates({
+              celestialBodies: planets,
+              scale,
+              referenceX: sunReferenceX,
+              referenceY: sunReferenceY
+            })
+          );
         }
 
         // Draw planets
@@ -332,13 +338,14 @@ export const draw = async (props: DrawPropsType) => {
             );
 
             if (scale.value > THRESHOLD_MOON_RENDER && OPTIONS_UI.labels) {
-              drawLabels({
-                celestialBodies: planetMoons,
-                space,
-                scale,
-                referenceX: planetReferenceX,
-                referenceY: planetReferenceY
-              });
+              labels.push(
+                ...getLabelCandidates({
+                  celestialBodies: planetMoons,
+                  scale,
+                  referenceX: planetReferenceX,
+                  referenceY: planetReferenceY
+                })
+              );
             }
 
             if (scale.value > THRESHOLD_MOON_RENDER) {
@@ -369,12 +376,13 @@ export const draw = async (props: DrawPropsType) => {
 
   if (OPTIONS_UI.labels) {
     stars.forEach((star) => {
-      drawLabels({
-        celestialBodies: [star],
-        space,
-        scale,
-        ...getParentReference(star)
-      });
+      labels.push(
+        ...getLabelCandidates({
+          celestialBodies: [star],
+          scale,
+          ...getParentReference(star)
+        })
+      );
     });
   }
 
@@ -388,6 +396,9 @@ export const draw = async (props: DrawPropsType) => {
       maxSize: MAX_STAR_SIZE
     });
   });
+
+  // Every label at once, over the bodies, so none overlaps another (#91)
+  drawLabels({ space, labels });
 
   // Mark the body the camera is locked on
   drawLockReticle(space);

@@ -18,6 +18,16 @@ type NearestBodyType = CartesianCoordinatesInterface & {
   parent: string | undefined;
 };
 
+/** A body label drawn in the current frame: its body, its text and its box, in canvas pixels. */
+type LabelBoxType = {
+  id: string;
+  label: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
 type CanvasRectType = {
   width: number;
   height: number;
@@ -50,6 +60,8 @@ declare global {
     ZOOM_PAN_TIMEOUT: number; // For delaying reactivation
     /** Screen positions of the bodies drawn in the current frame, keyed by body id. */
     NEAREST_BODIES: Record<string, NearestBodyType>;
+    /** The body labels drawn in the current frame, none overlapping (#91). */
+    LABEL_BOXES: LabelBoxType[];
     STARFIELD_BITMAP: ImageBitmap;
     LAST_CANVAS_SIZE: CanvasRectType;
   }
@@ -72,6 +84,8 @@ declare global {
   var ZOOM_PAN_TIMEOUT: number; // For delaying reactivation
   /** Screen positions of the bodies drawn in the current frame, keyed by body id. */
   var NEAREST_BODIES: Record<string, NearestBodyType>;
+  /** The body labels drawn in the current frame, none overlapping (#91). */
+  var LABEL_BOXES: LabelBoxType[];
   var STARFIELD_BITMAP: ImageBitmap;
   var LAST_CANVAS_SIZE: CanvasRectType;
 }

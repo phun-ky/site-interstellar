@@ -4,7 +4,16 @@ import { expect, type Page } from '@playwright/test';
 type AppGlobalsType = {
   PAUSE: boolean;
   LOCKED_CELESTIAL_BODY: { id: string } | null;
-  NEAREST_BODIES: Record<string, { x: number; y: number }>;
+  NEAREST_BODIES: Record<string, { x: number; y: number; size: number }>;
+  /** The body labels drawn in the current frame. */
+  LABEL_BOXES: {
+    id: string;
+    label: string;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  }[];
   /** Text drawn on the canvas in the last complete frame. */
   __lastFrameText: string[];
   __violations: string[];
