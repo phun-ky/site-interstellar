@@ -61,6 +61,7 @@ export const drawGalaxy = (props: DrawGalaxyPropsType): void => {
     galaxy,
     maxSize = MAX_CELESTIAL_BODY_SIZE
   } = props;
+
   // A galaxy without a known black hole (Triangulum) has no centre to draw
   if (!galaxy.blackHole) return;
 
