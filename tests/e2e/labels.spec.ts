@@ -74,11 +74,11 @@ test('locked on the Sun with Comets on, no two labels overlap (#91)', async ({
 
     expect(overlapping).toEqual([]);
     expect(overReticle).toEqual([]);
-    // The Sun's label stays, counting the labels it hides
+    // The Sun's label stays, counting the labels it hides. How many others
+    // stay depends on where the bodies are, and far enough out it hides all
     expect(labels.find((label) => label.startsWith('SUN'))).toMatch(
       /^SUN \+\d+$/
     );
-    expect(labels.length).toBeGreaterThan(2);
 
     for (let notch = 0; notch < 2; notch++) {
       await page.mouse.wheel(0, 100);

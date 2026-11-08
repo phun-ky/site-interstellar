@@ -1,6 +1,7 @@
 import { ASTEROID_BELTS, SYSTEMS } from '@interstellar-tools/constants';
 import {
   AsteroidsType,
+  CelestialBodyType,
   CometsType,
   GalaxiesType,
   MoonsType,
@@ -30,7 +31,7 @@ import { drawCelestialBodies } from '../features/celestial-bodies/draw-celestial
 import { drawGalaxy } from '../features/celestial-bodies/draw-galaxy';
 import { drawLockReticle } from '../features/celestial-bodies/draw-lock-reticle';
 import { drawOrbits } from '../features/celestial-bodies/orbits/draw';
-import { getAbsolutePosition } from '../features/celestial-bodies/utils/get-absolute-position';
+import { getBodyKind } from '../features/celestial-bodies/utils/body-catalog';
 import { getBodyPosition } from '../features/celestial-bodies/utils/get-body-position';
 import { drawLabels, getLabelCandidates } from '../features/labels/draw';
 import { drawGalaxyLabel } from '../features/labels/draw-galaxy-label';
@@ -52,6 +53,8 @@ const getFocusKeepOut = (): number => {
 
   return tracked ? tracked.size + FOCUS_KEEP_OUT_MARGIN : 0;
 };
+/** How wide a star's orbit round a black hole must be drawn before the star is, in pixels. */
+const MIN_BLACK_HOLE_ORBIT_PX = 8;
 
 export type DrawPropsType = {
   space: CanvasRenderingContext2D;
@@ -174,6 +177,18 @@ export const draw = async (props: DrawPropsType) => {
     };
   };
   const sun = stars.find((star) => star.id === 'sun'); // Find the Sun
+  const blackHoles = new Set(galaxies.map(({ blackHole }) => blackHole?.id));
+  /**
+   * The stars to draw: stars orbiting a black hole (the S-stars round
+   * Sagittarius A*) only once their orbit is wide enough to tell them apart
+   * from it, as moons are only drawn close up.
+   */
+  const shownStars = stars.filter(
+    ({ parent, orbit }) =>
+      !orbit ||
+      !blackHoles.has(parent) ||
+      distanceToPixels(orbit.a, scale) >= MIN_BLACK_HOLE_ORBIT_PX
+  );
   /** Every body label that could be drawn, placed together once the bodies are */
   const labels: LabelCandidateType[] = [];
 
@@ -196,7 +211,7 @@ export const draw = async (props: DrawPropsType) => {
   });
 
   // Draw star system and star orbits if toggled on
-  [...SYSTEMS, ...stars].forEach((body) => {
+  [...SYSTEMS, ...shownStars].forEach((body) => {
     drawOrbits({
       celestialBodies: [body],
       toggled: OPTIONS_UI.trajectory,
@@ -206,176 +221,104 @@ export const draw = async (props: DrawPropsType) => {
     });
   });
 
-  if (sun) {
-    const sunPosition = getAbsolutePosition(sun);
+  /**
+   * Draws a layer of bodies (planets, asteroids, comets or moons) round their
+   * parents: each group of siblings at its parent's position, so planets
+   * circle their own star (TRAPPIST-1's round TRAPPIST-1A) and moons their
+   * own planet or asteroid (Dimorphos round Didymos).
+   */
+  const drawLayer = (
+    bodies: OrbitingBodyType[],
+    { maxSize, labelled }: { maxSize: number; labelled: boolean }
+  ) => {
+    const byParent = new Map<string | undefined, OrbitingBodyType[]>();
 
-    if (sunPosition.x && sunPosition.y) {
-      const sunXPX = distanceToPixels(sunPosition.x, scale);
-      const sunYPX = distanceToPixels(sunPosition.y, scale);
-      const sunReferenceX = galacticReferenceX + sunXPX;
-      const sunReferenceY = galacticReferenceY + sunYPX;
-
-      if (
-        scale.value > THRESHOLD_ASTEROID_BELT_RENDER &&
-        OPTIONS_UI.asteroidBelts
-      ) {
-        drawBelts({
-          space,
-          centerX: sunReferenceX,
-          centerY: sunReferenceY,
-          scale,
-          asteroidBelts: ASTEROID_BELTS
-        });
-      }
-
-      // Asteroids are a layer of their own, drawn with or without the belts
-      if (scale.value > THRESHOLD_ASTEROID_RENDER && OPTIONS_UI.asteroids) {
-        drawOrbits({
-          celestialBodies: asteroids,
-          toggled: OPTIONS_UI.trajectory,
-          space,
-          referenceX: sunReferenceX,
-          referenceY: sunReferenceY,
-          scale
-        });
-
-        drawCelestialBodies({
-          space,
-          referenceX: sunReferenceX,
-          referenceY: sunReferenceY,
-          scale,
-          celestialBodies: asteroids,
-          maxSize: MAX_PLANET_SIZE
-        });
-
-        if (scale.value > THRESHOLD_PLANET_RENDER && OPTIONS_UI.labels) {
-          labels.push(
-            ...getLabelCandidates({
-              celestialBodies: asteroids,
-              scale,
-              referenceX: sunReferenceX,
-              referenceY: sunReferenceY
-            })
-          );
-        }
-      }
-
-      if (scale.value > THRESHOLD_COMET_RENDER && OPTIONS_UI.comets) {
-        drawOrbits({
-          celestialBodies: comets,
-          toggled: OPTIONS_UI.trajectory,
-          space,
-          referenceX: sunReferenceX,
-          referenceY: sunReferenceY,
-          scale
-        });
-
-        // Draw comets
-        drawCelestialBodies({
-          space,
-          referenceX: sunReferenceX,
-          referenceY: sunReferenceY,
-          scale,
-          celestialBodies: comets,
-          maxSize: MAX_PLANET_SIZE
-        });
-
-        if (scale.value > THRESHOLD_COMET_LABEL && OPTIONS_UI.labels) {
-          labels.push(
-            ...getLabelCandidates({
-              celestialBodies: comets,
-              scale,
-              referenceX: sunReferenceX,
-              referenceY: sunReferenceY
-            })
-          );
-        }
-      }
-
-      if (scale.value > THRESHOLD_PLANET_RENDER) {
-        drawOrbits({
-          celestialBodies: planets,
-          toggled: OPTIONS_UI.trajectory,
-          space,
-          referenceX: sunReferenceX,
-          referenceY: sunReferenceY,
-          scale
-        });
-
-        if (scale.value > THRESHOLD_PLANET_LABEL && OPTIONS_UI.labels) {
-          labels.push(
-            ...getLabelCandidates({
-              celestialBodies: planets,
-              scale,
-              referenceX: sunReferenceX,
-              referenceY: sunReferenceY
-            })
-          );
-        }
-
-        // Draw planets
-        drawCelestialBodies({
-          space,
-          referenceX: sunReferenceX,
-          referenceY: sunReferenceY,
-          scale,
-          celestialBodies: planets,
-          maxSize: MAX_PLANET_SIZE
-        });
-      }
-
-      planets.forEach((planet) => {
-        if (OPTIONS_UI.moons) {
-          const planetPosition = getBodyPosition(planet);
-
-          if (planetPosition.x && planetPosition.y) {
-            const planetXPX = distanceToPixels(planetPosition.x, scale);
-            const planetYPX = distanceToPixels(planetPosition.y, scale);
-            const planetReferenceX = sunReferenceX + planetXPX;
-            const planetReferenceY = sunReferenceY + planetYPX;
-            const planetMoons = moons.filter(
-              (moon) => moon.parent === planet.id
-            );
-
-            if (scale.value > THRESHOLD_MOON_RENDER && OPTIONS_UI.labels) {
-              labels.push(
-                ...getLabelCandidates({
-                  celestialBodies: planetMoons,
-                  scale,
-                  referenceX: planetReferenceX,
-                  referenceY: planetReferenceY
-                })
-              );
-            }
-
-            if (scale.value > THRESHOLD_MOON_RENDER) {
-              drawOrbits({
-                celestialBodies: planetMoons,
-                toggled: OPTIONS_UI.trajectory,
-                space,
-                referenceX: planetReferenceX,
-                referenceY: planetReferenceY,
-                scale
-              });
-
-              // Draw moons for this planet
-              drawCelestialBodies({
-                space,
-                referenceX: planetReferenceX,
-                referenceY: planetReferenceY,
-                scale,
-                celestialBodies: planetMoons,
-                maxSize: MAX_MOON_SIZE
-              });
-            }
-          }
-        }
-      });
+    for (const body of bodies) {
+      byParent.set(body.parent, [...(byParent.get(body.parent) ?? []), body]);
     }
+
+    byParent.forEach((siblings) => {
+      const reference = getParentReference(siblings[0]);
+      const celestialBodies = siblings as CelestialBodyType[];
+
+      drawOrbits({
+        celestialBodies,
+        toggled: OPTIONS_UI.trajectory,
+        space,
+        ...reference,
+        scale
+      });
+      drawCelestialBodies({
+        space,
+        ...reference,
+        scale,
+        celestialBodies,
+        maxSize
+      });
+
+      if (labelled) {
+        labels.push(
+          ...getLabelCandidates({ celestialBodies, scale, ...reference })
+        );
+      }
+    });
+  };
+  const showAsteroids =
+    scale.value > THRESHOLD_ASTEROID_RENDER && OPTIONS_UI.asteroids;
+
+  if (
+    sun &&
+    scale.value > THRESHOLD_ASTEROID_BELT_RENDER &&
+    OPTIONS_UI.asteroidBelts
+  ) {
+    const { referenceX: centerX, referenceY: centerY } = getParentReference({
+      parent: sun.id
+    } as OrbitingBodyType);
+
+    drawBelts({
+      space,
+      centerX,
+      centerY,
+      scale,
+      asteroidBelts: ASTEROID_BELTS
+    });
+  }
+
+  // Asteroids are a layer of their own, drawn with or without the belts
+  if (showAsteroids) {
+    drawLayer(asteroids, {
+      maxSize: MAX_PLANET_SIZE,
+      labelled: scale.value > THRESHOLD_PLANET_RENDER && OPTIONS_UI.labels
+    });
+  }
+
+  if (scale.value > THRESHOLD_COMET_RENDER && OPTIONS_UI.comets) {
+    drawLayer(comets, {
+      maxSize: MAX_PLANET_SIZE,
+      labelled: scale.value > THRESHOLD_COMET_LABEL && OPTIONS_UI.labels
+    });
+  }
+
+  if (scale.value > THRESHOLD_PLANET_RENDER) {
+    drawLayer(planets, {
+      maxSize: MAX_PLANET_SIZE,
+      labelled: scale.value > THRESHOLD_PLANET_LABEL && OPTIONS_UI.labels
+    });
+  }
+
+  // Moons round planets, and round asteroids while asteroids are shown
+  if (OPTIONS_UI.moons && scale.value > THRESHOLD_MOON_RENDER) {
+    drawLayer(
+      moons.filter(
+        ({ parent }) =>
+          getBodyKind(parent ?? '') !== 'asteroid' || showAsteroids
+      ),
+      { maxSize: MAX_MOON_SIZE, labelled: OPTIONS_UI.labels }
+    );
   }
 
   if (OPTIONS_UI.labels) {
-    stars.forEach((star) => {
+    shownStars.forEach((star) => {
       labels.push(
         ...getLabelCandidates({
           celestialBodies: [star],
@@ -387,7 +330,7 @@ export const draw = async (props: DrawPropsType) => {
   }
 
   // Draw stars
-  stars.forEach((star) => {
+  shownStars.forEach((star) => {
     drawCelestialBodies({
       space,
       scale,

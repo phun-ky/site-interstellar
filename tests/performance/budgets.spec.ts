@@ -13,9 +13,11 @@ const BUDGETS: Record<string, Budget> = {
   // fonts 39808 B, images 1975 B (the favicon), LCP 908-996 ms, CLS 0.007,
   // INP 64-72 ms. html raised from 2300 B for the header navigation (#74):
   // 2782 B measured with it. css raised from 4400 B for the narrow screen
-  // layout (#17): 4152 B before it, 4503 B with it
+  // layout (#17): 4152 B before it, 4503 B with it. js raised from 23000 B
+  // for the @interstellar-tools/constants 2.2.0 bodies (#103): 22946 B
+  // before it, 27748 B with it
   './': {
-    bytes: { html: 3200, js: 23_000, css: 5200, fonts: 46_000, images: 2300 },
+    bytes: { html: 3200, js: 29_000, css: 5200, fonts: 46_000, images: 2300 },
     lcpMs: 1300,
     cls: 0.02,
     inpMs: 150

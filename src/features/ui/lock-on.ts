@@ -34,6 +34,14 @@ const HIT_SLOP_PX = 6;
 const FOCUS_FILL = 0.85;
 /** How long the focus zoom takes, in milliseconds. */
 const ZOOM_DURATION_MS = 700;
+/**
+ * The smallest neighbourhood a lock frames, in au (15 000 km). Positions are
+ * summed from the galactic centre, 1.7 billion au from the Sun, where a
+ * double resolves only about 2e-7 au (28 km); framing closer would show that
+ * error as a jumping body. Dimorphos, 1.2 km from Didymos, stays within its
+ * disc.
+ */
+const MIN_FOCUS_EXTENT_AU = 1e-4;
 /** The layer toggles each kind of body needs to be drawn. */
 const LAYERS_BY_KIND: Record<string, string[]> = {
   moon: ['toggleMoons'],
@@ -180,9 +188,12 @@ const getFocusScale = (body: CelestialBodyType): number => {
     orbit ? convertDistanceUnit(orbit.a, 'au').value * (1 + orbit.e) : 0
   );
   const ownSizeAu = convertDistanceUnit(body.radius, 'au').value * 300;
-  const extentAu = childAphelia.length
-    ? getCoreExtent(childAphelia) * 1.1
-    : Math.max(ownSizeAu, 0.003);
+  const extentAu = Math.max(
+    childAphelia.length
+      ? getCoreExtent(childAphelia) * 1.1
+      : Math.max(ownSizeAu, 0.003),
+    MIN_FOCUS_EXTENT_AU
+  );
 
   let scale = halfView / (extentAu * AU_IN_PX);
 
