@@ -14,6 +14,8 @@ export const CSP_DIRECTIVES: Readonly<Record<string, readonly string[]>> = {
   'font-src': ["'self'"],
   'img-src': ["'self'"],
   'manifest-src': ["'self'"],
+  // The background sound, fetched only once someone turns sound on
+  'media-src': ["'self'"],
   'base-uri': ["'none'"],
   'form-action': ["'none'"]
 };

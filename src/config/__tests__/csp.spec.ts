@@ -29,7 +29,8 @@ describe('CSP_DIRECTIVES', () => {
       'style-src',
       'font-src',
       'img-src',
-      'manifest-src'
+      'manifest-src',
+      'media-src'
     ]) {
       assert.deepEqual(CSP_DIRECTIVES[directive], ["'self'"], directive);
     }
@@ -51,7 +52,7 @@ describe('CONTENT_SECURITY_POLICY', () => {
   test('joins every directive', () => {
     assert.equal(
       CONTENT_SECURITY_POLICY,
-      "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'"
+      "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; manifest-src 'self'; media-src 'self'; base-uri 'none'; form-action 'none'"
     );
   });
 });

@@ -101,13 +101,32 @@ const sourceMapOf = async (
   return map ? [new URL(map, script).href] : [];
 };
 
+/**
+ * The site's own files a script names, such as the background sound it plays
+ * on request: quoted paths relative to the site, resolved against `baseURL`.
+ */
+const filesNamedIn = async (
+  request: APIRequestContext,
+  script: string,
+  baseURL: string
+): Promise<string[]> => {
+  const js = await (await request.get(script)).text();
+
+  return [
+    ...js.matchAll(
+      /["'`]([a-z][\w-]*(?:\/[\w.-]+)+\.(?:webm|m4a|mp3|ogg|png|svg|jpg|webp))["'`]/g
+    )
+  ].map(([, path]) => new URL(path, baseURL).href);
+};
+
 /** The test server's root, where the site's path starts. */
 const SERVER_ROOT = 'http://127.0.0.1:3000/';
 
 /**
  * Every file the built site asks for: the pages, what they link and load, what
- * their stylesheets, scripts and manifest load in turn, the social card, and
- * the images in `browserconfig.xml`, which browsers ask for by convention.
+ * their stylesheets, scripts and manifest load in turn (a script's source map
+ * and the files it names), the social card, and the images in
+ * `browserconfig.xml`, which browsers ask for by convention.
  */
 const reachableUrls = async (
   page: Page,
@@ -131,6 +150,9 @@ const reachableUrls = async (
       for (const asset of await urlsInStylesheet(request, url)) urls.add(asset);
     } else if (pathname.endsWith('.js')) {
       for (const asset of await sourceMapOf(request, url)) urls.add(asset);
+      for (const asset of await filesNamedIn(request, url, baseURL)) {
+        urls.add(asset);
+      }
     } else if (pathname.endsWith('manifest.json')) {
       for (const asset of await urlsInManifest(request, url)) urls.add(asset);
     }

@@ -1,9 +1,10 @@
 /**
- * Opens and closes the header links from the menu button on narrow screens.
+ * Opens and closes the header menu: Settings, then the links, in a dropdown
+ * under the menu button at the top right, on every screen width.
  *
- * The button's `aria-expanded` shows the links (see `.mc-menu` in main.css).
- * Escape closes them and returns focus to the button, as do picking a link and
- * clicking anywhere outside the navigation.
+ * The button's `aria-expanded` shows the dropdown (see `.mc-menu` in
+ * main.css). Escape closes it and returns focus to the button. Picking an
+ * item, or clicking anywhere outside the menu, closes it too.
  *
  * @param {Document} [root=document] - The document holding the header.
  *
@@ -13,7 +14,7 @@
  * ```
  */
 export const setupMainMenu = (root: Document = document): void => {
-  const button = root.querySelector<HTMLButtonElement>('.mc-menu');
+  const button = root.getElementById('menuToggle');
   const nav = button?.closest('nav');
 
   if (!button || !nav) return;
@@ -31,8 +32,8 @@ export const setupMainMenu = (root: Document = document): void => {
     }
   });
 
-  nav.addEventListener('click', (event) => {
-    if ((event.target as Element).closest('a')) setOpen(false);
+  nav.addEventListener('click', ({ target }) => {
+    if ((target as Element).closest('li a, li button')) setOpen(false);
   });
 
   root.addEventListener('click', (event) => {

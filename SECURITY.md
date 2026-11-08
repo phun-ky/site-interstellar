@@ -38,7 +38,8 @@ security problem.
 What you can rely on:
 
 - **No data collection.** No analytics, no cookies, no local storage. The page
-  sends nothing anywhere.
+  sends nothing anywhere. Every sound in Settings starts off on every visit,
+  since the choices are not stored.
 - **No outside input.** The page reads nothing from the URL, from storage or
   from the network. All HTML it builds comes from data bundled with the site,
   and the body names and facts in the info panel are escaped as well. No `eval`
@@ -48,8 +49,9 @@ What you can rely on:
 - **A Content Security Policy.** The built page carries a
   [policy](https://github.com/phun-ky/site-interstellar/blob/main/src/config/csp.ts)
   in a `<meta>` tag, since GitHub Pages cannot set headers. It allows scripts,
-  styles, fonts, images and the manifest from the site's own origin only, and
-  blocks everything else, inline scripts and styles included.
+  styles, fonts, images, the manifest and the background sound from the site's
+  own origin only, and blocks everything else, inline scripts and styles
+  included.
 
 What you can't rely on:
 

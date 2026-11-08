@@ -136,3 +136,6 @@ interstellar.d.ts
 # Playwright
 test-results/
 playwright-report/
+
+# The ambience loop, made on the way to src/assets/audio (media/README.md)
+ambience-loop.wav
