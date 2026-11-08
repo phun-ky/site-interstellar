@@ -201,3 +201,78 @@ test('without reduced motion, locking on animates the zoom', async ({
     zoomAfterTwoFrames
   );
 });
+
+test.describe('the body info, from the keyboard (#90)', () => {
+  const info = (page: Page) => page.locator('#bodyInfoOpen');
+  const panel = (page: Page) => page.locator('#bodyInfo');
+
+  test('Info by the Lock menu opens the locked body, and Escape or Close returns focus', async ({
+    page
+  }) => {
+    await expect(info(page)).toBeDisabled();
+
+    // Lock on Jupiter by typing its name into the focused Lock menu
+    await page.locator('#lockOn').focus();
+    await page.keyboard.type('Jupiter');
+    await expect(page.locator('#lockOn')).toHaveValue('jupiter');
+    await expect(panel(page)).toBeHidden();
+    await expect(info(page)).toBeEnabled();
+
+    // Info is the next stop, and opens the panel with focus in it
+    await page.keyboard.press('Tab');
+    await expect(info(page)).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel(page)).toBeVisible();
+    await expect(panel(page)).toBeFocused();
+    await expect(page.locator('#bodyInfoTitle')).toHaveText('Jupiter');
+    await expect(info(page)).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      await panel(page).evaluate((el) => getComputedStyle(el).outlineStyle)
+    ).not.toBe('none');
+
+    // Escape closes it, and focus is back on Info
+    await page.keyboard.press('Escape');
+    await expect(panel(page)).toBeHidden();
+    await expect(info(page)).toBeFocused();
+    await expect(info(page)).toHaveAttribute('aria-expanded', 'false');
+
+    // So does Close
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#bodyInfoClose')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel(page)).toBeHidden();
+    await expect(info(page)).toBeFocused();
+
+    // Info again while it is open closes it
+    await page.keyboard.press('Enter');
+    await expect(panel(page)).toBeVisible();
+    await info(page).click();
+    await expect(panel(page)).toBeHidden();
+
+    // Unlocked, there is nothing to show
+    await page.selectOption('#lockOn', 'noLock');
+    await expect(info(page)).toBeDisabled();
+  });
+
+  test.describe('on a phone', () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+    test('Info closes the Systems sheet, and Escape returns focus to Systems', async ({
+      page
+    }) => {
+      await page.locator('#systemsToggle').click();
+      await page.selectOption('#lockOn', 'jupiter');
+      await info(page).click();
+
+      await expect(page.locator('#systems')).toBeHidden();
+      await expect(panel(page)).toBeVisible();
+      await expect(panel(page)).toBeFocused();
+      await expect(page.locator('#bodyInfoTitle')).toHaveText('Jupiter');
+
+      await page.keyboard.press('Escape');
+      await expect(panel(page)).toBeHidden();
+      await expect(page.locator('#systemsToggle')).toBeFocused();
+    });
+  });
+});

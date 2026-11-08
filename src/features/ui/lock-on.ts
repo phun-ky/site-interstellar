@@ -71,7 +71,8 @@ const enableLayersFor = (body: CelestialBodyType): void => {
  *
  * Locking keeps the body in the centre of the viewport (`draw()` re-centres it
  * every frame), switches on the layer it needs (Moons for a moon, …), shows it
- * in the header and the Lock dropdown, and closes an open info popup. Unlocking
+ * in the header and the Lock dropdown, enables the Info button beside it, and
+ * closes an open info popup. Unlocking
  * returns the camera to where it was before the lock.
  *
  * @param {CelestialBodyType | null} body - The body to lock on, or `null` to unlock.
@@ -84,8 +85,14 @@ const enableLayersFor = (body: CelestialBodyType): void => {
  */
 export const lockOn = (body: CelestialBodyType | null): void => {
   const select = document.getElementById('lockOn') as HTMLSelectElement | null;
+  const info = document.getElementById(
+    'bodyInfoOpen'
+  ) as HTMLButtonElement | null;
 
   markZoomingOrPanning();
+
+  // The Info button opens the locked body's info, so only while one is locked
+  if (info) info.disabled = !body;
 
   if (!body) {
     if (globalThis.LOCKED_CELESTIAL_BODY) {

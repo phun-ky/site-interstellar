@@ -93,6 +93,11 @@ const getBodyFacts = (
 
   return facts;
 };
+/** Shows on the Info button whether the popup is open. */
+const setExpanded = (open: boolean): void =>
+  document
+    .getElementById('bodyInfoOpen')
+    ?.setAttribute('aria-expanded', String(open));
 
 /**
  * Opens the info popup for a body, docked at the bottom of the viewport so it
@@ -127,6 +132,7 @@ export const showBodyInfo = (body: CelestialBodyType): void => {
     )
     .join('');
   panel.hidden = false;
+  setExpanded(true);
 };
 
 /**
@@ -141,4 +147,64 @@ export const hideBodyInfo = (): void => {
   const panel = document.getElementById('bodyInfo');
 
   if (panel) panel.hidden = true;
+
+  setExpanded(false);
+};
+
+/**
+ * Closes the info popup as someone asked to, with Escape or its Close button.
+ * When focus was in the popup, it returns to the Info button, or to the
+ * Systems button while the Systems sheet, and the Info button in it, is closed
+ * on a narrow screen.
+ *
+ * @example
+ * ```ts
+ * closeBodyInfo();
+ * ```
+ */
+export const closeBodyInfo = (): void => {
+  const panel = document.getElementById('bodyInfo');
+  const hadFocus = !!panel?.contains(document.activeElement);
+
+  hideBodyInfo();
+
+  if (!hadFocus) return;
+
+  const info = document.getElementById('bodyInfoOpen');
+
+  (info?.getClientRects().length
+    ? info
+    : document.getElementById('systemsToggle')
+  )?.focus();
+};
+
+/**
+ * Opens the info popup for the locked body and moves focus to it, or closes
+ * it when it is open: what the Info button by the Lock menu does, so the
+ * popup can be opened without clicking a body. On a narrow screen the Systems
+ * sheet closes first, since it would cover the popup.
+ *
+ * @example
+ * ```ts
+ * infoButton.addEventListener('click', toggleLockedBodyInfo);
+ * ```
+ */
+export const toggleLockedBodyInfo = (): void => {
+  const panel = document.getElementById('bodyInfo');
+  const locked = globalThis.LOCKED_CELESTIAL_BODY;
+
+  if (!panel || !locked) return;
+
+  if (!panel.hidden) {
+    hideBodyInfo();
+
+    return;
+  }
+
+  if (document.getElementById('systems')?.classList.contains('is-open')) {
+    document.getElementById('systemsToggle')?.click();
+  }
+
+  showBodyInfo(locked);
+  panel.focus();
 };
