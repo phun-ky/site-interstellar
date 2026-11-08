@@ -17,7 +17,7 @@ import { updateMinimap } from '../features/minimap/update-minimap';
 import { playZoomTick } from '../features/sound/sound';
 import { generateStarfield } from '../features/starfield/generate-star-field';
 import { initializeStarfield } from '../features/starfield/initialize-starfield';
-import { hideBodyInfo } from '../features/ui/body-info';
+import { closeBodyInfo, toggleLockedBodyInfo } from '../features/ui/body-info';
 import {
   focusOn,
   getBodyAtPoint,
@@ -261,7 +261,7 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
   );
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') hideBodyInfo();
+    if (event.key === 'Escape') closeBodyInfo();
 
     if (event.ctrlKey || event.metaKey) {
       // Ctrl on Windows/Linux, Cmd on macOS
@@ -377,9 +377,12 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
     });
   });
 
-  document.getElementById('bodyInfoClose')?.addEventListener('click', () => {
-    hideBodyInfo();
-  });
+  document
+    .getElementById('bodyInfoClose')
+    ?.addEventListener('click', closeBodyInfo);
+  document
+    .getElementById('bodyInfoOpen')
+    ?.addEventListener('click', toggleLockedBodyInfo);
 
   const trajectoryCheckboxElement = document.getElementById(
     'toggleTrajectory'

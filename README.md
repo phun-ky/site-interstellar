@@ -27,7 +27,7 @@ system, moving in real time or faster:
 
 - Pan with the mouse or a finger, and zoom with the wheel or a pinch.
 - Lock on any star, planet, moon, comet or asteroid to follow it, and click or
-  tap a body for its details.
+  tap a body, or choose Info beside the Lock menu, for its details.
 - Switch moons, asteroid belts, asteroids, comets, the starfield, arrows to
   off-screen bodies, labels and orbits on and off.
 - Hold the simulation, change its speed, or reset it to now.
@@ -66,7 +66,6 @@ See the [roadmap](ROADMAP.md) for what is planned next, and what is not.
   [timeline](#timeline)).
 - [Stars in nested systems overlap at galaxy scale](https://github.com/phun-ky/site-interstellar/issues/13).
 - [Labels overlap at solar system scale](https://github.com/phun-ky/site-interstellar/issues/91).
-- [The body info panel can't be opened with the keyboard](https://github.com/phun-ky/site-interstellar/issues/90).
 
 ## Development
 

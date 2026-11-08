@@ -112,12 +112,24 @@ export const setupUI = () => {
         <option value="insane">1 000 days / frame</option>
       </select>
     </label>
-    <label class="int mc-field" for="lockOn">
-      Lock
-      <select id="lockOn" class="int">
-        <option value="noLock">No lock</option>
-      </select>
-    </label>
+    <div class="int mc-field">
+      <label class="int" for="lockOn">Lock</label>
+      <span class="int mc-lock">
+        <select id="lockOn" class="int">
+          <option value="noLock">No lock</option>
+        </select>
+        <button
+          type="button"
+          class="int mc-lock-info"
+          id="bodyInfoOpen"
+          aria-controls="bodyInfo"
+          aria-expanded="false"
+          disabled
+        >
+          Info
+        </button>
+      </span>
+    </div>
     ${pauseButton}
     ${resetButton}
     `;
