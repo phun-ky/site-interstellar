@@ -60,6 +60,10 @@ export type DrawGalaxyLabelPropsType = {
 export const drawGalaxyLabel = (props: DrawGalaxyLabelPropsType): void => {
   const { space, referenceX, referenceY, scale, galaxy } = props;
   const { name, blackHole } = galaxy;
+
+  // Without a known black hole there is no centre to label
+  if (!blackHole) return;
+
   const { radius } = blackHole;
 
   space.save();

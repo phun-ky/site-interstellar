@@ -22,8 +22,9 @@ The goal is to ultimately have a 1:1 simulation of our galaxy and to be able to
 view information and follow all known celestial bodies, including calculating
 trajectories of asteroids.
 
-Today it is a 2D map of the Milky Way's centre, nearby stars and the solar
-system, moving in real time or faster:
+Today it is a 2D map of the Milky Way's centre with the S-stars round
+Sagittarius A*, nearby and bright stars, TRAPPIST-1 and its planets, and the
+solar system with its dwarf planets, moving in real time or faster:
 
 - Pan with the mouse or a finger, and zoom with the wheel or a pinch.
 - Lock on any star, planet, moon, comet or asteroid to follow it, and click or
