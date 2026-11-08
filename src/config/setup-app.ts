@@ -88,6 +88,7 @@ export const setupApp = (canvas: HTMLCanvasElement) => {
   globalThis.TRAJECTORY_TRAILS = {};
   globalThis.IS_ZOOMING_OR_PANNING = false; // Initialize
   globalThis.NEAREST_BODIES = {};
+  globalThis.LABEL_BOXES = [];
   globalThis.BODIES_IN_VIEWPORT =
     globalThis.BODIES_IN_VIEWPORT ?? new Set<string>();
 

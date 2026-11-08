@@ -8,6 +8,21 @@ const RETICLE_GAP = 8;
 const RETICLE_ARM = 6;
 
 /**
+ * Half the width of the reticle round a body: it hugs the body, growing with
+ * its drawn size.
+ *
+ * @param {number} size - The radius the body is drawn with, in pixels.
+ * @returns {number} Half the reticle's width, in pixels.
+ *
+ * @example
+ * ```ts
+ * getReticleHalfSize(4); // 14
+ * ```
+ */
+export const getReticleHalfSize = (size: number): number =>
+  Math.max(RETICLE_MIN_HALF_SIZE, size + RETICLE_GAP);
+
+/**
  * Draws an amber target reticle (four corner brackets) around the body the
  * camera is locked on.
  *
@@ -33,8 +48,7 @@ export const drawLockReticle = (space: CanvasRenderingContext2D): void => {
   if (!tracked) return;
 
   const { x, y, size } = tracked;
-  // Hug the body: the reticle grows with the body's drawn size
-  const s = Math.max(RETICLE_MIN_HALF_SIZE, size + RETICLE_GAP);
+  const s = getReticleHalfSize(size);
   const a = Math.max(RETICLE_ARM, s * 0.25);
 
   space.save();
