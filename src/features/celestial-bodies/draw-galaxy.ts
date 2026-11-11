@@ -1,6 +1,6 @@
 import { GalaxyInterface, ValueInterface } from '@interstellar-tools/types';
 
-import { MAX_CELESTIAL_BODY_SIZE } from '../../config/constants';
+import { MIN_BLACK_HOLE_SIZE } from '../../config/constants';
 import { distanceToPixels } from '../../utils/distance/distance-to-pixels';
 
 export type DrawGalaxyPropsType = {
@@ -9,7 +9,7 @@ export type DrawGalaxyPropsType = {
   referenceY: number;
   scale: ValueInterface;
   galaxy: GalaxyInterface;
-  maxSize?: number;
+  minSize?: number;
 };
 
 /**
@@ -19,7 +19,7 @@ export type DrawGalaxyPropsType = {
  *
  * The **radius** of the black hole in pixels is determined using:
  * $$
- * r_{px} = \max(\text{scaled radius}, \text{maxSize})
+ * r_{px} = \max(\text{scaled radius}, \text{minSize})
  * $$
  * ensuring a **minimum renderable size** for visibility.
  *
@@ -31,7 +31,7 @@ export type DrawGalaxyPropsType = {
  * @param {number} props.referenceY - The y-coordinate of the galactic center in pixels.
  * @param {ValueInterface} props.scale - The scale factor converting real-world units to pixels.
  * @param {GalaxyInterface} props.galaxy - The galaxy data, including its black hole radius.
- * @param {number} [props.maxSize=MAX_CELESTIAL_BODY_SIZE] - The maximum size of the black hole render in pixels.
+ * @param {number} [props.minSize=MIN_BLACK_HOLE_SIZE] - The smallest the black hole is drawn, in pixels.
  * @returns {void} This function does not return a value; it renders the galaxy onto the canvas.
  *
  * @example
@@ -59,14 +59,14 @@ export const drawGalaxy = (props: DrawGalaxyPropsType): void => {
     referenceY,
     scale,
     galaxy,
-    maxSize = MAX_CELESTIAL_BODY_SIZE
+    minSize = MIN_BLACK_HOLE_SIZE
   } = props;
 
   // A galaxy without a known black hole (Triangulum) has no centre to draw
   if (!galaxy.blackHole) return;
 
   const { radius } = galaxy.blackHole;
-  const galaxySize = Math.max(distanceToPixels(radius, scale), maxSize);
+  const galaxySize = Math.max(distanceToPixels(radius, scale), minSize);
 
   space.fillStyle = 'white';
   space.beginPath();

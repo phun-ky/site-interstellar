@@ -12,10 +12,7 @@ import {
 } from '@interstellar-tools/types';
 
 import {
-  MAX_CELESTIAL_BODY_SIZE,
-  MAX_MOON_SIZE,
-  MAX_PLANET_SIZE,
-  MAX_STAR_SIZE,
+  MIN_BLACK_HOLE_SIZE,
   THRESHOLD_ASTEROID_BELT_RENDER,
   THRESHOLD_ASTEROID_RENDER,
   THRESHOLD_COMET_LABEL,
@@ -207,7 +204,7 @@ export const draw = async (props: DrawPropsType) => {
     referenceX,
     referenceY,
     space,
-    maxSize: MAX_CELESTIAL_BODY_SIZE
+    minSize: MIN_BLACK_HOLE_SIZE
   });
 
   const galaxyLabelBoxes = drawGalaxyLabel({
@@ -247,7 +244,7 @@ export const draw = async (props: DrawPropsType) => {
    */
   const drawLayer = (
     bodies: OrbitingBodyType[],
-    { maxSize, labelled }: { maxSize: number; labelled: boolean }
+    { labelled }: { labelled: boolean }
   ) => {
     const byParent = new Map<string | undefined, OrbitingBodyType[]>();
 
@@ -270,8 +267,7 @@ export const draw = async (props: DrawPropsType) => {
         space,
         ...reference,
         scale,
-        celestialBodies,
-        maxSize
+        celestialBodies
       });
 
       if (labelled) {
@@ -305,14 +301,12 @@ export const draw = async (props: DrawPropsType) => {
   // Asteroids are a layer of their own, drawn with or without the belts
   if (showAsteroids) {
     drawLayer(asteroids, {
-      maxSize: MAX_PLANET_SIZE,
       labelled: scale.value > THRESHOLD_PLANET_RENDER && OPTIONS_UI.labels
     });
   }
 
   if (scale.value > THRESHOLD_COMET_RENDER && OPTIONS_UI.comets) {
     drawLayer(comets, {
-      maxSize: MAX_PLANET_SIZE,
       labelled: scale.value > THRESHOLD_COMET_LABEL && OPTIONS_UI.labels
     });
   }
@@ -320,14 +314,12 @@ export const draw = async (props: DrawPropsType) => {
   // Interstellar objects pass through on hyperbolas, shown as comets are
   if (scale.value > THRESHOLD_COMET_RENDER && OPTIONS_UI.interstellar) {
     drawLayer(interstellarObjects, {
-      maxSize: MAX_PLANET_SIZE,
       labelled: scale.value > THRESHOLD_COMET_LABEL && OPTIONS_UI.labels
     });
   }
 
   if (scale.value > THRESHOLD_PLANET_RENDER) {
     drawLayer(planets, {
-      maxSize: MAX_PLANET_SIZE,
       labelled: scale.value > THRESHOLD_PLANET_LABEL && OPTIONS_UI.labels
     });
   }
@@ -339,7 +331,7 @@ export const draw = async (props: DrawPropsType) => {
         ({ parent }) =>
           getBodyKind(parent ?? '') !== 'asteroid' || showAsteroids
       ),
-      { maxSize: MAX_MOON_SIZE, labelled: OPTIONS_UI.labels }
+      { labelled: OPTIONS_UI.labels }
     );
   }
 
@@ -361,8 +353,7 @@ export const draw = async (props: DrawPropsType) => {
       space,
       scale,
       ...getParentReference(star),
-      celestialBodies: [star],
-      maxSize: MAX_STAR_SIZE
+      celestialBodies: [star]
     });
   });
 
