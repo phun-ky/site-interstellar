@@ -17,7 +17,11 @@ const AXE_TAGS = [
 const TAB_ORDER = [
   'skip link',
   'link Interstellar',
-  '#menuToggle',
+  'link Tools',
+  'link Sponsor',
+  'link Contributing',
+  '#settingsOpen',
+  'link GitHub repository',
   '#toggleMoons',
   '#toggleAsteroidBelts',
   '#toggleAsteroids',
