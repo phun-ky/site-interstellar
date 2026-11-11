@@ -14,6 +14,8 @@ export type SetUIOptionsPropsType = {
   toggleArrowheadsElement: HTMLInputElement;
   /** Checkbox element for toggling comets visibility. */
   cometsCheckboxElement: HTMLInputElement;
+  /** Checkbox element for toggling the interstellar objects' visibility. */
+  interstellarCheckboxElement: HTMLInputElement;
   /** Checkbox element for toggling asteroid belts visibility. */
   asteroidBeltsCheckboxElement: HTMLInputElement;
   /** Checkbox element for toggling asteroids visibility. */
@@ -50,6 +52,7 @@ export const setUIOptions = (props: SetUIOptionsPropsType) => {
     moonsCheckboxElement,
     toggleArrowheadsElement,
     cometsCheckboxElement,
+    interstellarCheckboxElement,
     asteroidBeltsCheckboxElement,
     asteroidsCheckboxElement,
     starfieldCheckboxElement
@@ -60,6 +63,7 @@ export const setUIOptions = (props: SetUIOptionsPropsType) => {
   OPTIONS_UI.moons = moonsCheckboxElement.checked || false;
   OPTIONS_UI.arrowHeads = toggleArrowheadsElement.checked || false;
   OPTIONS_UI.comets = cometsCheckboxElement.checked || false;
+  OPTIONS_UI.interstellar = interstellarCheckboxElement.checked || false;
   OPTIONS_UI.asteroidBelts = asteroidBeltsCheckboxElement.checked || false;
   OPTIONS_UI.asteroids = asteroidsCheckboxElement.checked || false;
   OPTIONS_UI.starfield = starfieldCheckboxElement.checked || false;

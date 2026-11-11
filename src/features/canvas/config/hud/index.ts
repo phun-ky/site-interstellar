@@ -31,6 +31,9 @@ export const OPTIONS_UI: UIOptionsInterface = {
   /** Whether to display comets in the visualization. */
   comets: false,
 
+  /** Whether to display the interstellar objects, on their open orbits. */
+  interstellar: false,
+
   /** Whether to visualize asteroid belts. */
   asteroidBelts: false,
 

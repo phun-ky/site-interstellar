@@ -23,14 +23,17 @@ view information and follow all known celestial bodies, including calculating
 trajectories of asteroids.
 
 Today it is a 2D map of the Milky Way's centre with the S-stars round
-Sagittarius A*, nearby and bright stars, TRAPPIST-1 and its planets, and the
-solar system with its dwarf planets, moving in real time or faster:
+Sagittarius A*, nearby and bright stars, TRAPPIST-1 and its planets, the solar
+system with its dwarf planets and the interstellar objects passing through it,
+and the galaxies around the Milky Way, moving in real time or faster. Orbits are
+drawn flat, each turned to its real direction:
 
 - Pan with the mouse or a finger, and zoom with the wheel or a pinch.
-- Lock on any star, planet, moon, comet or asteroid to follow it, and click or
-  tap a body, or choose Info beside the Lock menu, for its details.
-- Switch moons, asteroid belts, asteroids, comets, the starfield, arrows to
-  off-screen bodies, labels and orbits on and off.
+- Lock on any star, planet, moon, comet, asteroid, interstellar object or galaxy
+  to follow it, and click or tap a body, or choose Info beside the Lock menu,
+  for its details.
+- Switch moons, asteroid belts, asteroids, comets, interstellar objects, the
+  starfield, arrows to off-screen bodies, labels and orbits on and off.
 - Hold the simulation, change its speed, or reset it to now.
 - Turn sounds on in Settings, from the menu at the top right: a background
   ambience, a click as each switch is flicked, and a tick as you zoom, each on

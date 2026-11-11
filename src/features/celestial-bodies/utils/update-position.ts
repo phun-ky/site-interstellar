@@ -3,6 +3,8 @@ import { Radians, TimeStepInterface } from '@interstellar-tools/types';
 
 import { OrbitingBodyType } from '../../../types/orbiting-bodies';
 
+import { isOpenOrbit } from './orbit-orientation';
+
 /**
  * Updates the **orbital position** (angle) of a celestial body based on the given time step.
  *
@@ -39,7 +41,8 @@ export const updatePosition = (
   timeStep: TimeStepInterface
 ): ((body: OrbitingBodyType) => void) => {
   return ({ orbit }: OrbitingBodyType) => {
-    if (!orbit) return;
+    // Open orbits are placed by date instead (see updateOpenOrbits)
+    if (!orbit || isOpenOrbit(orbit)) return;
 
     orbit.angle = wrapAngle(computeAngle(orbit, timeStep)) as Radians;
   };

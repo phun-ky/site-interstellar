@@ -46,6 +46,7 @@ const MIN_FOCUS_EXTENT_AU = 1e-4;
 const LAYERS_BY_KIND: Record<string, string[]> = {
   moon: ['toggleMoons'],
   comet: ['toggleComets'],
+  interstellar: ['toggleInterstellar'],
   asteroid: ['toggleAsteroids']
 };
 
@@ -187,7 +188,10 @@ const getFocusScale = (body: CelestialBodyType): number => {
   const childAphelia = children.map(({ orbit }) =>
     orbit ? convertDistanceUnit(orbit.a, 'au').value * (1 + orbit.e) : 0
   );
-  const ownSizeAu = convertDistanceUnit(body.radius, 'au').value * 300;
+  // A galaxy is framed whole; anything else a few hundred times its size
+  const ownSizeAu =
+    convertDistanceUnit(body.radius, 'au').value *
+    (getBodyKind(body.id) === 'galaxy' ? 1.2 : 300);
   const extentAu = Math.max(
     childAphelia.length
       ? getCoreExtent(childAphelia) * 1.1

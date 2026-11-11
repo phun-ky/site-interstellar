@@ -14,7 +14,11 @@ import {
 import { getReticleHalfSize } from '../celestial-bodies/draw-lock-reticle';
 import { getBodyPosition } from '../celestial-bodies/utils/get-body-position';
 
-import { type LabelCandidateType, placeLabels } from './utils/place-labels';
+import {
+  type LabelBoxType,
+  type LabelCandidateType,
+  placeLabels
+} from './utils/place-labels';
 
 export type GetLabelCandidatesPropsType = {
   referenceX: number;
@@ -25,6 +29,8 @@ export type GetLabelCandidatesPropsType = {
 
 export type DrawLabelsPropsType = {
   space: CanvasRenderingContext2D;
+  /** Fixed text no label may cover, such as the Milky Way's name. */
+  obstacles?: LabelBoxType[];
   /** Every label that could be drawn this frame, from `getLabelCandidates`. */
   labels: LabelCandidateType[];
 };
@@ -98,7 +104,11 @@ export const getLabelCandidates = ({
  * drawLabels({ space, labels });
  * ```
  */
-export const drawLabels = ({ space, labels }: DrawLabelsPropsType): void => {
+export const drawLabels = ({
+  space,
+  labels,
+  obstacles = []
+}: DrawLabelsPropsType): void => {
   space.save();
   space.font = CANVAS_LABEL_FONT;
   setLabelLetterSpacing(space);
@@ -136,7 +146,8 @@ export const drawLabels = ({ space, labels }: DrawLabelsPropsType): void => {
   const placed = placeLabels(
     nearby,
     (text) => space.measureText(text).width + 2 * PADDING_X,
-    BOX_HEIGHT
+    BOX_HEIGHT,
+    obstacles
   );
 
   globalThis.LABEL_BOXES = placed.map(({ id, label, box }) => ({

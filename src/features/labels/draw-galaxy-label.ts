@@ -8,6 +8,8 @@ import {
   setLabelLetterSpacing
 } from '../canvas/config/ui';
 
+import { type LabelBoxType } from './utils/place-labels';
+
 export type DrawGalaxyLabelPropsType = {
   space: CanvasRenderingContext2D;
   referenceX: number;
@@ -57,12 +59,26 @@ export type DrawGalaxyLabelPropsType = {
  *
  * @see [Sagittarius A*](https://en.wikipedia.org/wiki/Sagittarius_A*)
  */
-export const drawGalaxyLabel = (props: DrawGalaxyLabelPropsType): void => {
+export const drawGalaxyLabel = (
+  props: DrawGalaxyLabelPropsType
+): LabelBoxType[] => {
   const { space, referenceX, referenceY, scale, galaxy } = props;
   const { name, blackHole } = galaxy;
+  const boxes: LabelBoxType[] = [];
+  /** The box a line of text, centred on x, takes with the current font. */
+  const boxOf = (text: string, y: number): LabelBoxType => {
+    const metrics = space.measureText(text);
+
+    return {
+      left: referenceX - metrics.width / 2,
+      top: y - metrics.actualBoundingBoxAscent,
+      width: metrics.width,
+      height: metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
+    };
+  };
 
   // Without a known black hole there is no centre to label
-  if (!blackHole) return;
+  if (!blackHole) return boxes;
 
   const { radius } = blackHole;
 
@@ -72,11 +88,10 @@ export const drawGalaxyLabel = (props: DrawGalaxyLabelPropsType): void => {
   space.fillStyle = CANVAS_COLORS.teal;
   space.textAlign = 'center';
 
-  space.fillText(
-    name.toUpperCase(),
-    referenceX,
-    referenceY - distanceToPixels(radius, scale) - 56
-  );
+  const nameY = referenceY - distanceToPixels(radius, scale) - 56;
+
+  space.fillText(name.toUpperCase(), referenceX, nameY);
+  boxes.push(boxOf(name.toUpperCase(), nameY));
 
   space.restore();
 
@@ -86,11 +101,13 @@ export const drawGalaxyLabel = (props: DrawGalaxyLabelPropsType): void => {
   setLabelLetterSpacing(space);
   space.fillStyle = CANVAS_COLORS.amber;
   space.textAlign = 'center';
-  space.fillText(
-    blackHole.name.toUpperCase(),
-    referenceX,
-    referenceY - distanceToPixels(radius, scale) - 24
-  );
+
+  const blackHoleY = referenceY - distanceToPixels(radius, scale) - 24;
+
+  space.fillText(blackHole.name.toUpperCase(), referenceX, blackHoleY);
+  boxes.push(boxOf(blackHole.name.toUpperCase(), blackHoleY));
 
   space.restore();
+
+  return boxes;
 };

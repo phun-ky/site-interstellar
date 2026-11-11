@@ -9,9 +9,13 @@ import {
 import { distanceToPixels } from '../../../utils/distance/distance-to-pixels';
 import { getViewportSize } from '../../canvas/get-viewport-size';
 import { getBodyPosition } from '../utils/get-body-position';
+import { isOpenOrbit } from '../utils/orbit-orientation';
 
 import { getOrbitStyle } from './orbit-style';
 import { traceOrbit } from './trace-orbit';
+
+/** How long an open orbit's trail is, in days of a closed orbit's period. */
+const OPEN_ORBIT_TRAIL_DAYS = 365.25;
 
 export type DrawOrbitsPropsType = {
   celestialBodies: OrbitingBodiesType;
@@ -110,7 +114,10 @@ export const drawOrbits = (props: DrawOrbitsPropsType): void => {
         return;
       }
 
-      let periodInDays = convertTemporalUnit(orbit.period, 'd').value;
+      // An open orbit has no period: its trail is as long as a year's
+      let periodInDays = isOpenOrbit(orbit)
+        ? OPEN_ORBIT_TRAIL_DAYS
+        : convertTemporalUnit(orbit.period, 'd').value;
 
       // Prevent division by zero but keep sign for retrograde motion
       if (Math.abs(periodInDays) < 1) periodInDays = periodInDays < 0 ? -1 : 1;

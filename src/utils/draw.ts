@@ -4,6 +4,7 @@ import {
   CelestialBodyType,
   CometsType,
   GalaxiesType,
+  InterstellarObjectsType,
   MoonsType,
   PlanetsType,
   StarsType,
@@ -28,10 +29,14 @@ import { getHudObstacles } from '../features/arrows/utils/get-clear-bounds';
 import { OPTIONS_UI } from '../features/canvas/config/hud';
 import { drawBelts } from '../features/celestial-bodies/asteroids/draw-belts';
 import { drawCelestialBodies } from '../features/celestial-bodies/draw-celestial-bodies';
+import { drawGalaxies } from '../features/celestial-bodies/draw-galaxies';
 import { drawGalaxy } from '../features/celestial-bodies/draw-galaxy';
 import { drawLockReticle } from '../features/celestial-bodies/draw-lock-reticle';
 import { drawOrbits } from '../features/celestial-bodies/orbits/draw';
-import { getBodyKind } from '../features/celestial-bodies/utils/body-catalog';
+import {
+  GALAXY_BODIES,
+  getBodyKind
+} from '../features/celestial-bodies/utils/body-catalog';
 import { getBodyPosition } from '../features/celestial-bodies/utils/get-body-position';
 import { drawLabels, getLabelCandidates } from '../features/labels/draw';
 import { drawGalaxyLabel } from '../features/labels/draw-galaxy-label';
@@ -64,6 +69,8 @@ export type DrawPropsType = {
   planets: PlanetsType;
   asteroids: AsteroidsType;
   comets: CometsType;
+  /** The interstellar objects, on open orbits round the Sun (#105). */
+  interstellarObjects: InterstellarObjectsType;
   scale: ValueInterface;
   referenceX: number;
   referenceY: number;
@@ -123,6 +130,7 @@ export const draw = async (props: DrawPropsType) => {
     planets,
     galaxies,
     comets,
+    interstellarObjects,
     scale,
     referenceX,
     referenceY,
@@ -202,13 +210,23 @@ export const draw = async (props: DrawPropsType) => {
     maxSize: MAX_CELESTIAL_BODY_SIZE
   });
 
-  drawGalaxyLabel({
+  const galaxyLabelBoxes = drawGalaxyLabel({
     scale,
     space,
     referenceX,
     referenceY,
     galaxy: galaxies[0]
   });
+  // The other galaxies, round the Milky Way (#105)
+  const galaxyLabels = drawGalaxies({
+    space,
+    referenceX: galacticReferenceX,
+    referenceY: galacticReferenceY,
+    scale,
+    galaxies: GALAXY_BODIES
+  });
+
+  if (OPTIONS_UI.labels) labels.push(...galaxyLabels);
 
   // Draw star system and star orbits if toggled on
   [...SYSTEMS, ...shownStars].forEach((body) => {
@@ -299,6 +317,14 @@ export const draw = async (props: DrawPropsType) => {
     });
   }
 
+  // Interstellar objects pass through on hyperbolas, shown as comets are
+  if (scale.value > THRESHOLD_COMET_RENDER && OPTIONS_UI.interstellar) {
+    drawLayer(interstellarObjects, {
+      maxSize: MAX_PLANET_SIZE,
+      labelled: scale.value > THRESHOLD_COMET_LABEL && OPTIONS_UI.labels
+    });
+  }
+
   if (scale.value > THRESHOLD_PLANET_RENDER) {
     drawLayer(planets, {
       maxSize: MAX_PLANET_SIZE,
@@ -341,7 +367,7 @@ export const draw = async (props: DrawPropsType) => {
   });
 
   // Every label at once, over the bodies, so none overlaps another (#91)
-  drawLabels({ space, labels });
+  drawLabels({ space, labels, obstacles: galaxyLabelBoxes });
 
   // Mark the body the camera is locked on
   drawLockReticle(space);

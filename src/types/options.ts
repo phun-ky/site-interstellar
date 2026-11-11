@@ -35,6 +35,8 @@ export interface UIOptionsInterface {
   moons: boolean;
   /** Show or hide comets. */
   comets: boolean;
+  /** Show or hide the interstellar objects, on their open orbits (#105). */
+  interstellar: boolean;
   /** Display names of celestial objects. */
   labels: boolean;
   /** Render asteroid belts in the visualization. */

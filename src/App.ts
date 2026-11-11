@@ -2,6 +2,7 @@ import {
   ASTEROIDS,
   COMETS,
   GALAXIES,
+  INTERSTELLAR_OBJECTS,
   MILLISECONDS_PER_DAY,
   MOONS,
   PLANETS,
@@ -25,6 +26,7 @@ import { timeStep } from './features/canvas/config/time-step';
 import { generateTimeStep } from './features/canvas/config/time-step/generate-time-step';
 import { getViewportSize } from './features/canvas/get-viewport-size';
 import { setupCanvas } from './features/canvas/setup-canvas';
+import { updateOpenOrbits } from './features/celestial-bodies/utils/open-orbit';
 import { updatePositions } from './features/celestial-bodies/utils/update-positions';
 import { initializeMinimap } from './features/minimap/initialize-minimap';
 import { updateMinimap } from './features/minimap/update-minimap';
@@ -41,6 +43,8 @@ import { draw } from './utils/draw';
 import { attachEventHandlers } from './utils/event-handlers';
 import { waitFor } from './utils/wait-for';
 
+/** The Sun's gravitational parameter, in m³/s², for the open orbits round it. */
+const SUN_MU = STARS.find(({ id }) => id === 'sun')?.mu ?? 0;
 /**
  * **Main application entry point** for initializing and running the simulation.
  *
@@ -86,6 +90,9 @@ const App = async (): Promise<void> => {
       getViewportSize(canvas);
     const { referenceX, referenceY } = getReference(canvas);
 
+    // Open orbits are placed by date, the simulation's, every frame
+    updateOpenOrbits(INTERSTELLAR_OBJECTS, SIMULATION_DATE, SUN_MU);
+
     // Draw everything related to canvas
     draw({
       space,
@@ -96,6 +103,7 @@ const App = async (): Promise<void> => {
       stars: STARS,
       moons: MOONS,
       comets: COMETS,
+      interstellarObjects: INTERSTELLAR_OBJECTS,
       referenceX,
       referenceY,
       canvasHeight,

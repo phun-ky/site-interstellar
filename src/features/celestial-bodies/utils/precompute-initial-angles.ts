@@ -7,6 +7,8 @@ import {
   OrbitingBodyType
 } from '../../../types/orbiting-bodies';
 
+import { isOpenOrbit } from './orbit-orientation';
+
 /** Each body's true anomaly at J2000, as the dataset gives it, by body id. */
 const J2000_ANGLES = new Map<string, Radians>();
 
@@ -52,7 +54,8 @@ export const precomputeInitialAngles = (
   const deltaT = (date.getTime() - J2000_UTC.getTime()) / MILLISECONDS_PER_DAY; // Days since J2000
 
   bodies.forEach(({ id, orbit }: OrbitingBodyType) => {
-    if (!orbit) return;
+    // Open orbits are placed by date instead (see updateOpenOrbits)
+    if (!orbit || isOpenOrbit(orbit)) return;
 
     // The simulation moves orbit.angle on, so keep the J2000 angle from the dataset
     if (!J2000_ANGLES.has(id)) J2000_ANGLES.set(id, orbit.angle);

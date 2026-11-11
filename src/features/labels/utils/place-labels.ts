@@ -74,10 +74,13 @@ const spacesCollide = (a: LabelBoxType[], b: LabelBoxType[]): boolean =>
  * with its count can come to overlap another placed label; then the lower of
  * the two is left out too, and the higher counts it and what it hid. A
  * label's `area`, such as the locked body's reticle, counts as part of it.
+ * A label over one of the `obstacles` (fixed text, such as the Milky Way's
+ * name) is left out, with nothing to count it on.
  *
  * @param {LabelCandidateType[]} candidates - Every label that could be drawn.
  * @param {(text: string) => number} measure - The width a label's box needs for a text, in pixels.
  * @param {number} height - The height of a label's box, in pixels.
+ * @param {LabelBoxType[]} [obstacles=[]] - Fixed text no label may cover.
  * @returns {PlacedLabelType[]} The labels to draw, highest priority first.
  *
  * @example
@@ -88,8 +91,11 @@ const spacesCollide = (a: LabelBoxType[], b: LabelBoxType[]): boolean =>
 export const placeLabels = (
   candidates: LabelCandidateType[],
   measure: (text: string) => number,
-  height: number
+  height: number,
+  obstacles: LabelBoxType[] = []
 ): PlacedLabelType[] => {
+  const blocked = (label: { box: LabelBoxType; area?: LabelBoxType }) =>
+    spacesCollide(spaceOf(label.box, label.area), obstacles);
   const boxFor = (
     { x, bottom }: LabelCandidateType,
     label: string
@@ -109,6 +115,10 @@ export const placeLabels = (
 
   for (const candidate of sorted) {
     const box = boxFor(candidate, candidate.text);
+
+    // Over fixed text, such as the Milky Way's name: nothing to count it on
+    if (blocked({ box, area: candidate.area })) continue;
+
     const covering = placed.find((other) =>
       spacesCollide(
         spaceOf(box, candidate.area),
@@ -124,6 +134,14 @@ export const placeLabels = (
   for (const label of placed) if (label.hidden) relabel(label);
 
   for (;;) {
+    // A label widened onto fixed text is left out, its count with it
+    const onObstacle = placed.findIndex(blocked);
+
+    if (onObstacle >= 0) {
+      placed.splice(onObstacle, 1);
+      continue;
+    }
+
     let clash: [PlacedLabelType, number] | null = null;
 
     for (let i = 0; i < placed.length && !clash; i++) {

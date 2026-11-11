@@ -49,6 +49,9 @@ export const setupApp = (canvas: HTMLCanvasElement) => {
   const cometsCheckboxElement = document.getElementById(
     'toggleComets'
   ) as HTMLInputElement;
+  const interstellarCheckboxElement = document.getElementById(
+    'toggleInterstellar'
+  ) as HTMLInputElement;
   const labelCheckboxElement = document.getElementById(
     'toggleLabels'
   ) as HTMLInputElement;
@@ -69,6 +72,7 @@ export const setupApp = (canvas: HTMLCanvasElement) => {
     trajectoryCheckboxElement,
     moonsCheckboxElement,
     cometsCheckboxElement,
+    interstellarCheckboxElement,
     labelCheckboxElement,
     toggleArrowheadsElement,
     asteroidBeltsCheckboxElement,
