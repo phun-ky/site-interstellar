@@ -198,6 +198,13 @@ canvas {
   color: var(--int-color-amber);
 }
 
+/* A long body name ends in an ellipsis rather than pushing the menu */
+.int.mc-callsign {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .int.mc-callsign[hidden] {
   display: none;
 }
@@ -231,22 +238,20 @@ canvas {
     align-items: flex-start;
     gap: 2px;
   }
-
-  /* A long body name ends in an ellipsis rather than under the menu */
-  .int.mc-callsign {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 }
 
 /* ---------- Navigation ---------- */
 
-/* The header menu: one button at the top right on every screen width, and a
-   dropdown under it holding Settings, then the links, in mono uppercase as
-   on the Interstellar Tools site */
+/* As on the Interstellar Tools site: mono uppercase links in a row, then
+   Settings and the GitHub icon, each set apart by a divider. Where the row
+   doesn't fit, the same items open from a menu button instead, as a dropdown
+   under the header */
+.int.mc-nav {
+  flex: none;
+}
+
 .int.mc-menu {
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   width: 40px;
@@ -267,44 +272,17 @@ canvas {
 }
 
 .int.mc-nav-links {
-  position: fixed;
-  top: var(--int-header-height);
-  right: var(--int-gutter);
-  display: none;
-  flex-direction: column;
-  width: 280px;
-  max-height: calc(100vh - var(--int-header-height));
-  padding: 8px 16px;
-  overflow-y: auto;
-  list-style: none;
-  background: var(--int-color-panel-solid);
-  border: 1px solid var(--int-color-line);
-  border-top: 0;
-}
-
-.int.mc-menu[aria-expanded='true'] + .int.mc-nav-links {
   display: flex;
-}
-
-.int.mc-nav-links > li.int {
-  border-bottom: 1px solid var(--int-color-line);
-}
-
-.int.mc-nav-links > li.int:last-child {
-  border-bottom: 0;
-}
-
-/* Settings first, set apart from the links */
-.int.mc-nav-links > li.mc-nav-settings {
-  border-bottom: 2px solid var(--int-color-line-strong);
+  align-items: center;
+  list-style: none;
 }
 
 .int.mc-nav li > .int {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
-  min-height: 48px;
+  min-height: 40px;
+  padding: 0 10px;
   border: 0;
   background: none;
   font-family: var(--int-font-family-mono);
@@ -326,14 +304,76 @@ canvas {
   color: var(--int-color-muted);
 }
 
-/* Narrow screens: the dropdown spans the screen, under the header */
-@media (max-width: 1023px) {
+/* Settings, and then GitHub, each after a divider */
+.int.mc-nav-group {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--int-color-line);
+}
+
+/* In the row GitHub is its icon alone; the link's label names it */
+.int.mc-nav-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Where the row doesn't fit, below 880 px: the menu button, and the items as
+   a dropdown. The row needs about 840 px with the status at its shortest */
+@media (max-width: 879px) {
+  .int.mc-menu {
+    display: flex;
+  }
+
   .int.mc-nav-links {
+    position: fixed;
+    top: var(--int-header-height);
     left: 0;
     right: 0;
-    width: auto;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    max-height: calc(100vh - var(--int-header-height));
     padding: 8px var(--int-gutter) 24px;
-    border-width: 0 0 1px;
+    overflow-y: auto;
+    background: var(--int-color-panel-solid);
+    border-bottom: 1px solid var(--int-color-line);
+  }
+
+  .int.mc-menu[aria-expanded='true'] + .int.mc-nav-links {
+    display: flex;
+  }
+
+  .int.mc-nav-links > li.int {
+    border-bottom: 1px solid var(--int-color-line);
+  }
+
+  .int.mc-nav-links > li.int:last-child {
+    border-bottom: 0;
+  }
+
+  /* Each divider in the row becomes a stronger line above its group */
+  .int.mc-nav-group {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--int-color-line-strong);
+    border-left: 0;
+  }
+
+  .int.mc-nav li > .int {
+    width: 100%;
+    min-height: 48px;
+    padding: 0;
+  }
+
+  .int.mc-nav-label {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
   }
 }
 

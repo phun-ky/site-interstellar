@@ -8,7 +8,8 @@ const dialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
 
 /** Opens Settings from the header menu. */
 const openSettings = async (page: Page) => {
-  await menuButton(page).click();
+  // Behind the menu button only where the header row doesn't fit
+  if (await menuButton(page).isVisible()) await menuButton(page).click();
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(dialog(page)).toBeVisible();
 };
@@ -82,29 +83,38 @@ for (const [name, viewport] of [
   });
 }
 
+for (const [name, viewport, opener] of [
+  ['a wide screen', { width: 1440, height: 900 }, '#settingsOpen'],
+  ['a phone', { width: 390, height: 844 }, '#menuToggle']
+] as const) {
+  test.describe(`closing Settings on ${name}`, () => {
+    test.use({ viewport });
+
+    test(`Escape, the close button or a click outside closes it, and focus returns to ${opener}`, async ({
+      page
+    }) => {
+      await openApp(page);
+
+      await openSettings(page);
+      await page.keyboard.press('Escape');
+      await expect(dialog(page)).toBeHidden();
+      await expect(page.locator(opener)).toBeFocused();
+
+      await openSettings(page);
+      await dialog(page).getByRole('button', { name: 'Close' }).click();
+      await expect(dialog(page)).toBeHidden();
+      await expect(page.locator(opener)).toBeFocused();
+
+      await openSettings(page);
+      await page.mouse.click(10, viewport.height - 120);
+      await expect(dialog(page)).toBeHidden();
+      await expect(page.locator(opener)).toBeFocused();
+    });
+  });
+}
+
 test.describe('closing Settings', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
-
-  test('Escape, the close button or a click outside closes it, and focus returns to the menu', async ({
-    page
-  }) => {
-    await openApp(page);
-
-    await openSettings(page);
-    await page.keyboard.press('Escape');
-    await expect(dialog(page)).toBeHidden();
-    await expect(menuButton(page)).toBeFocused();
-
-    await openSettings(page);
-    await dialog(page).getByRole('button', { name: 'Close' }).click();
-    await expect(dialog(page)).toBeHidden();
-    await expect(menuButton(page)).toBeFocused();
-
-    await openSettings(page);
-    await page.mouse.click(100, 450);
-    await expect(dialog(page)).toBeHidden();
-    await expect(menuButton(page)).toBeFocused();
-  });
 
   test('a setting stays as it was left when Settings opens again', async ({
     page
