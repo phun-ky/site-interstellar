@@ -81,7 +81,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.50.1",
-    "@types/node": "^22.13.1",
+    "@types/node": "^24.19.2",
     "cssnano": "^7.0.6",
     "eslint": "^10.14.0",
     "eslint-config-phun-ky": "^2.0.10",
