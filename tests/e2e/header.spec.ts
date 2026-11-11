@@ -28,14 +28,15 @@ test('the brand links to the map', async ({ page, baseURL }) => {
   );
 });
 
-test('the menu holds Settings, then the links, in order', async ({ page }) => {
+test('the header holds the links, then Settings, then GitHub, in order', async ({
+  page
+}) => {
   await page.goto('./');
-  await menu(page).click();
 
   const items = nav(page).getByRole('listitem');
 
-  await expect(items.first()).toHaveText('Settings');
   await expect(items).toHaveCount(LINKS.length + 1);
+  await expect(items.nth(3)).toHaveText('Settings');
 
   const links = nav(page).getByRole('link');
 
@@ -52,42 +53,84 @@ test('the menu holds Settings, then the links, in order', async ({ page }) => {
   }
 });
 
-test.describe('on a wide screen', () => {
-  test.use({ viewport: { width: 1440, height: 900 } });
+for (const width of [1440, 1024, 880]) {
+  test.describe(`at ${width} px wide`, () => {
+    test.use({ viewport: { width, height: 900 } });
 
-  test('the menu button at the top right opens a dropdown under it', async ({
+    test('the items are in a row, with no menu button', async ({ page }) => {
+      await page.goto('./');
+
+      await expect(menu(page)).toBeHidden();
+      await expect(
+        nav(page).getByRole('button', { name: 'Settings' })
+      ).toBeVisible();
+
+      for (const [name] of LINKS) {
+        await expect(nav(page).getByRole('link', { name })).toBeVisible();
+      }
+
+      // One row, at the same height, ending at the gutter
+      const boxes = await nav(page)
+        .getByRole('listitem')
+        .evaluateAll((items) =>
+          items.map((item) => item.getBoundingClientRect().top)
+        );
+
+      expect(new Set(boxes).size).toBe(1);
+
+      const header = page.locator('.mc-header');
+
+      expect(
+        await header.evaluate((el) => (el as HTMLElement).offsetHeight)
+      ).toBe(64);
+      expect(
+        await header.evaluate((el) => el.scrollWidth - el.clientWidth)
+      ).toBe(0);
+    });
+
+    test('a long lock name ends in an ellipsis, and the row stays', async ({
+      page
+    }) => {
+      await page.goto('./');
+
+      // Below 1024 px the Lock menu is in the Systems sheet
+      if (await page.locator('#systemsToggle').isVisible()) {
+        await page.locator('#systemsToggle').click();
+      }
+
+      await page.selectOption('#lockOn', 'sagittarius-dwarf');
+
+      const header = page.locator('.mc-header');
+
+      await expect(page.locator('#lockStatus')).toBeVisible();
+      await expect(menu(page)).toBeHidden();
+      expect(
+        await header.evaluate((el) => (el as HTMLElement).offsetHeight)
+      ).toBe(64);
+      expect(
+        await header.evaluate((el) => el.scrollWidth - el.clientWidth)
+      ).toBe(0);
+    });
+  });
+}
+
+test.describe('just too narrow for the row, at 879 px', () => {
+  test.use({ viewport: { width: 879, height: 900 } });
+
+  test('the menu button opens the same items, in the same order', async ({
     page
   }) => {
     await page.goto('./');
 
-    const button = menu(page);
-    const links = page.locator('#mainMenu');
+    await expect(nav(page).getByRole('link', { name: 'Tools' })).toBeHidden();
+    await menu(page).click();
+    await expect(menu(page)).toHaveAttribute('aria-expanded', 'true');
 
-    await expect(button).toBeVisible();
-    await expect(links).toBeHidden();
-    await button.click();
-    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    const items = nav(page).getByRole('listitem');
 
-    for (const [name] of LINKS) {
-      await expect(nav(page).getByRole('link', { name })).toBeVisible();
-    }
-
-    // Right under the header, in line with the button's right edge
-    const buttonBox = await button.boundingBox();
-    const linksBox = await links.boundingBox();
-
-    expect(linksBox?.y).toBe(64);
-    expect(Math.round((linksBox?.x ?? 0) + (linksBox?.width ?? 0))).toBe(
-      Math.round((buttonBox?.x ?? 0) + (buttonBox?.width ?? 0))
-    );
-    expect(linksBox?.width).toBeLessThan(400);
-
-    // The header stays one 64 px bar, where the canvas starts
-    expect(
-      await page
-        .locator('.mc-header')
-        .evaluate((el) => (el as HTMLElement).offsetHeight)
-    ).toBe(64);
+    await expect(items.nth(3)).toHaveText('Settings');
+    await expect(items.nth(4)).toHaveText('GitHub');
+    await expect(nav(page).getByRole('link', { name: 'Tools' })).toBeVisible();
   });
 });
 

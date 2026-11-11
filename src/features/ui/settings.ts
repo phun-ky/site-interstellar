@@ -7,7 +7,8 @@ import { SOUND_SETTINGS } from '../sound/sound';
  * The dialog is modal: the map behind it can't be reached until it closes.
  * It holds a switch for each sound (see `setupSound`), all off on every
  * visit. Escape, its close button or a click outside it closes it, and focus
- * returns to the menu button, since the menu has closed behind it.
+ * returns to Settings in the header row, or to the menu button where the
+ * items are in its dropdown, which closed behind the dialog.
  *
  * @param {Document} [root=document] - The document holding the dialog.
  *
@@ -41,7 +42,12 @@ export const setupSettings = (root: Document = document): void => {
     if (target === dialog) dialog.close();
   });
 
-  dialog.addEventListener('close', () =>
-    root.getElementById('menuToggle')?.focus()
-  );
+  dialog.addEventListener('close', () => {
+    const opener = root.getElementById('settingsOpen');
+
+    (opener?.getClientRects().length
+      ? opener
+      : root.getElementById('menuToggle')
+    )?.focus();
+  });
 };

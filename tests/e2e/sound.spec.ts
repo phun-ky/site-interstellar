@@ -111,7 +111,10 @@ const audioRequests = (page: Page): string[] => {
 
 /** Opens Settings from the header menu. */
 const openSettings = async (page: Page) => {
-  await page.locator('#menuToggle').click();
+  // Behind the menu button only where the header row doesn't fit
+  if (await page.locator('#menuToggle').isVisible()) {
+    await page.locator('#menuToggle').click();
+  }
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
 };
