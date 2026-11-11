@@ -5,10 +5,10 @@ import {
   ValueInterface
 } from '@interstellar-tools/types';
 
-import { MAX_CELESTIAL_BODY_SIZE } from '../../config/constants';
 import { distanceToPixels } from '../../utils/distance/distance-to-pixels';
 
 import { getBodyPosition } from './utils/get-body-position';
+import { getDrawnSize } from './utils/get-drawn-size';
 
 /** How far a star's glow reaches, as a multiple of its drawn radius. */
 const STAR_GLOW_RADIUS = 3;
@@ -21,7 +21,6 @@ export type DrawCelestialBodiesPropsType = {
   referenceY: number;
   scale: ValueInterface;
   celestialBodies: CelestialBodiesType;
-  maxSize?: number;
 };
 
 /**
@@ -43,11 +42,9 @@ export type DrawCelestialBodiesPropsType = {
  * - $f = e \cdot a$ is the **focus shift**.
  * - $(x, y)$ is the **celestial body's position** in AU.
  *
- * The **rendered size** of each celestial body is computed as:
- * $$
- * S = \max(\text{scaled radius}, \text{maxSize})
- * $$
- * ensuring a **minimum renderable size** for visibility.
+ * The **rendered size** of each celestial body comes from `getDrawnSize`: a
+ * size by its kind and radius when zoomed out, blending into its true size
+ * as you zoom in, and smaller while crowded against its parent (#109).
  *
  * @param {DrawCelestialBodiesPropsType} props - Object containing rendering parameters.
  * @param {CanvasRenderingContext2D} props.space - The 2D rendering context of the canvas.
@@ -55,7 +52,6 @@ export type DrawCelestialBodiesPropsType = {
  * @param {number} props.referenceY - The y-coordinate of the galactic center in pixels.
  * @param {ValueInterface} props.scale - The scale factor converting real-world units to pixels.
  * @param {CelestialBodiesType} props.celestialBodies - Array of celestial bodies with orbital parameters.
- * @param {number} [props.maxSize=MAX_CELESTIAL_BODY_SIZE] - The maximum size of a celestial body in pixels.
  * @returns {void} This function does not return a value; it renders celestial bodies onto the canvas.
  *
  * @example
@@ -87,23 +83,21 @@ export type DrawCelestialBodiesPropsType = {
 export const drawCelestialBodies = (
   props: DrawCelestialBodiesPropsType
 ): void => {
-  const {
-    space,
-    referenceX,
-    referenceY,
-    scale,
-    celestialBodies,
-    maxSize = MAX_CELESTIAL_BODY_SIZE
-  } = props;
+  const { space, referenceX, referenceY, scale, celestialBodies } = props;
 
   space.save();
 
   celestialBodies.forEach((body: CelestialBodyType) => {
-    const { radius, name, display } = body;
+    const { name, display } = body;
     const { x, y } = getBodyPosition(body);
     const xPX = referenceX + distanceToPixels(x, scale);
     const yPX = referenceY + distanceToPixels(y, scale);
-    const size = Math.max(distanceToPixels(radius, scale), maxSize);
+    // How far it is drawn from its parent: 0 for a body that sits on it
+    const size = getDrawnSize(
+      body,
+      scale,
+      Math.hypot(xPX - referenceX, yPX - referenceY)
+    );
     const color = display?.color ?? 'white';
 
     globalThis.NEAREST_BODIES[body.id] = {

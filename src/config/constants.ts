@@ -24,26 +24,11 @@ export const MAX_SCALE = 1e20;
 /** Threshold for rendering moons (dependent on zoom level). */
 export const THRESHOLD_MOON_RENDER = 4;
 
-/** Minimum and maximum sizes for planets in the visualization. */
-export const MIN_PLANET_SIZE = 2;
-
-export const MAX_PLANET_SIZE = 4;
-
-/** Minimum and maximum sizes for stars in the visualization. */
-export const MIN_STAR_SIZE = 5;
-
-export const MAX_STAR_SIZE = 10;
-
-/** Minimum and maximum sizes for moons in the visualization. */
-export const MIN_MOON_SIZE = 1;
-
-export const MAX_MOON_SIZE = 2;
-
-/** Minimum and maximum sizes for comets in the visualization. */
-export const MIN_COMET_SIZE = 2;
-
-/** Maximum allowed celestial body size in the visualization. */
-export const MAX_CELESTIAL_BODY_SIZE = 10;
+/**
+ * The smallest a galaxy's black hole is drawn, in pixels. Bodies get their
+ * sizes from `getDrawnSize` (#109).
+ */
+export const MIN_BLACK_HOLE_SIZE = 10;
 
 /** Thresholds for rendering and labeling celestial objects. */
 export const THRESHOLD_PLANET_LABEL = 0.002600668431442156;
