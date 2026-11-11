@@ -1,6 +1,7 @@
 import {
   ASTEROIDS,
   COMETS,
+  INTERSTELLAR_OBJECTS,
   MOONS,
   PLANETS,
   STARS
@@ -10,6 +11,7 @@ import { CelestialBodyType } from '@interstellar-tools/types';
 import { Button } from '../../components/actions/Button';
 import { ToggleBox } from '../../components/ToggleBox';
 import { OPTIONS_UI } from '../canvas/config/hud';
+import { GALAXY_BODIES } from '../celestial-bodies/utils/body-catalog';
 
 export const setupUI = () => {
   const toggleTrajectoriesBox = ToggleBox({
@@ -29,6 +31,12 @@ export const setupUI = () => {
     checked: false,
     name: 'toggleComets',
     label: 'Comets'
+  });
+  const toggleInterstellarBox = ToggleBox({
+    id: 'toggleInterstellar',
+    checked: false,
+    name: 'toggleInterstellar',
+    label: 'Interstellar'
   });
   const toggleLabelsBox = ToggleBox({
     id: 'toggleLabels',
@@ -86,6 +94,7 @@ export const setupUI = () => {
     ${toggleAsteroidBeltsBox}
     ${toggleAsteroidsBox}
     ${toggleCometsBox}
+    ${toggleInterstellarBox}
     ${toggleStarfieldBox}
     ${toggleArrowheadsBox}
     ${toggleLabelsBox}
@@ -136,11 +145,16 @@ export const setupUI = () => {
   }
 
   const lockOnDropdown = document.getElementById('lockOn') as HTMLSelectElement;
-  const lockGroups: [label: string, bodies: CelestialBodyType[]][] = [
+  const lockGroups: [
+    label: string,
+    bodies: Pick<CelestialBodyType, 'id' | 'name'>[]
+  ][] = [
     ['Stars', STARS],
     ['Planets', PLANETS],
     ['Moons', MOONS],
     ['Comets', COMETS],
+    ['Interstellar objects', INTERSTELLAR_OBJECTS],
+    ['Galaxies', GALAXY_BODIES],
     ['Asteroids', ASTEROIDS]
   ];
 

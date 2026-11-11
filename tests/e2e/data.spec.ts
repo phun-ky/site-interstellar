@@ -131,3 +131,59 @@ test('the new moons of Saturn, Pluto and Eris are drawn', async ({ page }) => {
     expect(await drawn(page, [...moons])).not.toContain(null);
   }
 });
+
+test.describe('2.7 data (#105)', () => {
+  const INTERSTELLAR = ['1i-oumuamua', '2i-borisov', '3i-atlas'];
+
+  test('the Interstellar toggle draws the three interstellar objects', async ({
+    page
+  }) => {
+    const errors = collectErrors(page);
+
+    await openApp(page);
+    await lockOn(page, 'sun');
+    expect(await drawn(page, INTERSTELLAR)).toEqual([null, null, null]);
+
+    await toggle(page, 'toggleInterstellar');
+    expect(await drawn(page, INTERSTELLAR)).not.toContain(null);
+
+    await lockOn(page, '1i-oumuamua');
+
+    const middle = await centre(page);
+    const [oumuamua] = await drawn(page, ['1i-oumuamua']);
+
+    expect(Math.abs((oumuamua?.x ?? 0) - middle.x)).toBeLessThan(2);
+
+    // Its info: a closest pass and a speed, not a size and a period
+    await page.locator('#bodyInfoOpen').click();
+    await expect(page.locator('#bodyInfo')).toContainText('Excess speed');
+    await expect(page.locator('#bodyInfo')).toContainText('Perihelion');
+    await expect(page.locator('#bodyInfo')).not.toContainText('Period');
+    expect(errors).toEqual([]);
+  });
+
+  test('the galaxies are drawn, listed and can be locked on', async ({
+    page
+  }) => {
+    await openApp(page);
+
+    const options = page.locator('#lockOn optgroup[label="Galaxies"] option');
+
+    await expect(options).toHaveCount(7);
+    expect(
+      await drawn(page, ['andromeda', 'large-magellanic-cloud', 'm87'])
+    ).not.toContain(null);
+
+    await lockOn(page, 'andromeda');
+
+    const middle = await centre(page);
+    const [andromeda] = await drawn(page, ['andromeda']);
+
+    expect(Math.abs((andromeda?.x ?? 0) - middle.x)).toBeLessThan(2);
+    expect(Math.abs((andromeda?.y ?? 0) - middle.y)).toBeLessThan(2);
+
+    await page.locator('#bodyInfoOpen').click();
+    await expect(page.locator('#bodyInfo')).toContainText('Distance');
+    await expect(page.locator('#bodyInfoTitle')).toHaveText('Andromeda');
+  });
+});

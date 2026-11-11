@@ -22,6 +22,7 @@ const TAB_ORDER = [
   '#toggleAsteroidBelts',
   '#toggleAsteroids',
   '#toggleComets',
+  '#toggleInterstellar',
   '#toggleStarfield',
   '#toggleArrowheads',
   '#toggleLabels',

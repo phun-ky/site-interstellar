@@ -1,8 +1,12 @@
 import { TWO_PI } from '@interstellar-tools/constants';
 import { convertDistanceUnit } from '@interstellar-tools/equations';
-import { OrbitInterface, ValueInterface } from '@interstellar-tools/types';
+import { ValueInterface } from '@interstellar-tools/types';
 
 import { AU_IN_PX } from '../../../config/constants';
+import {
+  type AnyOrbitType,
+  getOrbitRotation
+} from '../utils/orbit-orientation';
 
 /** Initial number of segments around the orbit, before refining. */
 const INITIAL_SEGMENTS = 256;
@@ -12,6 +16,8 @@ const TOLERANCE_PX = 0.5;
 const MAX_DEPTH = 48;
 /** Draw this far outside the viewport, so lines don't end at its edge. */
 const MARGIN_PX = 64;
+/** How far from its parent an open orbit is traced, in au: past the Kuiper belt. */
+const OPEN_ORBIT_REACH_AU = 2000;
 
 type PointType = [x: number, y: number];
 
@@ -60,7 +66,7 @@ const clipSegment = (
 };
 
 /**
- * Adds an orbit's ellipse to the current canvas path, accurately at any zoom level.
+ * Adds an orbit's ellipse, or an open orbit's hyperbola, to the current canvas path, accurately at any zoom level.
  *
  * A fixed set of points can't do this: at galactic size (the Solar System's orbit is
  * about 1.7 × 10⁹ au) each straight segment between points cuts thousands of au inside
@@ -75,11 +81,14 @@ const clipSegment = (
  * - every segment is clipped to the viewport in double precision, so only small,
  *   precise coordinates reach the canvas.
  *
- * The ellipse matches `getBodyPosition()`: `x = a·cos θ − a·e`, `y = b·sin θ`, around
- * the reference point (the parent's position on screen).
+ * The ellipse matches `getBodyPosition()`: `x = a·cos θ − a·e`, `y = b·sin θ`
+ * from the parent, laid flat and turned by the orbit's node and periapsis
+ * (#105), around the reference point (the parent's position on screen). An
+ * open orbit is traced as its hyperbola, `x = a·(cosh F − e)`,
+ * `y = |a|·√(e² − 1)·sinh F`, out to `OPEN_ORBIT_REACH_AU` from the parent.
  *
  * @param {CanvasRenderingContext2D} space - The rendering context; the caller strokes the path.
- * @param {OrbitInterface} orbit - The orbit to trace.
+ * @param {AnyOrbitType} orbit - The orbit to trace.
  * @param {number} referenceX - The parent's x position on screen, in pixels.
  * @param {number} referenceY - The parent's y position on screen, in pixels.
  * @param {ValueInterface} scale - The current zoom scale.
@@ -95,7 +104,7 @@ const clipSegment = (
  */
 export const traceOrbit = (
   space: CanvasRenderingContext2D,
-  orbit: OrbitInterface,
+  orbit: AnyOrbitType,
   referenceX: number,
   referenceY: number,
   scale: ValueInterface,
@@ -104,19 +113,26 @@ export const traceOrbit = (
 ): void => {
   const a = convertDistanceUnit(orbit.a, 'au').value;
   const { e } = orbit;
-  const b = a * Math.sqrt(1 - e ** 2);
-  const focusOffset = e * a;
+  const open = e >= 1;
+  const b = Math.abs(a) * Math.sqrt(Math.abs(1 - e ** 2));
   const pxPerAu = AU_IN_PX * scale.value;
+  // The flat turn getFlatPosition() makes, from the perifocal frame to the canvas
+  const [[xx, xy], [yx, yy]] = getOrbitRotation(orbit, { flat: true });
   const rect: RectType = {
     left: -MARGIN_PX,
     top: -MARGIN_PX,
     right: width + MARGIN_PX,
     bottom: height + MARGIN_PX
   };
-  const pointAt = (theta: number): PointType => [
-    referenceX + (a * Math.cos(theta) - focusOffset) * pxPerAu,
-    referenceY + b * Math.sin(theta) * pxPerAu
-  ];
+  const pointAt = (theta: number): PointType => {
+    const px = open ? a * (Math.cosh(theta) - e) : a * Math.cos(theta) - a * e;
+    const py = b * (open ? Math.sinh(theta) : Math.sin(theta));
+
+    return [
+      referenceX + (xx * px + xy * py) * pxPerAu,
+      referenceY - (yx * px + yy * py) * pxPerAu
+    ];
+  };
 
   let last: PointType | null = null;
 
@@ -185,15 +201,21 @@ export const traceOrbit = (
     refine(t0, p0, tm, pm, depth + 1);
     refine(tm, pm, t1, p1, depth + 1);
   };
-  const step = TWO_PI / INITIAL_SEGMENTS;
+  // A closed orbit all the way round; an open one between the hyperbolic
+  // anomalies where it is OPEN_ORBIT_REACH_AU from the parent
+  const end = open
+    ? Math.acosh((OPEN_ORBIT_REACH_AU / Math.abs(a) + 1) / e)
+    : TWO_PI;
+  const start = open ? -end : 0;
+  const step = (end - start) / INITIAL_SEGMENTS;
 
-  let previous = pointAt(0);
+  let previous = pointAt(start);
 
   for (let i = 1; i <= INITIAL_SEGMENTS; i++) {
-    const theta = i === INITIAL_SEGMENTS ? TWO_PI : i * step;
+    const theta = i === INITIAL_SEGMENTS ? end : start + i * step;
     const point = pointAt(theta);
 
-    refine((i - 1) * step, previous, theta, point, 0);
+    refine(theta - step, previous, theta, point, 0);
     previous = point;
   }
 };

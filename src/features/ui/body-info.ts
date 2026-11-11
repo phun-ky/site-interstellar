@@ -1,6 +1,7 @@
 import { convertTemporalUnit } from '@interstellar-tools/temporal';
 import {
   CelestialBodyType,
+  InterstellarObjectInterface,
   DistanceInterface,
   TemporalInterface
 } from '@interstellar-tools/types';
@@ -10,8 +11,15 @@ import {
   getBodyKind,
   getChildBodies
 } from '../celestial-bodies/utils/body-catalog';
+import { type GalaxyBodyType } from '../celestial-bodies/utils/galaxy-bodies';
+import { isOpenOrbit } from '../celestial-bodies/utils/orbit-orientation';
 
 const html = String.raw;
+
+/** What the info popup can describe: a body, an interstellar object or a galaxy. */
+type InfoBodyType =
+  CelestialBodyType | InterstellarObjectInterface | GalaxyBodyType;
+
 const NUMBER = new Intl.NumberFormat('en', { maximumSignificantDigits: 4 });
 const COMPACT = new Intl.NumberFormat('en', {
   notation: 'compact',
@@ -23,7 +31,9 @@ const KIND_LABELS = {
   planet: 'Planet',
   moon: 'Moon',
   comet: 'Comet',
-  asteroid: 'Asteroid'
+  asteroid: 'Asteroid',
+  interstellar: 'Interstellar object',
+  galaxy: 'Galaxy'
 } as const;
 const escapeHTML = (text: string): string =>
   text.replace(
@@ -62,9 +72,19 @@ const capitalize = (text: string): string =>
  * getBodyFacts(earth); // [['Type', 'Terrestrial planet'], ['Orbits', 'Sun'], …]
  * ```
  */
-const getBodyFacts = (
-  body: CelestialBodyType
-): [label: string, value: string][] => {
+const getBodyFacts = (body: InfoBodyType): [label: string, value: string][] => {
+  // A galaxy has no orbit: where it is, and how big
+  if (body.category === 'galaxy') {
+    return [
+      ['Type', body.type],
+      ['Distance', formatDistance(body.distance)],
+      [
+        'Diameter',
+        formatDistance({ ...body.radius, value: body.radius.value * 2 })
+      ]
+    ];
+  }
+
   const { type, category, parent, radius, orbit } = body;
   const parentName =
     findBodyById(parent)?.name ??
@@ -78,7 +98,17 @@ const getBodyFacts = (
     ['Radius', formatDistance(radius)]
   ];
 
-  if (orbit) {
+  if (orbit && isOpenOrbit(orbit)) {
+    // An open orbit has no size or period, but a closest pass and a speed
+    facts.push(
+      ['Perihelion', formatDistance(orbit.q)],
+      ['Eccentricity', orbit.e.toFixed(4)],
+      [
+        'Excess speed',
+        `${formatNumber(orbit.excessSpeed)} km/s${orbit.retrograde ? ' · retrograde' : ''}`
+      ]
+    );
+  } else if (orbit) {
     facts.push(
       ['Semi-major axis', formatDistance(orbit.a)],
       ['Eccentricity', orbit.e.toFixed(4)],
@@ -110,7 +140,7 @@ const setExpanded = (open: boolean): void =>
  * showBodyInfo(earth);
  * ```
  */
-export const showBodyInfo = (body: CelestialBodyType): void => {
+export const showBodyInfo = (body: InfoBodyType): void => {
   const panel = document.getElementById('bodyInfo');
   const title = document.getElementById('bodyInfoTitle');
   const kind = document.getElementById('bodyInfoKind');

@@ -393,6 +393,9 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
   const cometsCheckboxElement = document.getElementById(
     'toggleComets'
   ) as HTMLInputElement;
+  const interstellarCheckboxElement = document.getElementById(
+    'toggleInterstellar'
+  ) as HTMLInputElement;
   const labelCheckboxElement = document.getElementById(
     'toggleLabels'
   ) as HTMLInputElement;
@@ -413,6 +416,7 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
     trajectoryCheckboxElement,
     moonsCheckboxElement,
     cometsCheckboxElement,
+    interstellarCheckboxElement,
     labelCheckboxElement,
     toggleArrowheadsElement,
     asteroidBeltsCheckboxElement,
@@ -424,6 +428,7 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
         trajectoryCheckboxElement,
         moonsCheckboxElement,
         cometsCheckboxElement,
+        interstellarCheckboxElement,
         labelCheckboxElement,
         toggleArrowheadsElement,
         asteroidBeltsCheckboxElement,

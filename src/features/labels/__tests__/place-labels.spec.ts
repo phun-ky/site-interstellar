@@ -178,6 +178,22 @@ describe('placeLabels', () => {
     );
   });
 
+  test("leaves out a label over fixed text, such as the Milky Way's name", () => {
+    const name = { left: 60, top: 70, width: 80, height: 20 };
+    const placed = placeLabels(
+      [label('lmc', 100, 92, 9e16), label('sun', 300, 92, 696_340)],
+      measure,
+      HEIGHT,
+      [name]
+    );
+
+    // Nothing to count it on: it is just not drawn
+    assert.deepEqual(
+      placed.map(({ label }) => label),
+      ['SUN']
+    );
+  });
+
   test('breaks ties by id, whatever order the labels come in', () => {
     const a = label('a', 100, 100, 1);
     const b = label('b', 104, 100, 1);
