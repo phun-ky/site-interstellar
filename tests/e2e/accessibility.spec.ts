@@ -20,6 +20,7 @@ const TAB_ORDER = [
   'link Tools',
   'link Sponsor',
   'link Contributing',
+  'link Changelog',
   '#settingsOpen',
   'link GitHub repository',
   '#toggleMoons',

@@ -218,13 +218,15 @@ turns on the repository's Git hooks (see [Commits](#commits)).
 | `npm run commit`              | Writes a commit message in the project's style, step by step ([git-cz](#commits)).                                                                    |
 | `npm run check:bestpractices` | Checks `.bestpractices.json`, and that every file and heading it and `security-insights.yml` link to exists.                                          |
 | `npm run bestpractices:url`   | Prints bestpractices.dev links that propose the answers in `.bestpractices.json` the project doesn't have yet, for the maintainer to review and save. |
+| `npm run changelog`           | Rebuilds `CHANGELOG.md` from what has landed on `main`, month by month. Run it after `git fetch`, and commit the result in a pull request.            |
 
 #### Tests
 
-- **Unit tests** sit next to the code, in `src/**/__tests__/*.spec.ts`, and run
-  with Node's test runner. `npm run test:coverage` fails below 89 % of lines, 88
-  % of branches or 95 % of functions, and writes `coverage/lcov.info`, which CI
-  uploads to Codecov. Add tests with the code they cover.
+- **Unit tests** sit next to the code, in `src/**/__tests__/*.spec.ts` (and
+  `scripts/__tests__/*.spec.mjs` for the scripts), and run with Node's test
+  runner. `npm run test:coverage` fails below 89 % of lines, 88 % of branches or
+  95 % of functions, and writes `coverage/lcov.info`, which CI uploads to
+  Codecov. Add tests with the code they cover.
 - **End-to-end tests** in `tests/e2e/` drive the built site in Chrome with
   Playwright: the controls, the keyboard, touch, the narrow screen layout, axe
   accessibility checks, the Content Security Policy, links and metadata. They

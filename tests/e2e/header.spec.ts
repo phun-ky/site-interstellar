@@ -10,10 +10,24 @@ const LINKS: [string, string, boolean][] = [
     'https://github.com/phun-ky/site-interstellar/blob/main/CONTRIBUTING.md',
     true
   ],
+  [
+    'Changelog',
+    'https://github.com/phun-ky/site-interstellar/blob/main/CHANGELOG.md',
+    true
+  ],
   ['GitHub repository', 'https://github.com/phun-ky/site-interstellar', false]
 ];
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Main' });
+/** How far the simulation status runs past where the menu row starts, in pixels: 0 or less when it is clear. */
+const statusUnderMenu = (page: Page): Promise<number> =>
+  page.evaluate(
+    () =>
+      (document.getElementById('simStatus')?.getBoundingClientRect().right ??
+        0) -
+      (document.querySelector('#mainMenu > li')?.getBoundingClientRect().left ??
+        0)
+  );
 const menu = (page: Page) => nav(page).getByRole('button', { name: 'Menu' });
 
 test('the brand links to the map', async ({ page, baseURL }) => {
@@ -36,7 +50,7 @@ test('the header holds the links, then Settings, then GitHub, in order', async (
   const items = nav(page).getByRole('listitem');
 
   await expect(items).toHaveCount(LINKS.length + 1);
-  await expect(items.nth(3)).toHaveText('Settings');
+  await expect(items.nth(LINKS.length - 1)).toHaveText('Settings');
 
   const links = nav(page).getByRole('link');
 
@@ -53,7 +67,7 @@ test('the header holds the links, then Settings, then GitHub, in order', async (
   }
 });
 
-for (const width of [1440, 1024, 880]) {
+for (const width of [1440, 1024, 960]) {
   test.describe(`at ${width} px wide`, () => {
     test.use({ viewport: { width, height: 900 } });
 
@@ -77,6 +91,8 @@ for (const width of [1440, 1024, 880]) {
         );
 
       expect(new Set(boxes).size).toBe(1);
+      // Clear of the status, which would otherwise run under the menu
+      expect(await statusUnderMenu(page)).toBeLessThanOrEqual(0);
 
       const header = page.locator('.mc-header');
 
@@ -114,8 +130,8 @@ for (const width of [1440, 1024, 880]) {
   });
 }
 
-test.describe('just too narrow for the row, at 879 px', () => {
-  test.use({ viewport: { width: 879, height: 900 } });
+test.describe('just too narrow for the row, at 959 px', () => {
+  test.use({ viewport: { width: 959, height: 900 } });
 
   test('the menu button opens the same items, in the same order', async ({
     page
@@ -128,8 +144,8 @@ test.describe('just too narrow for the row, at 879 px', () => {
 
     const items = nav(page).getByRole('listitem');
 
-    await expect(items.nth(3)).toHaveText('Settings');
-    await expect(items.nth(4)).toHaveText('GitHub');
+    await expect(items.nth(LINKS.length - 1)).toHaveText('Settings');
+    await expect(items.nth(LINKS.length)).toHaveText('GitHub');
     await expect(nav(page).getByRole('link', { name: 'Tools' })).toBeVisible();
   });
 });

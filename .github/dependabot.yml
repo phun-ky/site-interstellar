@@ -21,10 +21,11 @@ updates:
     allow:
       - dependency-type: 'direct'
     ignore:
-      # Keep @types/node on the Node major that CI runs (24)
+      # Keep @types/node on the oldest Node major the site supports (22, see
+      # engines in package.json), so the code can't use what Node 22 lacks
       - dependency-name: '@types/node'
         versions:
-          - '>= 25'
+          - '>= 23'
     labels:
       - 'mindless: 📦 dependencies'
     commit-message:
