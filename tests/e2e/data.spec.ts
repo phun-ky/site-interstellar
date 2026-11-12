@@ -189,3 +189,44 @@ test.describe('2.7 data (#105)', () => {
     await expect(page.locator('#bodyInfoTitle')).toHaveText('Andromeda');
   });
 });
+
+test.describe('2.14 data: what is measured about a body', () => {
+  /** The info's facts, as label and value pairs. */
+  const facts = (page: Page) =>
+    page
+      .locator('#bodyInfoFacts dt')
+      .evaluateAll((terms) =>
+        terms.map((term) => [
+          term.textContent?.trim(),
+          term.nextElementSibling?.textContent?.trim()
+        ])
+      );
+
+  test("the info shows a star's spectral class, temperature and luminosity, a planet's rings, and an interstellar object's discovery", async ({
+    page
+  }) => {
+    await openApp(page);
+
+    // The map opens locked on the Sun
+    await page.locator('#bodyInfoOpen').click();
+    expect(await facts(page)).toEqual(
+      expect.arrayContaining([
+        ['Spectral class', 'G2V'],
+        ['Temperature', '5,772 K'],
+        ['Luminosity', '1 L☉']
+      ])
+    );
+
+    await lockOn(page, 'saturn');
+    await page.locator('#bodyInfoOpen').click();
+    expect(await facts(page)).toContainEqual(['Rings', '9']);
+
+    await toggle(page, 'toggleInterstellar');
+    await lockOn(page, '1i-oumuamua');
+    await page.locator('#bodyInfoOpen').click();
+    expect(await facts(page)).toContainEqual([
+      'Discovered',
+      '2017-10-19 · R. Weryk'
+    ]);
+  });
+});
