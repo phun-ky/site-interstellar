@@ -15,6 +15,50 @@ const STAR_GLOW_RADIUS = 3;
 /** Opacity of a star's glow at its brightest. */
 const STAR_GLOW_OPACITY = 0.35;
 
+/**
+ * Draws a star: a disc in its colour, glowing softly round it.
+ *
+ * @param {CanvasRenderingContext2D} space - The canvas.
+ * @param {number} x - Where its centre is, in pixels.
+ * @param {number} y - Where its centre is, in pixels.
+ * @param {number} size - Its drawn radius, in pixels.
+ * @param {string} color - Its colour.
+ *
+ * @example
+ * ```ts
+ * drawStar(space, 640, 360, 8, '#fff4ea');
+ * ```
+ */
+export const drawStar = (
+  space: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  color: string
+): void => {
+  const glow = space.createRadialGradient(
+    x,
+    y,
+    size * 0.8,
+    x,
+    y,
+    size * STAR_GLOW_RADIUS
+  );
+
+  glow.addColorStop(0, color);
+  glow.addColorStop(1, 'transparent');
+  space.globalAlpha = STAR_GLOW_OPACITY;
+  space.fillStyle = glow;
+  space.beginPath();
+  space.arc(x, y, size * STAR_GLOW_RADIUS, 0, TWO_PI);
+  space.fill();
+  space.globalAlpha = 1;
+  space.fillStyle = color;
+  space.beginPath();
+  space.arc(x, y, size, 0, TWO_PI);
+  space.fill();
+};
+
 export type DrawCelestialBodiesPropsType = {
   space: CanvasRenderingContext2D;
   referenceX: number;
@@ -109,27 +153,6 @@ export const drawCelestialBodies = (
       category: body.category,
       parent: body.category.includes('satellite') ? body.parent : undefined
     };
-
-    // Stars glow softly in their own colour
-    if (body.category === 'star') {
-      const glow = space.createRadialGradient(
-        xPX,
-        yPX,
-        size * 0.8,
-        xPX,
-        yPX,
-        size * STAR_GLOW_RADIUS
-      );
-
-      glow.addColorStop(0, color);
-      glow.addColorStop(1, 'transparent');
-      space.globalAlpha = STAR_GLOW_OPACITY;
-      space.fillStyle = glow;
-      space.beginPath();
-      space.arc(xPX, yPX, size * STAR_GLOW_RADIUS, 0, TWO_PI);
-      space.fill();
-      space.globalAlpha = 1;
-    }
 
     space.fillStyle = color;
     space.beginPath();
