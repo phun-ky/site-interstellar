@@ -1,6 +1,13 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { lockOn, nextFrames, openApp, readApp, recordFrames } from './helpers';
+import {
+  lockOn,
+  nextFrames,
+  openApp,
+  readApp,
+  recordFrames,
+  showGalaxy
+} from './helpers';
 
 type StarType = { id: string; x: number; y: number; size: number };
 
@@ -40,6 +47,7 @@ test("at the galaxy's scale, no two star markers overlap, and the Sun's label co
   page
 }) => {
   await openApp(page);
+  await showGalaxy(page);
 
   const stars = await readStars(page);
   // One star of each marker

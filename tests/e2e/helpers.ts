@@ -177,6 +177,22 @@ export const lockOn = async (page: Page, id: string): Promise<void> => {
 };
 
 /**
+ * Shows the whole galaxy with the Galaxy view, unlocking the Sun the map
+ * opens on, and waits for the zoom to finish.
+ *
+ * @param page - The page.
+ */
+export const showGalaxy = async (page: Page): Promise<void> => {
+  await page.locator('#viewGalaxy').click();
+  await expect
+    .poll(() => readApp(page, (app) => app.LOCKED_CELESTIAL_BODY))
+    .toBe(null);
+  // The zoom animates for 700 ms
+  await page.waitForTimeout(900);
+  await nextFrames(page);
+};
+
+/**
  * The number of off-screen objects the arrows point at in the last frame.
  * Each arrow's label is a name, followed by ` +n` when it stands for `n` more
  * objects in the same direction.

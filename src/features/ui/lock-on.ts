@@ -3,7 +3,7 @@ import { CelestialBodyType } from '@interstellar-tools/types';
 
 import {
   AU_IN_PX,
-  INITIAL_SCALE,
+  GALAXY_SCALE,
   MAX_SCALE,
   MIN_SCALE,
   SCALE,
@@ -237,18 +237,31 @@ const getFocusScale = (body: CelestialBodyType): number => {
  * A new zoom cancels one still running.
  *
  * @param {number} target - The scale to end at.
+ * @param {boolean} [animate=true] - Whether to ease there, or jump straight to it.
  *
  * @example
  * ```ts
  * zoomTo(4.5);
  * ```
  */
-const zoomTo = (target: number): void => {
+const zoomTo = (target: number, animate = true): void => {
   if (zoomAnimation !== null) cancelAnimationFrame(zoomAnimation);
 
   const scaleDisplay = document.getElementById('scaleDisplay');
   const from = Math.log(SCALE.value);
   const to = Math.log(Math.min(Math.max(target, MIN_SCALE), MAX_SCALE));
+
+  // Straight there, before the next frame is drawn
+  if (!animate) {
+    SCALE.value = Math.exp(to);
+    zoomAnimation = null;
+    markZoomingOrPanning();
+
+    if (scaleDisplay) updateScaleDisplay(scaleDisplay, SCALE);
+
+    return;
+  }
+
   // With reduced motion, jump straight to the target
   const duration = prefersReducedMotion() ? 0 : ZOOM_DURATION_MS;
   const start = performance.now();
@@ -329,9 +342,29 @@ export const focusOn = (body: CelestialBodyType): void => {
 };
 
 /**
- * Shows the whole Milky Way, as the map opens: unlocks, centres on the
- * galactic centre and zooms out to the opening scale. What the Galaxy view
- * does (#14).
+ * Locks on the Sun and zooms to frame its planets: the Solar system view
+ * (#14), which the map opens on.
+ *
+ * @param {boolean} [animate=true] - Whether to ease the zoom; the map opens
+ * on it without.
+ *
+ * @example
+ * ```ts
+ * solarButton.addEventListener('click', () => showSolarSystem());
+ * ```
+ */
+export const showSolarSystem = (animate = true): void => {
+  const sun = findBodyById('sun') as CelestialBodyType | undefined;
+
+  if (!sun) return;
+
+  lockOn(sun);
+  zoomTo(getFocusScale(sun), animate);
+};
+
+/**
+ * Shows the whole Milky Way: unlocks, centres on the galactic centre and
+ * zooms out to show it all. What the Galaxy view does (#14).
  *
  * @example
  * ```ts
@@ -342,7 +375,7 @@ export const showGalaxy = (): void => {
   lockOn(null);
   offsetX.value = 0;
   offsetY.value = 0;
-  zoomTo(INITIAL_SCALE);
+  zoomTo(GALAXY_SCALE);
 };
 
 /**
