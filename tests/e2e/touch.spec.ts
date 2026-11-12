@@ -1,6 +1,12 @@
 import { type CDPSession, expect, type Page, test } from '@playwright/test';
 
-import { lockOn, nextFrames, openApp, recordFrames } from './helpers';
+import {
+  lockOn,
+  nextFrames,
+  openApp,
+  recordFrames,
+  showGalaxy
+} from './helpers';
 
 type Point = { x: number; y: number };
 
@@ -81,6 +87,8 @@ test.describe('on a touch screen', () => {
 
   test('one finger pans the map', async ({ page }) => {
     await openApp(page);
+    // The map opens locked on the Sun, which keeps it in the middle
+    await showGalaxy(page);
 
     const before = await page.locator('.mc-cells').first().innerText();
     const centre = await canvasCentre(page);

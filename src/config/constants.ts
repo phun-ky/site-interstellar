@@ -43,11 +43,14 @@ export const THRESHOLD_ASTEROID_BELT_RENDER = 0.0007533210080944772;
 
 export const THRESHOLD_ASTEROID_RENDER = 0.0007533210080944772;
 
-/** Initial scale factor for the simulation. */
-export const INITIAL_SCALE = 2.389618154589582e-10;
+/** The scale that shows the whole Milky Way: the Galaxy view's. */
+export const GALAXY_SCALE = 2.389618154589582e-10;
 
-/** Global scale object to manage dynamic scaling. */
-export const SCALE = { value: INITIAL_SCALE };
+/**
+ * Global scale object to manage dynamic scaling. The map opens on the Solar
+ * system view, whose scale depends on the viewport, so `App` sets it.
+ */
+export const SCALE = { value: GALAXY_SCALE };
 
 /** Scaling factor for rendering orbital trails. */
 export const TRAIL_SCALING_FACTOR = 0.5;

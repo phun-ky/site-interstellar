@@ -35,9 +35,9 @@ drawn flat, each turned to its real direction:
 - Click or tap a body to look at it up close: time holds, and a cockpit visor
   shows its facts, its live range, bearing and speed, and where it is in its
   system. Release target, or Escape, returns to its parent with it in view.
-- Jump to the solar system or the whole galaxy from the views at the bottom of
-  the map, or open Bodies to find any body in a table, sort and filter it, and
-  lock on it.
+- Start over the solar system, locked on the Sun, and jump to the whole galaxy
+  and back from the views at the bottom of the map, or open Bodies to find any
+  body in a table, sort and filter it, and lock on it.
 - Switch moons, asteroid belts, asteroids, comets, interstellar objects, the
   starfield, arrows to off-screen bodies, labels and orbits on and off.
 - Hold the simulation, change its speed, or reset it to now.

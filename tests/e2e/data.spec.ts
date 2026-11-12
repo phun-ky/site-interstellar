@@ -7,6 +7,7 @@ import {
   openApp,
   readApp,
   recordFrames,
+  showGalaxy,
   toggle
 } from './helpers';
 
@@ -104,6 +105,7 @@ test('the S-stars are drawn round Sagittarius A* once they can be told apart', a
   page
 }) => {
   await openApp(page);
+  await showGalaxy(page);
 
   // At the galaxy's scale they would all sit on the black hole
   expect(await drawn(page, ['s1', 's2', 's4'])).toEqual([null, null, null]);

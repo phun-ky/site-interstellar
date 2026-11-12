@@ -15,7 +15,12 @@ The repository and the site were overhauled:
   kept to what is drawn, and the arrows kept clear of the info popup.
 - **Hardening:** CI with one aggregate check, a coverage floor, pinned and
   reviewed dependencies, Dependabot, OpenSSF Scorecard and a
-  [security policy](SECURITY.md).
+  [security policy](SECURITY.md); branch rules with required checks and DCO
+  sign-off ([#30](https://github.com/phun-ky/site-interstellar/issues/30)),
+  unused files and secrets removed
+  ([#33](https://github.com/phun-ky/site-interstellar/issues/33)), and the
+  OpenSSF Best Practices passing badge
+  ([#43](https://github.com/phun-ky/site-interstellar/issues/43)).
 - **Website quality:**
   - deploys from CI after the checks pass
   - a Content Security Policy that loads nothing from other hosts, with the
@@ -28,29 +33,22 @@ The repository and the site were overhauled:
   - a layout and touch gestures for phones
   - Solar system, Galaxy and Bodies views at the bottom of the map
     ([#14](https://github.com/phun-ky/site-interstellar/issues/14)), with every
-    body in a table to search, sort and lock on
+    body in a table to search, sort and lock on, and the map opening on the
+    Solar system
+- **The map:**
   - a focus view: click a body to look at it up close, with time held
+  - the body info opened with the keyboard
+    ([#90](https://github.com/phun-ky/site-interstellar/issues/90))
+  - labels that don't overlap at solar system scale
+    ([#91](https://github.com/phun-ky/site-interstellar/issues/91))
+  - stars in nested systems told apart at galaxy scale
+    ([#13](https://github.com/phun-ky/site-interstellar/issues/13))
 
 ## Planned
 
-- **The body info with the keyboard**
-  ([#90](https://github.com/phun-ky/site-interstellar/issues/90)): open a body's
-  details without a pointer.
-- **Labels that don't overlap**
-  ([#91](https://github.com/phun-ky/site-interstellar/issues/91)) at solar
-  system scale.
-- **Stars in nested systems told apart at galaxy scale**
-  ([#13](https://github.com/phun-ky/site-interstellar/issues/13)).
 - **A Step button**
   ([#15](https://github.com/phun-ky/site-interstellar/issues/15)) to advance one
   frame while the simulation is held.
-- **Finishing the hardening:** branch rules with required checks and DCO
-  sign-off ([#30](https://github.com/phun-ky/site-interstellar/issues/30)), and
-  removing unused files and secrets
-  ([#33](https://github.com/phun-ky/site-interstellar/issues/33)).
-- **OpenSSF Best Practices**
-  ([#43](https://github.com/phun-ky/site-interstellar/issues/43)): the passing
-  badge, with the answers kept in the repository.
 
 ## Later
 

@@ -1,16 +1,13 @@
-import { CelestialBodyType } from '@interstellar-tools/types';
-
-import { findBodyById } from '../celestial-bodies/utils/body-catalog';
-
 // Types only: the drawer itself is loaded on the first click on Bodies
 import type { SetBodiesOpenType } from './bodies-drawer';
-import { focusOn, LOCK_CHANGE, showGalaxy } from './lock-on';
+import { LOCK_CHANGE, showGalaxy, showSolarSystem } from './lock-on';
 
 /**
  * Sets up the views console at the bottom of the map (#14):
  *
- * - **Solar system** locks on the Sun, framing its planets.
- * - **Galaxy** shows the whole Milky Way, as the map opens.
+ * - **Solar system** locks on the Sun, framing its planets: where the map
+ *   opens.
+ * - **Galaxy** shows the whole Milky Way.
  * - **Bodies** opens a drawer with every body in a table (see
  *   `createBodiesDrawer`), loaded on the first click so the map page doesn't
  *   load it up front.
@@ -49,11 +46,8 @@ export const setupViews = (): void => {
     (await getDrawer())(open);
   });
   solar.addEventListener('click', () => {
-    const sun = findBodyById('sun');
-
     setOpen?.(false);
-
-    if (sun) focusOn(sun as CelestialBodyType);
+    showSolarSystem();
   });
   galaxy.addEventListener('click', () => {
     setOpen?.(false);
