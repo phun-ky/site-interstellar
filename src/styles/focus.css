@@ -59,11 +59,13 @@
   position: fixed;
   z-index: 4;
   top: var(--int-header-height);
-  bottom: 0;
+  /* Ends above the system map and its caption, so a long list of facts
+     scrolls rather than running over the map */
+  bottom: calc(var(--int-focus-map) + 72px);
   left: 0;
   width: 420px;
   overflow-y: auto;
-  padding: 24px 32px calc(var(--int-focus-map) + 72px) 56px;
+  padding: 24px 32px 16px 56px;
   background: linear-gradient(
     90deg,
     rgba(5, 8, 7, 0.96) 0%,
@@ -82,6 +84,12 @@
 
 .int.mc-focus:focus {
   outline: none;
+}
+
+/* Reached by Tab, to scroll its facts: show it */
+.int.mc-focus:focus-visible {
+  outline: 2px solid var(--int-color-cyan);
+  outline-offset: -2px;
 }
 
 /* the data rail down the left, with a node per fact */
@@ -430,6 +438,7 @@
 
     top: auto;
     right: 0;
+    bottom: 0;
     width: auto;
     max-height: 42vh;
     padding: 20px var(--int-gutter) 20px 48px;
