@@ -7,6 +7,7 @@
 ![issues](https://img.shields.io/github/issues/phun-ky/site-interstellar)
 ![GitHub Repo stars](https://img.shields.io/github/stars/phun-ky/site-interstellar)
 [![build](https://github.com/phun-ky/site-interstellar/actions/workflows/deploy.yml/badge.svg)](https://github.com/phun-ky/site-interstellar/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/phun-ky/site-interstellar/graph/badge.svg)](https://codecov.io/gh/phun-ky/site-interstellar)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16380/badge)](https://www.bestpractices.dev/projects/16380)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/phun-ky/site-interstellar/badge)](https://scorecard.dev/viewer/?uri=github.com/phun-ky/site-interstellar)
 
@@ -95,6 +96,8 @@ npm run test:coverage
 npm run test:e2e
 # Performance budgets on a throttled phone (after a build)
 npm run test:performance
+# Rebuild CHANGELOG.md from main (after git fetch)
+npm run changelog
 ```
 
 The end-to-end tests and the performance budgets use the installed Google

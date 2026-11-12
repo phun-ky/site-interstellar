@@ -321,9 +321,9 @@ canvas {
   white-space: nowrap;
 }
 
-/* Where the row doesn't fit, below 880 px: the menu button, and the items as
-   a dropdown. The row needs about 840 px with the status at its shortest */
-@media (max-width: 879px) {
+/* Where the row doesn't fit, below 960 px: the menu button, and the items as
+   a dropdown. The row needs about 940 px with the status at its shortest */
+@media (max-width: 959px) {
   .int.mc-menu {
     display: flex;
   }
