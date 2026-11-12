@@ -13,6 +13,12 @@ import { type GalaxyBodyType } from '../celestial-bodies/utils/galaxy-bodies';
 import { isOpenOrbit } from '../celestial-bodies/utils/orbit-orientation';
 
 import { formatDistance, formatNumber, formatPeriod } from './utils/format';
+import {
+  getDiscoveryFacts,
+  getRingFacts,
+  getStarFacts,
+  getTypeLabel
+} from './utils/observed-facts';
 
 const html = String.raw;
 
@@ -70,9 +76,11 @@ export const getBodyFacts = (
     (child) => getBodyKind(child.id) === 'moon'
   ).length;
   const facts: [string, string][] = [
-    ['Type', capitalize(type ?? category)],
+    [getTypeLabel(body), capitalize(type ?? category)],
     ['Orbits', parentName],
-    ['Radius', formatDistance(radius)]
+    ['Radius', formatDistance(radius)],
+    // What is measured about a star: its temperature and luminosity
+    ...getStarFacts(body)
   ];
 
   if (orbit && isOpenOrbit(orbit)) {
@@ -97,6 +105,8 @@ export const getBodyFacts = (
   }
 
   if (moons > 0) facts.push(['Moons', String(moons)]);
+
+  facts.push(...getRingFacts(body), ...getDiscoveryFacts(body));
 
   return facts;
 };
