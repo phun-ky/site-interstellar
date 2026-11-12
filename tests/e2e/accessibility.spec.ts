@@ -98,6 +98,15 @@ test('axe finds no violations with a body locked, held and its info open', async
 }) => {
   await lockOn(page, 'jupiter');
   await page.locator('#pause').click();
+  await page.locator('#bodyInfoOpen').click();
+  await expect(page.locator('#bodyInfo')).toBeVisible();
+  await expect(page.locator('#lockStatus')).toBeVisible();
+
+  expect(await axeViolations(page)).toEqual([]);
+});
+
+test('axe finds no violations with the focus view open', async ({ page }) => {
+  await lockOn(page, 'jupiter');
 
   const canvas = await page.locator('canvas').boundingBox();
 
@@ -105,8 +114,9 @@ test('axe finds no violations with a body locked, held and its info open', async
     (canvas?.x ?? 0) + (canvas?.width ?? 0) / 2,
     (canvas?.y ?? 0) + (canvas?.height ?? 0) / 2
   );
-  await expect(page.locator('#bodyInfo')).toBeVisible();
-  await expect(page.locator('#lockStatus')).toBeVisible();
+  await expect(page.locator('#focusView')).toBeVisible();
+  // Past the entrance animations
+  await page.waitForTimeout(1000);
 
   expect(await axeViolations(page)).toEqual([]);
 });
@@ -142,7 +152,7 @@ test('the skip link moves focus to Systems', async ({ page }) => {
   await expect(page.locator('#toggleMoons')).toBeFocused();
 });
 
-test('Space switches a layer, and Escape closes the body info', async ({
+test('Space switches a layer, and Escape closes the focus view', async ({
   page
 }) => {
   const moons = page.locator('#toggleMoons');
@@ -161,9 +171,10 @@ test('Space switches a layer, and Escape closes the body info', async ({
     (canvas?.x ?? 0) + (canvas?.width ?? 0) / 2,
     (canvas?.y ?? 0) + (canvas?.height ?? 0) / 2
   );
-  await expect(page.locator('#bodyInfo')).toBeVisible();
+  await expect(page.locator('#focusView')).toBeVisible();
+  await expect(page.locator('#focusClose')).toBeFocused();
   await page.keyboard.press('Escape');
-  await expect(page.locator('#bodyInfo')).toBeHidden();
+  await expect(page.locator('#focusView')).toBeHidden();
 });
 
 test('the page has landmarks and the canvas a text alternative', async ({

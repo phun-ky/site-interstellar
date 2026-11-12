@@ -124,7 +124,7 @@ test.describe('on a touch screen', () => {
     await expect(page.locator('#lockStatusName')).toHaveText('Jupiter');
   });
 
-  test('a tap on a body locks on it and opens its info', async ({ page }) => {
+  test('a tap on a body opens the focus view on it', async ({ page }) => {
     await openApp(page);
     await lockOn(page, 'jupiter');
     await page.locator('#pause').click();
@@ -134,8 +134,9 @@ test.describe('on a touch screen', () => {
 
     await page.touchscreen.tap(centre.x, centre.y);
 
-    await expect(page.locator('#bodyInfo')).toBeVisible();
-    await expect(page.locator('#bodyInfoTitle')).toHaveText('Jupiter');
+    await expect(page.locator('#focusView')).toBeVisible();
+    await expect(page.locator('#focusTitle')).toHaveText('Jupiter');
+    await expect(page.locator('#bodyInfo')).toBeHidden();
   });
 });
 

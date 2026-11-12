@@ -6,6 +6,7 @@ import {
 } from '@interstellar-tools/types';
 
 import { distanceToPixels } from '../../utils/distance/distance-to-pixels';
+import { getFocusShift } from '../ui/focus-state';
 
 import { getBodyPosition } from './utils/get-body-position';
 import { getDrawnSize } from './utils/get-drawn-size';
@@ -128,14 +129,23 @@ export const drawCelestialBodies = (
   props: DrawCelestialBodiesPropsType
 ): void => {
   const { space, referenceX, referenceY, scale, celestialBodies } = props;
+  const focused = globalThis.FOCUSED_CELESTIAL_BODY;
 
   space.save();
 
   celestialBodies.forEach((body: CelestialBodyType) => {
     const { name, display } = body;
     const { x, y } = getBodyPosition(body);
-    const xPX = referenceX + distanceToPixels(x, scale);
-    const yPX = referenceY + distanceToPixels(y, scale);
+    // The focused body is pinned to the middle of the view: zoomed in on a
+    // small body, rounding in its galactic position is many pixels
+    const isFocused = focused?.id === body.id;
+    const shift = getFocusShift();
+    const xPX = isFocused
+      ? space.canvas.clientWidth / 2 + shift.x
+      : referenceX + distanceToPixels(x, scale);
+    const yPX = isFocused
+      ? space.canvas.clientHeight / 2 + shift.y
+      : referenceY + distanceToPixels(y, scale);
     // How far it is drawn from its parent: 0 for a body that sits on it
     const size = getDrawnSize(
       body,

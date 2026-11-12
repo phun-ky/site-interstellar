@@ -24,7 +24,7 @@ import {
   getChildBodies
 } from '../celestial-bodies/utils/body-catalog';
 
-import { hideBodyInfo, showBodyInfo } from './body-info';
+import { hideBodyInfo } from './body-info';
 import { updateScaleDisplay } from './update-scale-display';
 import { updateLockStatus } from './update-simulation-status';
 import { needsMoonZoom } from './utils/needs-moon-zoom';
@@ -56,7 +56,7 @@ export const LOCK_CHANGE = 'interstellar:lockchange';
 
 let zoomAnimation: number | null = null;
 
-const markZoomingOrPanning = (): void => {
+export const markZoomingOrPanning = (): void => {
   globalThis.IS_ZOOMING_OR_PANNING = true;
 
   if (globalThis.ZOOM_PAN_TIMEOUT) clearTimeout(globalThis.ZOOM_PAN_TIMEOUT);
@@ -65,8 +65,9 @@ const markZoomingOrPanning = (): void => {
     globalThis.IS_ZOOMING_OR_PANNING = false;
   }, 500);
 };
+
 /** Switches on the layers a body needs, so it is drawn once locked. */
-const enableLayersFor = (body: CelestialBodyType): void => {
+export const enableLayersFor = (body: CelestialBodyType): void => {
   const kind = getBodyKind(body.id);
 
   (LAYERS_BY_KIND[kind ?? ''] ?? []).forEach((id) => {
@@ -313,22 +314,18 @@ export const getBodyAtPoint = (
 
 /**
  * Locks on a body and zooms to show it: what picking it in the Lock dropdown
- * does. Clicking the body does the same and also opens its info popup.
+ * does. Clicking a body opens the focus view instead (`openFocusView()`).
  *
  * @param {CelestialBodyType} body - The body to focus on.
- * @param {boolean} [showInfo=false] - Whether to open the body's info popup.
  *
  * @example
  * ```ts
- * focusOn(jupiter); // from the Lock dropdown
- * focusOn(jupiter, true); // from a click
+ * focusOn(jupiter);
  * ```
  */
-export const focusOn = (body: CelestialBodyType, showInfo = false): void => {
+export const focusOn = (body: CelestialBodyType): void => {
   lockOn(body);
   zoomTo(getFocusScale(body));
-
-  if (showInfo) showBodyInfo(body);
 };
 
 /**

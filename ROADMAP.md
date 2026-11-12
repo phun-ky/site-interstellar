@@ -29,6 +29,7 @@ The repository and the site were overhauled:
   - Solar system, Galaxy and Bodies views at the bottom of the map
     ([#14](https://github.com/phun-ky/site-interstellar/issues/14)), with every
     body in a table to search, sort and lock on
+  - a focus view: click a body to look at it up close, with time held
 
 ## Planned
 

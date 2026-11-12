@@ -31,8 +31,10 @@ drawn flat, each turned to its real direction:
 
 - Pan with the mouse or a finger, and zoom with the wheel or a pinch.
 - Lock on any star, planet, moon, comet, asteroid, interstellar object or galaxy
-  to follow it, and click or tap a body, or choose Info beside the Lock menu,
-  for its details.
+  to follow it, and choose Info beside the Lock menu for its details.
+- Click or tap a body to look at it up close: time holds, and a cockpit visor
+  shows its facts, its live range, bearing and speed, and where it is in its
+  system. Release target, or Escape, returns to its parent with it in view.
 - Jump to the solar system or the whole galaxy from the views at the bottom of
   the map, or open Bodies to find any body in a table, sort and filter it, and
   lock on it.

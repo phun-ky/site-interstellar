@@ -76,6 +76,11 @@ export default defineConfig({
             return 'css/bodies-[hash].css';
           }
 
+          // The lazily loaded focus view's styles
+          if (assetInfo.names.some((name) => name.startsWith('focus'))) {
+            return 'css/focus-[hash].css';
+          }
+
           // Named after the entry: `notFound.css` comes from 404.html
           return assetInfo.names.includes('notFound.css')
             ? 'css/not-found.css'
