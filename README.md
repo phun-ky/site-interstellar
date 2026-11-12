@@ -33,6 +33,9 @@ drawn flat, each turned to its real direction:
 - Lock on any star, planet, moon, comet, asteroid, interstellar object or galaxy
   to follow it, and click or tap a body, or choose Info beside the Lock menu,
   for its details.
+- Jump to the solar system or the whole galaxy from the views at the bottom of
+  the map, or open Bodies to find any body in a table, sort and filter it, and
+  lock on it.
 - Switch moons, asteroid belts, asteroids, comets, interstellar objects, the
   starfield, arrows to off-screen bodies, labels and orbits on and off.
 - Hold the simulation, change its speed, or reset it to now.

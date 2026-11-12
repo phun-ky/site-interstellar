@@ -39,6 +39,7 @@ import { updateBodiesInView } from './features/ui/update-bodies-in-view';
 import { updateCoordinates } from './features/ui/update-coordinates';
 import { updateSimulationDate } from './features/ui/update-simulation-date';
 import { updateZoom } from './features/ui/update-zoom';
+import { setupViews } from './features/ui/views';
 import { draw } from './utils/draw';
 import { attachEventHandlers } from './utils/event-handlers';
 import { waitFor } from './utils/wait-for';
@@ -74,6 +75,7 @@ const App = async (): Promise<void> => {
   setupMainMenu();
   setupSettings();
   setupSystemsSheet();
+  setupViews();
   setupSound();
 
   const { canvas, space } = setupCanvas();

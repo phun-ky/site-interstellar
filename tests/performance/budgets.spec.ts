@@ -17,9 +17,13 @@ const BUDGETS: Record<string, Budget> = {
   // for the @interstellar-tools/constants 2.2.0 bodies (#103): 22946 B
   // before it, 27748 B with it. js raised from 29000 B for the 2.7.0 data
   // (#105), with every body's rotation model, the interstellar objects and
-  // the galaxies: 35069 B with it
+  // the galaxies: 35069 B with it. html raised from 3200 B and js from
+  // 37000 B for the views console (#14): html 3195 B before it, 3334 B with
+  // it; js 36228 B before it, 37129 B with it. The Bodies drawer loads on
+  // its first opening, apart, so its table (2.5 kB) and styles (0.9 kB) are
+  // not counted here
   './': {
-    bytes: { html: 3200, js: 37_000, css: 5200, fonts: 46_000, images: 2300 },
+    bytes: { html: 3400, js: 37_300, css: 5200, fonts: 46_000, images: 2300 },
     lcpMs: 1300,
     cls: 0.02,
     inpMs: 150

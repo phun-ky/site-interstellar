@@ -53,6 +53,9 @@ export default defineConfig({
     // Keep every asset a file: the Content Security Policy allows no
     // `data:` URIs, and small font subsets would otherwise be inlined
     assetsInlineLimit: 0,
+    // Every browser the site supports preloads modules itself, so the
+    // polyfill for the lazily loaded Bodies drawer (#14) is dead weight
+    modulePreload: { polyfill: false },
     rolldownOptions: {
       // The app, and the page GitHub Pages serves for unknown paths
       input: {
@@ -66,6 +69,11 @@ export default defineConfig({
         assetFileNames: (assetInfo) => {
           if (!assetInfo.names.some((name) => name.endsWith('.css'))) {
             return 'assets/[name]-[hash][extname]';
+          }
+
+          // The lazily loaded Bodies drawer's styles (#14)
+          if (assetInfo.names.some((name) => name.startsWith('bodies'))) {
+            return 'css/bodies-[hash].css';
           }
 
           // Named after the entry: `notFound.css` comes from 404.html

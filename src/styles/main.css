@@ -31,6 +31,8 @@
   --int-color-red: #ff7a6e;
 
   --int-header-height: 64px;
+  /* The views console at the bottom of the map (#14) */
+  --int-views-height: 44px;
   --int-gutter: 24px;
   --int-minimap-size: 160px;
   --int-dock-height: 68px;
@@ -691,7 +693,8 @@ select.int:focus-visible,
 
 .int.mc-popup {
   position: fixed;
-  bottom: var(--int-gutter);
+  /* above the views console */
+  bottom: calc(var(--int-gutter) + var(--int-views-height) + 12px);
   left: 50%;
   /* wide and short, between the side panels where there is room */
   width: min(
@@ -929,17 +932,20 @@ select.int:focus-visible,
     border-width: 3px 0 0;
   }
 
-  /* The minimap and the info popup stay clear of the bottom bar */
+  /* The minimap and the info popup stay clear of the bottom bar and the
+     views console */
   #minimap {
-    bottom: calc(var(--int-dock-height) + var(--int-gutter));
+    bottom: calc(
+      var(--int-dock-height) + var(--int-views-height) + 8px + var(--int-gutter)
+    );
   }
 
   .int.mc-popup {
-    bottom: calc(var(--int-dock-height) + var(--int-gutter));
+    bottom: calc(var(--int-dock-height) + var(--int-views-height) + 16px);
     width: calc(100vw - 2 * var(--int-gutter));
     max-height: calc(
-      100vh - var(--int-header-height) - var(--int-dock-height) - 2 *
-        var(--int-gutter)
+      100vh - var(--int-header-height) - var(--int-dock-height) -
+        var(--int-views-height) - 2 * var(--int-gutter) - 16px
     );
     overflow-y: auto;
   }

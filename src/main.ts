@@ -5,6 +5,7 @@ import '@fontsource/ibm-plex-sans-condensed/600.css';
 import '@fontsource/ibm-plex-sans-condensed/700.css';
 
 import './styles/main.css';
+import './styles/views.css';
 
 // Events that happens after DOM is loaded
 if (document.readyState === 'loading') {
