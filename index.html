@@ -249,6 +249,24 @@
       <div class="int in-viewport" id="in-viewport"></div>
     </div>
 
+    <!-- The map's views (#14): the Solar system, the galaxy, and every body in a table, in a drawer built on the first click -->
+    <nav class="int mc-views" aria-label="Views">
+      <button
+        type="button"
+        class="int"
+        id="viewSolarSystem"
+        aria-pressed="false"
+      >
+        Solar system
+      </button>
+      <button type="button" class="int" id="viewGalaxy" aria-pressed="true">
+        Galaxy
+      </button>
+      <button type="button" class="int" id="viewBodies" aria-expanded="false">
+        Bodies
+      </button>
+    </nav>
+
     <aside
       class="int controls"
       id="systems"

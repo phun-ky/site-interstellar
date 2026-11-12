@@ -26,6 +26,9 @@ The repository and the site were overhauled:
   - page metadata and a social card
   - a header linking to Interstellar Tools
   - a layout and touch gestures for phones
+  - Solar system, Galaxy and Bodies views at the bottom of the map
+    ([#14](https://github.com/phun-ky/site-interstellar/issues/14)), with every
+    body in a table to search, sort and lock on
 
 ## Planned
 
@@ -40,9 +43,6 @@ The repository and the site were overhauled:
 - **A Step button**
   ([#15](https://github.com/phun-ky/site-interstellar/issues/15)) to advance one
   frame while the simulation is held.
-- **Galaxy and Bodies views**
-  ([#14](https://github.com/phun-ky/site-interstellar/issues/14)) in the header
-  navigation, beside the solar system.
 - **Finishing the hardening:** branch rules with required checks and DCO
   sign-off ([#30](https://github.com/phun-ky/site-interstellar/issues/30)), and
   removing unused files and secrets

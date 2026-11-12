@@ -1,0 +1,187 @@
+/* The Bodies drawer (#14), loaded with it on the first click on Bodies */
+
+.int.mc-bodies {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--int-gutter) + var(--int-views-height) + 12px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  /* As wide as the room between the side panels, like the info popup, but
+     no narrower than the table needs: over the panels' edges while open */
+  width: min(
+    780px,
+    max(560px, calc(100vw - 2 * (330px + 2 * var(--int-gutter)))),
+    calc(100vw - 2 * var(--int-gutter))
+  );
+  height: min(60vh, 560px);
+  background: var(--int-color-panel-solid);
+  transform: translateX(-50%);
+}
+
+.int.mc-bodies[hidden] {
+  display: none;
+}
+
+.int.mc-bodies-search {
+  min-height: 36px;
+  margin-bottom: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--int-color-line-strong);
+  border-radius: 0;
+  background: var(--int-color-field);
+  color: var(--int-color-text);
+  font-family: var(--int-font-family-mono);
+  font-size: 13px;
+}
+
+.int.mc-bodies-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.int.mc-bodies-kinds button {
+  padding: 4px 8px;
+  border: 1px solid var(--int-color-line);
+  background: transparent;
+  color: var(--int-color-muted);
+  font-family: var(--int-font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.int.mc-bodies-kinds button[aria-pressed='true'] {
+  border-color: var(--int-color-amber);
+  color: var(--int-color-amber);
+}
+
+.int.mc-bodies-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.int.mc-bodies-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--int-font-family-mono);
+  font-size: 12px;
+}
+
+.int.mc-bodies-table thead th,
+.int.mc-bodies-table thead td {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--int-color-line-strong);
+  background: var(--int-color-panel-solid);
+}
+
+.int.mc-bodies-table thead button {
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--int-color-muted);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* The symbols a and e keep their case */
+.int.mc-bodies-table th[data-key='a'] button,
+.int.mc-bodies-table th[data-key='e'] button {
+  text-transform: none;
+}
+
+.int.mc-bodies-table th[aria-sort] button {
+  color: var(--int-color-amber);
+}
+
+.int.mc-bodies-table th[aria-sort='ascending'] button::after {
+  content: ' \25B4';
+}
+
+.int.mc-bodies-table th[aria-sort='descending'] button::after {
+  content: ' \25BE';
+}
+
+.int.mc-bodies-table tbody th,
+.int.mc-bodies-table tbody td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--int-color-line);
+  color: var(--int-color-text);
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* The name stays in view as the table scrolls sideways */
+.int.mc-bodies-table tbody th {
+  position: sticky;
+  left: 0;
+  min-width: 10ch;
+  background: var(--int-color-panel-solid);
+  font-weight: 600;
+}
+
+/* Names, types and parents wrap, so long ones (Sagittarius Dwarf
+   Spheroidal Galaxy) leave room for the numbers */
+.int.mc-bodies-table tbody th,
+.int.mc-bodies-table tbody td:nth-of-type(-n + 2) {
+  white-space: normal;
+}
+
+/* The numbers line up on the right */
+.int.mc-bodies-table tbody td:nth-of-type(n + 3):not(:last-child) {
+  text-align: right;
+}
+
+.int.mc-bodies-lock {
+  padding: 3px 8px;
+  border: 1px solid var(--int-color-line-strong);
+  background: transparent;
+  color: var(--int-color-teal);
+  font-family: var(--int-font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.int.mc-bodies-lock:hover {
+  border-color: var(--int-color-amber);
+  color: var(--int-color-amber);
+}
+
+.int.mc-bodies button:focus-visible,
+.int.mc-bodies-search:focus-visible {
+  outline: 2px solid var(--int-color-cyan);
+  outline-offset: -2px;
+}
+
+/* On narrow screens the drawer spans the width above the console */
+@media (max-width: 1023px) {
+  .int.mc-bodies {
+    left: 0;
+    right: 0;
+    bottom: calc(var(--int-dock-height) + var(--int-views-height) + 16px);
+    width: auto;
+    height: min(
+      62vh,
+      calc(
+        100vh - var(--int-header-height) - 72px - var(--int-dock-height) -
+          var(--int-views-height) - 24px
+      )
+    );
+    transform: none;
+  }
+}

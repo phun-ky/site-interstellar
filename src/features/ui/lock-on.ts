@@ -3,6 +3,7 @@ import { CelestialBodyType } from '@interstellar-tools/types';
 
 import {
   AU_IN_PX,
+  INITIAL_SCALE,
   MAX_SCALE,
   MIN_SCALE,
   SCALE,
@@ -50,6 +51,9 @@ const LAYERS_BY_KIND: Record<string, string[]> = {
   asteroid: ['toggleAsteroids']
 };
 
+/** The event `lockOn` dispatches on the document whenever the lock changes. */
+export const LOCK_CHANGE = 'interstellar:lockchange';
+
 let zoomAnimation: number | null = null;
 
 const markZoomingOrPanning = (): void => {
@@ -82,7 +86,8 @@ const enableLayersFor = (body: CelestialBodyType): void => {
  * every frame), switches on the layer it needs (Moons for a moon, …), shows it
  * in the header and the Lock dropdown, enables the Info button beside it, and
  * closes an open info popup. Unlocking
- * returns the camera to where it was before the lock.
+ * returns the camera to where it was before the lock. Either way it
+ * dispatches `LOCK_CHANGE` on the document.
  *
  * @param {CelestialBodyType | null} body - The body to lock on, or `null` to unlock.
  *
@@ -115,6 +120,8 @@ export const lockOn = (body: CelestialBodyType | null): void => {
 
     if (select) select.value = 'noLock';
 
+    document.dispatchEvent(new Event(LOCK_CHANGE));
+
     return;
   }
 
@@ -131,6 +138,8 @@ export const lockOn = (body: CelestialBodyType | null): void => {
   hideBodyInfo();
 
   if (select) select.value = body.id;
+
+  document.dispatchEvent(new Event(LOCK_CHANGE));
 };
 
 /** A child this many times farther out than the previous one starts an outer group. */
@@ -320,6 +329,23 @@ export const focusOn = (body: CelestialBodyType, showInfo = false): void => {
   zoomTo(getFocusScale(body));
 
   if (showInfo) showBodyInfo(body);
+};
+
+/**
+ * Shows the whole Milky Way, as the map opens: unlocks, centres on the
+ * galactic centre and zooms out to the opening scale. What the Galaxy view
+ * does (#14).
+ *
+ * @example
+ * ```ts
+ * galaxyButton.addEventListener('click', showGalaxy);
+ * ```
+ */
+export const showGalaxy = (): void => {
+  lockOn(null);
+  offsetX.value = 0;
+  offsetY.value = 0;
+  zoomTo(INITIAL_SCALE);
 };
 
 /**

@@ -16,7 +16,7 @@ import { type GalaxyBodyType, getGalaxyBodies } from './galaxy-bodies';
 import { getFlatPosition } from './orbit-orientation';
 
 /** The kind of a body, from the dataset it belongs to. */
-type BodyKindType =
+export type BodyKindType =
   | 'system'
   | 'star'
   | 'planet'
@@ -25,6 +25,18 @@ type BodyKindType =
   | 'asteroid'
   | 'interstellar'
   | 'galaxy';
+
+/** What each kind of body is called, in the HUD. */
+export const BODY_KIND_LABELS: Record<BodyKindType, string> = {
+  system: 'System',
+  star: 'Star',
+  planet: 'Planet',
+  moon: 'Moon',
+  comet: 'Comet',
+  asteroid: 'Asteroid',
+  interstellar: 'Interstellar object',
+  galaxy: 'Galaxy'
+};
 
 const solarSystem = SYSTEMS.find(({ id }) => id === 'solar-system');
 

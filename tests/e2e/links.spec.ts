@@ -114,7 +114,7 @@ const filesNamedIn = async (
 
   return [
     ...js.matchAll(
-      /["'`]([a-z][\w-]*(?:\/[\w.-]+)+\.(?:webm|m4a|mp3|ogg|png|svg|jpg|webp))["'`]/g
+      /["'`]([a-z][\w-]*(?:\/[\w.-]+)+\.(?:webm|m4a|mp3|ogg|png|svg|jpg|webp|js|css))["'`]/g
     )
   ].map(([, path]) => new URL(path, baseURL).href);
 };
@@ -125,7 +125,8 @@ const SERVER_ROOT = 'http://127.0.0.1:3000/';
 /**
  * Every file the built site asks for: the pages, what they link and load, what
  * their stylesheets, scripts and manifest load in turn (a script's source map
- * and the files it names), the social card, and the images in
+ * and the files it names, such as a script it loads later), the social card,
+ * and the images in
  * `browserconfig.xml`, which browsers ask for by convention.
  */
 const reachableUrls = async (
@@ -143,7 +144,9 @@ const reachableUrls = async (
     for (const url of await metaImagesOn(page)) urls.add(url);
   }
 
-  for (const url of [...urls]) {
+  // Including what is found on the way: a lazily loaded script (#14), and
+  // its source map and styles
+  for (const url of urls) {
     const { pathname } = new URL(url);
 
     if (pathname.endsWith('.css')) {

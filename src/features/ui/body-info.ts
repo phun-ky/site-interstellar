@@ -1,12 +1,10 @@
-import { convertTemporalUnit } from '@interstellar-tools/temporal';
 import {
   CelestialBodyType,
-  InterstellarObjectInterface,
-  DistanceInterface,
-  TemporalInterface
+  InterstellarObjectInterface
 } from '@interstellar-tools/types';
 
 import {
+  BODY_KIND_LABELS,
   findBodyById,
   getBodyKind,
   getChildBodies
@@ -14,27 +12,14 @@ import {
 import { type GalaxyBodyType } from '../celestial-bodies/utils/galaxy-bodies';
 import { isOpenOrbit } from '../celestial-bodies/utils/orbit-orientation';
 
+import { formatDistance, formatNumber, formatPeriod } from './utils/format';
+
 const html = String.raw;
 
 /** What the info popup can describe: a body, an interstellar object or a galaxy. */
 type InfoBodyType =
   CelestialBodyType | InterstellarObjectInterface | GalaxyBodyType;
 
-const NUMBER = new Intl.NumberFormat('en', { maximumSignificantDigits: 4 });
-const COMPACT = new Intl.NumberFormat('en', {
-  notation: 'compact',
-  maximumSignificantDigits: 3
-});
-const KIND_LABELS = {
-  system: 'System',
-  star: 'Star',
-  planet: 'Planet',
-  moon: 'Moon',
-  comet: 'Comet',
-  asteroid: 'Asteroid',
-  interstellar: 'Interstellar object',
-  galaxy: 'Galaxy'
-} as const;
 const escapeHTML = (text: string): string =>
   text.replace(
     /[&<>"']/g,
@@ -47,17 +32,6 @@ const escapeHTML = (text: string): string =>
         "'": '&#39;'
       })[character] ?? character
   );
-const formatNumber = (value: number): string =>
-  Math.abs(value) >= 1e5 ? COMPACT.format(value) : NUMBER.format(value);
-const formatDistance = ({ value, unit }: DistanceInterface): string =>
-  `${formatNumber(value)} ${unit}`;
-const formatPeriod = (period: TemporalInterface): string => {
-  const days = convertTemporalUnit(period, 'd').value;
-
-  if (days < 1000) return `${formatNumber(days)} d`;
-
-  return `${formatNumber(convertTemporalUnit(period, 'yr').value)} yr`;
-};
 const capitalize = (text: string): string =>
   text.charAt(0).toUpperCase() + text.slice(1);
 /**
@@ -148,7 +122,7 @@ export const showBodyInfo = (body: InfoBodyType): void => {
 
   if (!panel || !title || !kind || !facts) return;
 
-  const kindLabel = KIND_LABELS[getBodyKind(body.id) ?? 'planet'];
+  const kindLabel = BODY_KIND_LABELS[getBodyKind(body.id) ?? 'planet'];
 
   title.textContent = body.name;
   kind.textContent = kindLabel;
