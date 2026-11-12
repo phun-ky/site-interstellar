@@ -23,6 +23,7 @@ import {
 } from '../config/constants';
 import { drawDirectionalArrows } from '../features/arrows/draw-arrowheads';
 import { getHudObstacles } from '../features/arrows/utils/get-clear-bounds';
+import { lockPan } from '../features/canvas/config/camera/lock-pan';
 import { OPTIONS_UI } from '../features/canvas/config/hud';
 import { drawBelts } from '../features/celestial-bodies/asteroids/draw-belts';
 import { drawCelestialBodies } from '../features/celestial-bodies/draw-celestial-bodies';
@@ -41,7 +42,11 @@ import { drawGalaxyLabel } from '../features/labels/draw-galaxy-label';
 import { type LabelCandidateType } from '../features/labels/utils/place-labels';
 import { drawStarfield } from '../features/starfield/draw-starfield';
 import { initializeStarfield } from '../features/starfield/initialize-starfield';
-import { drawFocusOverlay, getFocusShift } from '../features/ui/focus-state';
+import {
+  drawFocusOverlay,
+  getFocusShift,
+  isFocusView
+} from '../features/ui/focus-state';
 import { OrbitingBodyType } from '../types/orbiting-bodies';
 
 import { distanceToPixels } from './distance/distance-to-pixels';
@@ -166,8 +171,9 @@ export const draw = async (props: DrawPropsType) => {
       offsetX.value = normalizeParentOffset(xPX, parentOffsetX);
       offsetY.value = normalizeParentOffset(yPX, parentOffsetY);
 
-      // In the focus view, the body sits in the space the info panel leaves
-      const shift = getFocusShift();
+      // In the focus view, the body sits in the space the info panel leaves;
+      // otherwise wherever it has been panned to (#118)
+      const shift = isFocusView() ? getFocusShift() : lockPan;
 
       offsetX.value += shift.x;
       offsetY.value += shift.y;

@@ -24,9 +24,12 @@ const BUDGETS: Record<string, Budget> = {
   // not counted here. js raised from 37300 B for the focus view (clicking a
   // body): 37129 B before it, 37548 B with it, for the click and Escape
   // wiring, the zoom and time guards and pinning the body. The view itself
-  // loads on the first click, apart: 6.3 kB of js and 1.9 kB of css
+  // loads on the first click, apart: 6.3 kB of js and 1.9 kB of css. js
+  // raised from 37700 B for panning while locked, with Centre (#118):
+  // 37558 B before it, 38134 B with it, for the pan, zoom and C key
+  // wiring, and Centre beside Lock and on the map. html 3400 B with it
   './': {
-    bytes: { html: 3400, js: 37_700, css: 5200, fonts: 46_000, images: 2300 },
+    bytes: { html: 3400, js: 38_300, css: 5200, fonts: 46_000, images: 2300 },
     lcpMs: 1300,
     cls: 0.02,
     inpMs: 150

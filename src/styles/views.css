@@ -57,6 +57,45 @@
   outline-offset: -2px;
 }
 
+/* Centre, above the console, while the view is panned off the locked body
+   (#118) */
+.int.mc-map-centre {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--int-gutter) + var(--int-views-height) + 10px);
+  z-index: 3;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--int-color-amber);
+  background: rgba(11, 16, 22, 0.92);
+  color: var(--int-color-amber);
+  font-family: var(--int-font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+.int.mc-map-centre[hidden],
+/* The info popup and the Bodies drawer sit where it does; Centre beside the
+   Lock menu and C still work */
+body:has(#bodyInfo:not([hidden])) .int.mc-map-centre,
+body:has(#bodies:not([hidden])) .int.mc-map-centre {
+  display: none;
+}
+
+.int.mc-map-centre:hover {
+  background: var(--int-color-amber);
+  color: var(--int-color-amber-ink);
+}
+
+.int.mc-map-centre:focus-visible {
+  outline: 2px solid var(--int-color-cyan);
+  outline-offset: 2px;
+}
+
 /* On narrow screens the console spans the width above the bottom bar */
 @media (max-width: 1023px) {
   .int.mc-views {
@@ -70,5 +109,9 @@
 
   .int.mc-views button {
     padding: 0 6px;
+  }
+
+  .int.mc-map-centre {
+    bottom: calc(var(--int-dock-height) + 8px + var(--int-views-height) + 10px);
   }
 }

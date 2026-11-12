@@ -610,6 +610,16 @@ select.int {
   width: 170px;
 }
 
+/* With Info and Centre (#118), on a line of its own under its label */
+.int.mc-field-lock {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.int.mc-field-lock .int.mc-lock {
+  width: 100%;
+}
+
 .int.mc-lock select.int {
   flex: 1;
   width: auto;
@@ -631,13 +641,14 @@ select.int {
   cursor: pointer;
 }
 
-.int.mc-lock-info:hover:enabled,
+.int.mc-lock-info:hover:enabled:not([aria-disabled='true']),
 .int.mc-lock-info[aria-expanded='true'] {
   border-color: var(--int-color-cyan);
   color: var(--int-color-cyan);
 }
 
-.int.mc-lock-info:disabled {
+.int.mc-lock-info:disabled,
+.int.mc-lock-info[aria-disabled='true'] {
   border-color: var(--int-color-line);
   color: var(--int-color-muted);
   cursor: not-allowed;

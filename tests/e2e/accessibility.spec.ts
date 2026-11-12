@@ -41,6 +41,8 @@ const TAB_ORDER = [
   '#lockOn',
   // Enabled: the map opens locked on the Sun
   '#bodyInfoOpen',
+  // Focusable but off while the view is on the locked body (#118)
+  '#lockCentre',
   '#pause',
   '#resetToNow'
 ];
