@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-import { openApp, readApp, recordFrames } from './helpers';
+import { nextFrames, openApp, readApp, recordFrames } from './helpers';
 
 const solar = (page: Page) => page.locator('#viewSolarSystem');
 const galaxy = (page: Page) => page.locator('#viewGalaxy');
@@ -40,24 +40,51 @@ test.beforeEach(async ({ page }) => {
   await openApp(page);
 });
 
-test('Solar system locks on the Sun, and Galaxy shows the whole Milky Way again (#14)', async ({
+test('the map opens on the Solar system view: locked on the Sun, its planets drawn', async ({
+  page
+}) => {
+  expect(await locked(page)).toBe('sun');
+  await expect(solar(page)).toHaveAttribute('aria-pressed', 'true');
+  await expect(galaxy(page)).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('#lockOn')).toHaveValue('sun');
+
+  // Framed, with the planets out to Neptune drawn and the Sun in the middle
+  await nextFrames(page);
+
+  const drawn = await readApp(page, (app) => app.NEAREST_BODIES);
+  const box = await page.locator('canvas').boundingBox();
+
+  for (const id of ['mercury', 'earth', 'jupiter', 'neptune']) {
+    const body = drawn[id];
+
+    expect(body, `${id} is drawn`).toBeDefined();
+    expect(body.x, `${id} is on screen`).toBeGreaterThan(0);
+    expect(body.x).toBeLessThan(box?.width ?? 0);
+    expect(body.y).toBeGreaterThan(0);
+    expect(body.y).toBeLessThan(box?.height ?? 0);
+  }
+
+  expect(Math.abs(drawn.sun.x - (box?.width ?? 0) / 2)).toBeLessThan(2);
+  expect(Math.abs(drawn.sun.y - (box?.height ?? 0) / 2)).toBeLessThan(2);
+});
+
+test('Galaxy shows the whole Milky Way, and Solar system goes back to the Sun (#14)', async ({
   page
 }) => {
   const opening = await page.locator('#scaleDisplay').textContent();
-
-  await expect(galaxy(page)).toHaveAttribute('aria-pressed', 'true');
-  await expect(solar(page)).toHaveAttribute('aria-pressed', 'false');
-
-  await solar(page).click();
-  await expect.poll(() => locked(page)).toBe('sun');
-  await expect(solar(page)).toHaveAttribute('aria-pressed', 'true');
-  await expect(galaxy(page)).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.locator('#scaleDisplay')).not.toHaveText(opening ?? '');
 
   await galaxy(page).click();
   await expect.poll(() => locked(page)).toBe(null);
   await expect(galaxy(page)).toHaveAttribute('aria-pressed', 'true');
   await expect(solar(page)).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('#scaleDisplay')).not.toHaveText(opening ?? '');
+  // The galaxy's scale: a scale bar in light years
+  await expect(page.locator('#scaleDisplay')).toContainText(/ly/i);
+
+  await solar(page).click();
+  await expect.poll(() => locked(page)).toBe('sun');
+  await expect(solar(page)).toHaveAttribute('aria-pressed', 'true');
+  await expect(galaxy(page)).toHaveAttribute('aria-pressed', 'false');
   // Back at the opening scale, once the zoom has run
   await expect(page.locator('#scaleDisplay')).toHaveText(opening ?? '');
 

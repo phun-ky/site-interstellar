@@ -8,6 +8,9 @@ is deployed to the site. Rebuilt with `npm run changelog`.
 
 ### Features
 
+- 🎸 Clicking a body opens a focus view, a cockpit visor round it ([#114](https://github.com/phun-ky/site-interstellar/pull/114))
+- 🎸 Solar system, Galaxy and Bodies views at the bottom of the map ([#113](https://github.com/phun-ky/site-interstellar/pull/113))
+- 🎸 A Changelog link and script, a Codecov badge, and katex patched ([#112](https://github.com/phun-ky/site-interstellar/pull/112))
 - 🎸 Draw overlapping stars as one, and star systems by name ([#111](https://github.com/phun-ky/site-interstellar/pull/111))
 - 🎸 Draw bodies at sizes that tell them apart at every zoom ([#110](https://github.com/phun-ky/site-interstellar/pull/110))
 - 🎸 The header menu in a row, with the hamburger only where it can't fit ([#108](https://github.com/phun-ky/site-interstellar/pull/108))
@@ -72,6 +75,10 @@ is deployed to the site. Rebuilt with `npm run changelog`.
 - 🤖 Add a Dependabot config with grouping and a cooldown ([#55](https://github.com/phun-ky/site-interstellar/pull/55))
 - 🤖 Run tests with Node's own globs and enforce a coverage floor ([#53](https://github.com/phun-ky/site-interstellar/pull/53))
 - 🤖 Lint the whole repository with eslint-config-phun-ky 2 ([#52](https://github.com/phun-ky/site-interstellar/pull/52))
+
+### Dependencies
+
+- 🤖 Bump cssnano from 7.1.9 to 9.9.0 ([#64](https://github.com/phun-ky/site-interstellar/pull/64))
 
 ## June 2026
 

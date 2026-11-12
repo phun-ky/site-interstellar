@@ -39,6 +39,8 @@ const TAB_ORDER = [
   '#toggleTrajectoryType',
   '#speedMode',
   '#lockOn',
+  // Enabled: the map opens locked on the Sun
+  '#bodyInfoOpen',
   '#pause',
   '#resetToNow'
 ];
@@ -229,6 +231,9 @@ test.describe('the body info, from the keyboard (#90)', () => {
   test('Info by the Lock menu opens the locked body, and Escape or Close returns focus', async ({
     page
   }) => {
+    // The map opens locked on the Sun, so Info is enabled; unlocked, it isn't
+    await expect(info(page)).toBeEnabled();
+    await page.selectOption('#lockOn', 'noLock');
     await expect(info(page)).toBeDisabled();
 
     // Lock on Jupiter by typing its name into the focused Lock menu

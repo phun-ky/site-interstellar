@@ -31,6 +31,7 @@ import { updatePositions } from './features/celestial-bodies/utils/update-positi
 import { initializeMinimap } from './features/minimap/initialize-minimap';
 import { updateMinimap } from './features/minimap/update-minimap';
 import { setupSound } from './features/sound/sound';
+import { showSolarSystem } from './features/ui/lock-on';
 import { setupMainMenu } from './features/ui/main-menu';
 import { setupSettings } from './features/ui/settings';
 import { setupUI } from './features/ui/setup-UI';
@@ -81,6 +82,8 @@ const App = async (): Promise<void> => {
   const { canvas, space } = setupCanvas();
 
   setupApp(canvas);
+  // The map opens on the Solar system view: locked on the Sun, its planets framed
+  showSolarSystem(false);
 
   const simDateDisplayElement = document.getElementById('simDate');
   // Animation function
