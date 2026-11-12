@@ -208,6 +208,29 @@ test.describe('on a desktop', () => {
   });
 });
 
+test.describe('on a short desktop', () => {
+  test.use({ viewport: { width: 1280, height: 720 } });
+
+  test('a long list of facts scrolls above the system map, rather than over it', async ({
+    page
+  }) => {
+    // The Sun has the most facts: eleven
+    await clickBody(page, 'sun');
+    await expect(view(page)).toBeVisible();
+    await expect(page.locator('#focusFacts > div')).toHaveCount(11);
+
+    const column = await view(page).boundingBox();
+    const caption = await page.locator('#focusMapCaption').boundingBox();
+
+    expect((column?.y ?? 0) + (column?.height ?? 0)).toBeLessThanOrEqual(
+      caption?.y ?? 0
+    );
+    // All of them can be scrolled to
+    await page.locator('#focusFacts > div').last().scrollIntoViewIfNeeded();
+    await expect(page.locator('#focusFacts > div').last()).toBeInViewport();
+  });
+});
+
 test.describe('on a phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 

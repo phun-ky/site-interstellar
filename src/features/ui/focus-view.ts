@@ -491,7 +491,8 @@ const createFocusView = (): void => {
   );
 
   panel.setAttribute('aria-labelledby', 'focusTitle');
-  panel.tabIndex = -1;
+  // A Tab stop, as a long list of facts scrolls, by keyboard too
+  panel.tabIndex = 0;
   panel.hidden = true;
   bar.append(
     decorative(make('span', '', 'mc-focus-blink')),

@@ -202,7 +202,7 @@ test.describe('2.14 data: what is measured about a body', () => {
         ])
       );
 
-  test("the info shows a star's spectral class, temperature and luminosity, a planet's rings, and an interstellar object's discovery", async ({
+  test("the info shows a star's class, mass and measurements, a planet's rotation and rings, and an interstellar object's discovery", async ({
     page
   }) => {
     await openApp(page);
@@ -212,14 +212,23 @@ test.describe('2.14 data: what is measured about a body', () => {
     expect(await facts(page)).toEqual(
       expect.arrayContaining([
         ['Spectral class', 'G2V'],
+        ['Mass', '1 M☉'],
         ['Temperature', '5,772 K'],
-        ['Luminosity', '1 L☉']
+        ['Luminosity', '1 L☉'],
+        ['Surface gravity', 'log g 4.438'],
+        ['Metallicity', '[Fe/H] 0.00'],
+        ['Rotation', '25.38 d']
       ])
     );
 
     await lockOn(page, 'saturn');
     await page.locator('#bodyInfoOpen').click();
-    expect(await facts(page)).toContainEqual(['Rings', '9']);
+    expect(await facts(page)).toEqual(
+      expect.arrayContaining([
+        ['Rotation', '10.66 h'],
+        ['Rings', '9']
+      ])
+    );
 
     await toggle(page, 'toggleInterstellar');
     await lockOn(page, '1i-oumuamua');
