@@ -63,14 +63,3 @@ test("at the Solar System's scale, larger planets are drawn larger (#109)", asyn
   expect(earth - mercury).toBeGreaterThan(0.5);
   expect(mercury).toBeGreaterThanOrEqual(1);
 });
-
-test("at the galaxy's scale, a star crowded in its system is drawn smaller (#109)", async ({
-  page
-}) => {
-  await openApp(page);
-
-  // Alpha Centauri A is a little larger than the Sun, but sits on its partner
-  const [alphaCentauriA, sun] = await sizes(page, ['alpha-centauri-a', 'sun']);
-
-  expect(alphaCentauriA).toBeLessThan(sun * 0.6);
-});

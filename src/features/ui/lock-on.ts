@@ -184,10 +184,21 @@ const getFocusScale = (body: CelestialBodyType): number => {
     (child) =>
       child.orbit && (OPTIONS_UI.moons || getBodyKind(child.id) !== 'moon')
   );
+  const aphelion = ({ orbit }: { orbit?: CelestialBodyType['orbit'] }) =>
+    orbit ? convertDistanceUnit(orbit.a, 'au').value * (1 + orbit.e) : 0;
+  // A star in a system, such as Sirius A, frames its partners too: the
+  // farthest each gets from it, both at the far ends of their orbits (#13)
+  const companions =
+    getBodyKind(body.id) === 'star' && body.orbit && body.parent
+      ? getChildBodies(body.parent).filter(
+          (other) => other.id !== body.id && other.orbit
+        )
+      : [];
   // The farthest any child gets from the body (its aphelion), in au
-  const childAphelia = children.map(({ orbit }) =>
-    orbit ? convertDistanceUnit(orbit.a, 'au').value * (1 + orbit.e) : 0
-  );
+  const childAphelia = [
+    ...children.map(aphelion),
+    ...companions.map((other) => aphelion(body) + aphelion(other))
+  ];
   // A galaxy is framed whole; anything else a few hundred times its size
   const ownSizeAu =
     convertDistanceUnit(body.radius, 'au').value *

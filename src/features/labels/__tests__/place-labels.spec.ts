@@ -92,6 +92,40 @@ describe('placeLabels', () => {
     assert.equal(placed[0].box.width, measure('SUN +1'));
   });
 
+  test('counts every body a hidden label stands for, such as a star system (#13)', () => {
+    const placed = placeLabels(
+      [
+        label('sun', 100, 100, 696_340),
+        { ...label('sirius', 105, 100, 1_190_000), priority: 1, bodies: 2 }
+      ],
+      measure,
+      HEIGHT
+    );
+
+    assert.deepEqual(
+      placed.map(({ label }) => label),
+      ['SUN +2']
+    );
+  });
+
+  test('shows the count a label starts with, and passes it on when hidden (#13)', () => {
+    // SUN stands for 18 stars, naming one
+    const sun = { ...label('sun', 100, 100, 696_340), bodies: 18, others: 17 };
+
+    assert.deepEqual(
+      placeLabels([sun], measure, HEIGHT).map(({ label }) => label),
+      ['SUN +17']
+    );
+    assert.deepEqual(
+      placeLabels(
+        [sun, label('halley', 110, 100, Infinity)],
+        measure,
+        HEIGHT
+      ).map(({ label }) => label),
+      ['HALLEY +18']
+    );
+  });
+
   test('keeps the locked body over larger ones', () => {
     const placed = placeLabels(
       [

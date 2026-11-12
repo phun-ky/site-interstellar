@@ -29,6 +29,7 @@ import { drawCelestialBodies } from '../features/celestial-bodies/draw-celestial
 import { drawGalaxies } from '../features/celestial-bodies/draw-galaxies';
 import { drawGalaxy } from '../features/celestial-bodies/draw-galaxy';
 import { drawLockReticle } from '../features/celestial-bodies/draw-lock-reticle';
+import { drawStars } from '../features/celestial-bodies/draw-stars';
 import { drawOrbits } from '../features/celestial-bodies/orbits/draw';
 import {
   GALAXY_BODIES,
@@ -335,27 +336,17 @@ export const draw = async (props: DrawPropsType) => {
     );
   }
 
-  if (OPTIONS_UI.labels) {
-    shownStars.forEach((star) => {
-      labels.push(
-        ...getLabelCandidates({
-          celestialBodies: [star],
-          scale,
-          ...getParentReference(star)
-        })
-      );
-    });
-  }
-
-  // Draw stars
-  shownStars.forEach((star) => {
-    drawCelestialBodies({
+  // Draw stars, overlapping ones as one (#13)
+  labels.push(
+    ...drawStars({
       space,
       scale,
-      ...getParentReference(star),
-      celestialBodies: [star]
-    });
-  });
+      stars: shownStars,
+      referenceX: galacticReferenceX,
+      referenceY: galacticReferenceY,
+      labelled: OPTIONS_UI.labels
+    })
+  );
 
   // Every label at once, over the bodies, so none overlaps another (#91)
   drawLabels({ space, labels, obstacles: galaxyLabelBoxes });
