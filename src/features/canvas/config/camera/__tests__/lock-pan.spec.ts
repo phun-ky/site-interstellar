@@ -98,3 +98,86 @@ describe('centreLocked', () => {
     assert.equal(isOffCentre(), false);
   });
 });
+
+describe('centreLocked, eased', () => {
+  /** Runs `run` with a frame clock it steps by hand, and the motion preference given. */
+  const withFrames = (
+    reduced: boolean,
+    run: (frame: (at: number) => void) => void
+  ): void => {
+    const saved = {
+      requestAnimationFrame: globalThis.requestAnimationFrame,
+      cancelAnimationFrame: globalThis.cancelAnimationFrame,
+      matchMedia: globalThis.matchMedia,
+      now: performance.now
+    };
+    let pending: ((at: number) => void) | null = null;
+
+    globalThis.requestAnimationFrame = (callback) => {
+      pending = callback;
+
+      return 1;
+    };
+    globalThis.cancelAnimationFrame = () => {
+      pending = null;
+    };
+    globalThis.matchMedia = (() => ({ matches: reduced })) as never;
+    performance.now = () => 0;
+
+    try {
+      run((at) => {
+        const callback = pending;
+
+        pending = null;
+        callback?.(at);
+      });
+    } finally {
+      Object.assign(globalThis, {
+        requestAnimationFrame: saved.requestAnimationFrame,
+        cancelAnimationFrame: saved.cancelAnimationFrame,
+        matchMedia: saved.matchMedia
+      });
+      performance.now = saved.now;
+    }
+  };
+
+  test('eases the body back over 300 ms', () => {
+    withFrames(false, (frame) => {
+      panLocked(100, -40);
+      centreLocked(true);
+
+      // Not moved until the first frame
+      assert.deepEqual({ ...lockPan }, { x: 100, y: -40 });
+
+      frame(150);
+      // Halfway in time, an eighth of the way left to go: (1 - 0.5)³
+      assert.deepEqual({ ...lockPan }, { x: 12.5, y: -5 });
+      assert.equal(isOffCentre(), true);
+
+      frame(300);
+      assert.deepEqual({ ...lockPan }, { x: 0, y: 0 });
+      assert.equal(isOffCentre(), false);
+    });
+  });
+
+  test('a drag during the ease stops it', () => {
+    withFrames(false, (frame) => {
+      panLocked(100, 0);
+      centreLocked(true);
+      frame(150);
+      panLocked(10, 0);
+      frame(300);
+
+      assert.deepEqual({ ...lockPan }, { x: 22.5, y: 0 });
+    });
+  });
+
+  test('with reduced motion, goes back at once', () => {
+    withFrames(true, () => {
+      panLocked(100, -40);
+      centreLocked(true);
+
+      assert.deepEqual({ ...lockPan }, { x: 0, y: 0 });
+    });
+  });
+});
