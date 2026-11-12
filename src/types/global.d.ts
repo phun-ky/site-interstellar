@@ -53,6 +53,8 @@ declare global {
     PAUSE: boolean;
     INTERVAL_IN_VIEWPORT: Interval;
     LOCKED_CELESTIAL_BODY: CelestialBodyType | null;
+    /** The body shown in the focus view (opened by clicking it), or `null`. */
+    FOCUSED_CELESTIAL_BODY: CelestialBodyType | null;
     TRAJECTORY_TYPE: 'orbits' | 'trails';
     /** Trail points per body id, in trails mode. */
     TRAJECTORY_TRAILS: Record<string, CartesianCoordinatesInterface[]>;
@@ -77,6 +79,8 @@ declare global {
   var PAUSE: boolean;
   var INTERVAL_IN_VIEWPORT: Interval;
   var LOCKED_CELESTIAL_BODY: CelestialBodyType | null;
+  /** The body shown in the focus view (opened by clicking it), or `null`. */
+  var FOCUSED_CELESTIAL_BODY: CelestialBodyType | null;
   var TRAJECTORY_TYPE: 'orbits' | 'trails';
   /** Trail points per body id, in trails mode. */
   var TRAJECTORY_TRAILS: Record<string, CartesianCoordinatesInterface[]>;

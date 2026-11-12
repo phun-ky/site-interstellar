@@ -34,6 +34,7 @@ const escapeHTML = (text: string): string =>
   );
 const capitalize = (text: string): string =>
   text.charAt(0).toUpperCase() + text.slice(1);
+
 /**
  * Lists the facts shown for a body: type, what it orbits, radius, orbit size,
  * eccentricity, period and, for planets, how many moons it has.
@@ -46,7 +47,9 @@ const capitalize = (text: string): string =>
  * getBodyFacts(earth); // [['Type', 'Terrestrial planet'], ['Orbits', 'Sun'], …]
  * ```
  */
-const getBodyFacts = (body: InfoBodyType): [label: string, value: string][] => {
+export const getBodyFacts = (
+  body: InfoBodyType
+): [label: string, value: string][] => {
   // A galaxy has no orbit: where it is, and how big
   if (body.category === 'galaxy') {
     return [
@@ -97,6 +100,7 @@ const getBodyFacts = (body: InfoBodyType): [label: string, value: string][] => {
 
   return facts;
 };
+
 /** Shows on the Info button whether the popup is open. */
 const setExpanded = (open: boolean): void =>
   document

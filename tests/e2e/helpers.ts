@@ -4,6 +4,8 @@ import { expect, type Page } from '@playwright/test';
 type AppGlobalsType = {
   PAUSE: boolean;
   LOCKED_CELESTIAL_BODY: { id: string } | null;
+  /** The body the focus view shows, opened by clicking it. */
+  FOCUSED_CELESTIAL_BODY: { id: string } | null;
   NEAREST_BODIES: Record<string, { x: number; y: number; size: number }>;
   /** The body labels drawn in the current frame. */
   LABEL_BOXES: {

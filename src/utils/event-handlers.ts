@@ -18,6 +18,7 @@ import { playZoomTick } from '../features/sound/sound';
 import { generateStarfield } from '../features/starfield/generate-star-field';
 import { initializeStarfield } from '../features/starfield/initialize-starfield';
 import { closeBodyInfo, toggleLockedBodyInfo } from '../features/ui/body-info';
+import { isFocusView, loadFocusView } from '../features/ui/focus-state';
 import {
   focusOn,
   getBodyAtPoint,
@@ -58,6 +59,9 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
    * the middle of a pinch). While locked, the locked body stays centred.
    */
   const zoomAround = (newScale: number, clientX: number, clientY: number) => {
+    // Zooming is off in the focus view
+    if (isFocusView()) return;
+
     if (newScale < MIN_SCALE || newScale > MAX_SCALE) return;
 
     const prevScale = { value: SCALE.value };
@@ -232,7 +236,7 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       globalThis.PAUSE = true; // Pause simulation when tab is hidden
-    } else if (!isHeldByUser) {
+    } else if (!isHeldByUser && !isFocusView()) {
       globalThis.PAUSE = false; // Resume simulation when tab is visible
     }
   });
@@ -247,6 +251,10 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
         clearTimeout(globalThis.ZOOM_PAN_TIMEOUT); // Reset timer
 
       setupCanvas();
+
+      if (isFocusView()) {
+        loadFocusView().then(({ refitFocusView }) => refitFocusView());
+      }
     })
   );
 
@@ -261,9 +269,15 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
   );
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeBodyInfo();
+    if (event.key === 'Escape') {
+      if (isFocusView()) {
+        loadFocusView().then(({ closeFocusView }) => closeFocusView());
+      } else {
+        closeBodyInfo();
+      }
+    }
 
-    if (event.ctrlKey || event.metaKey) {
+    if ((event.ctrlKey || event.metaKey) && !isFocusView()) {
       // Ctrl on Windows/Linux, Cmd on macOS
       if (event.key === '=' || event.key === '+') {
         // Ctrl +
@@ -358,9 +372,13 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
       return;
     }
 
+    // Clicking opens the focus view; locking is the Lock menu's
+    if (isFocusView()) return;
+
     const body = getBodyAtPoint(canvas, event.clientX, event.clientY);
 
-    if (body) focusOn(body, true);
+    // The view loads on the first click, as a file of its own
+    if (body) loadFocusView().then(({ openFocusView }) => openFocusView(body));
   });
 
   // Show a pointer over bodies, checked at most once per frame
@@ -371,9 +389,10 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
 
     hoverCheck = requestAnimationFrame(() => {
       hoverCheck = null;
-      canvas.style.cursor = getBodyAtPoint(canvas, event.clientX, event.clientY)
-        ? 'pointer'
-        : '';
+      canvas.style.cursor =
+        !isFocusView() && getBodyAtPoint(canvas, event.clientX, event.clientY)
+          ? 'pointer'
+          : '';
     });
   });
 

@@ -41,6 +41,7 @@ import { drawGalaxyLabel } from '../features/labels/draw-galaxy-label';
 import { type LabelCandidateType } from '../features/labels/utils/place-labels';
 import { drawStarfield } from '../features/starfield/draw-starfield';
 import { initializeStarfield } from '../features/starfield/initialize-starfield';
+import { drawFocusOverlay, getFocusShift } from '../features/ui/focus-state';
 import { OrbitingBodyType } from '../types/orbiting-bodies';
 
 import { distanceToPixels } from './distance/distance-to-pixels';
@@ -164,6 +165,12 @@ export const draw = async (props: DrawPropsType) => {
       // Adjust offsets to center the locked body in the viewport
       offsetX.value = normalizeParentOffset(xPX, parentOffsetX);
       offsetY.value = normalizeParentOffset(yPX, parentOffsetY);
+
+      // In the focus view, the body sits in the space the info panel leaves
+      const shift = getFocusShift();
+
+      offsetX.value += shift.x;
+      offsetY.value += shift.y;
     }
   }
 
@@ -348,14 +355,24 @@ export const draw = async (props: DrawPropsType) => {
     })
   );
 
-  // Every label at once, over the bodies, so none overlaps another (#91)
-  drawLabels({ space, labels, obstacles: galaxyLabelBoxes });
+  const focused = globalThis.FOCUSED_CELESTIAL_BODY;
+
+  // The focused body, shaded and dressed, under the labels
+  drawFocusOverlay(space);
+
+  // Every label at once, over the bodies, so none overlaps another (#91).
+  // The focused body is named in its panel, so it has none
+  drawLabels({
+    space,
+    labels: focused ? labels.filter(({ id }) => id !== focused.id) : labels,
+    obstacles: galaxyLabelBoxes
+  });
 
   // Mark the body the camera is locked on
-  drawLockReticle(space);
+  if (!focused) drawLockReticle(space);
 
   // Draw arrows towards the nearest off-screen bodies drawn in this frame
-  if (OPTIONS_UI.arrowHeads) {
+  if (OPTIONS_UI.arrowHeads && !focused) {
     drawDirectionalArrows({
       space,
       canvasWidth,

@@ -21,9 +21,12 @@ const BUDGETS: Record<string, Budget> = {
   // 37000 B for the views console (#14): html 3195 B before it, 3334 B with
   // it; js 36228 B before it, 37129 B with it. The Bodies drawer loads on
   // its first opening, apart, so its table (2.5 kB) and styles (0.9 kB) are
-  // not counted here
+  // not counted here. js raised from 37300 B for the focus view (clicking a
+  // body): 37129 B before it, 37548 B with it, for the click and Escape
+  // wiring, the zoom and time guards and pinning the body. The view itself
+  // loads on the first click, apart: 6.3 kB of js and 1.9 kB of css
   './': {
-    bytes: { html: 3400, js: 37_300, css: 5200, fonts: 46_000, images: 2300 },
+    bytes: { html: 3400, js: 37_700, css: 5200, fonts: 46_000, images: 2300 },
     lcpMs: 1300,
     cls: 0.02,
     inpMs: 150

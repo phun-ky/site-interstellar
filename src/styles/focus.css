@@ -1,0 +1,487 @@
+/* ---------- Focus view: what clicking a body opens ----------
+   A cockpit visor. Time holds, the HUD panels and the views console slide
+   away, a data column on the left describes the body, the minimap grows into
+   a nav map of its system, and tapes round the body (drawn on the canvas)
+   read its bearing, range and speed. Release target, under the body, closes
+   it */
+
+:root {
+  --int-focus-map: 224px;
+  --int-focus-ease: cubic-bezier(0.6, 0, 0.2, 1);
+}
+
+/* ---------- The HUD slides away, and can't be tabbed to meanwhile ---------- */
+
+.int.mc-left,
+.int.controls,
+.int.mc-dock,
+.int.mc-views,
+.int.mc-bodies {
+  transition:
+    transform 450ms var(--int-focus-ease),
+    opacity 450ms,
+    visibility 0s 0s;
+}
+
+.is-focus-view .int.mc-left,
+.is-focus-view .int.controls,
+.is-focus-view .int.mc-dock,
+.is-focus-view .int.mc-views,
+.is-focus-view .int.mc-bodies {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform 450ms var(--int-focus-ease),
+    opacity 450ms,
+    visibility 0s 450ms;
+}
+
+.is-focus-view .int.mc-left {
+  transform: translateX(calc(-100% - 2 * var(--int-gutter)));
+}
+
+.is-focus-view .int.controls {
+  transform: translateX(calc(100% + 2 * var(--int-gutter)));
+}
+
+.is-focus-view .int.mc-dock {
+  transform: translateY(100%);
+}
+
+/* ---------- The data column ---------- */
+
+.int.mc-focus {
+  /* The body's share of the height, and where it sits (see focus-view.ts) */
+  --int-focus-anchor: none;
+  --int-focus-size: 0.46;
+
+  position: fixed;
+  z-index: 4;
+  top: var(--int-header-height);
+  bottom: 0;
+  left: 0;
+  width: 420px;
+  overflow-y: auto;
+  padding: 24px 32px calc(var(--int-focus-map) + 72px) 56px;
+  background: linear-gradient(
+    90deg,
+    rgba(5, 8, 7, 0.96) 0%,
+    rgba(5, 8, 7, 0.88) 80%,
+    rgba(5, 8, 7, 0) 100%
+  );
+  font-family: var(--int-font-family-mono);
+  animation: mc-focus-in 500ms 150ms cubic-bezier(0.2, 0, 0.2, 1) both;
+}
+
+.int.mc-focus[hidden],
+.int.mc-focus-close[hidden],
+.int.mc-focus-live[hidden] {
+  display: none;
+}
+
+.int.mc-focus:focus {
+  outline: none;
+}
+
+/* the data rail down the left, with a node per fact */
+.int.mc-focus::before {
+  content: '';
+  position: absolute;
+  top: 32px;
+  bottom: 32px;
+  left: 28px;
+  width: 1px;
+  background: linear-gradient(
+    var(--int-color-amber),
+    var(--int-color-teal) 30%,
+    rgba(71, 184, 190, 0)
+  );
+}
+
+@keyframes mc-focus-in {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+.int.mc-focus-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--int-color-cyan);
+}
+
+/* the designation, Sun III for Earth */
+.int.mc-focus-bar b {
+  margin-left: auto;
+  padding: 1px 6px;
+  border: 1px solid rgba(255, 181, 71, 0.5);
+  font-weight: 500;
+  color: var(--int-color-amber);
+}
+
+.int.mc-focus-blink {
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  animation: mc-blink 1.2s steps(2, jump-none) infinite;
+}
+
+@keyframes mc-blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.int.mc-focus-path {
+  margin-top: 16px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--int-color-teal);
+}
+
+.int.mc-focus-path span + span::before {
+  content: '›';
+  margin: 0 0.6em;
+  color: var(--int-color-muted);
+}
+
+.int.mc-focus-kind {
+  margin-top: 10px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--int-color-amber);
+}
+
+.int.mc-focus-title {
+  margin-top: 4px;
+  font-family: var(--int-font-family-heading);
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--int-color-text);
+}
+
+/* range, bearing and speed, read live */
+.int.mc-focus-live {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-top: 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--int-color-line);
+  border-bottom: 1px solid var(--int-color-line);
+}
+
+.int.mc-focus-live dt,
+.int.mc-focus-facts dt {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.int.mc-focus-live dd {
+  margin-top: 2px;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--int-color-cyan);
+}
+
+.int.mc-focus-facts {
+  display: grid;
+  gap: 2px;
+  margin-top: 16px;
+}
+
+.int.mc-focus-facts > div {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  column-gap: 12px;
+  padding: 5px 10px;
+  background: linear-gradient(90deg, rgba(71, 184, 190, 0.08), transparent);
+}
+
+/* the fact's node on the rail */
+.int.mc-focus-facts > div::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: -32px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--int-color-teal);
+  background: var(--int-color-space);
+  transform: rotate(45deg);
+}
+
+.int.mc-focus-facts dt {
+  display: flex;
+  gap: 10px;
+}
+
+.int.mc-focus-code {
+  color: var(--int-color-teal);
+}
+
+.int.mc-focus-facts dd {
+  font-size: 14px;
+  text-align: right;
+  color: var(--int-color-text);
+}
+
+/* a segmented gauge: ten cells, the filled share in amber */
+.int.mc-gauge {
+  position: relative;
+  display: block;
+  grid-column: 1 / -1;
+  height: 5px;
+  margin-top: 6px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(71, 184, 190, 0.2) 0 calc(10% - 2px),
+    transparent calc(10% - 2px) 10%
+  );
+}
+
+.int.mc-gauge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--int-color-amber) 0 calc(10% - 2px),
+    transparent calc(10% - 2px) 10%
+  );
+  clip-path: inset(0 calc(100% - var(--int-gauge, 0) * 100%) 0 0);
+}
+
+/* ---------- The system map: the minimap, grown into a nav grid ---------- */
+
+#minimap {
+  transition:
+    width 450ms var(--int-focus-ease),
+    height 450ms var(--int-focus-ease),
+    left 450ms var(--int-focus-ease),
+    bottom 450ms var(--int-focus-ease),
+    border-radius 450ms;
+}
+
+.is-focus-view #minimap {
+  /* over the data column, which is made after it */
+  z-index: 5;
+  left: 56px;
+  bottom: 32px;
+  width: var(--int-focus-map);
+  height: var(--int-focus-map);
+  border: 0;
+  border-radius: 0;
+  outline: 1px solid rgba(79, 239, 249, 0.35);
+  outline-offset: -1px;
+  background: rgba(5, 8, 7, 0.9);
+  box-shadow: none;
+}
+
+.int.mc-system-map {
+  position: static;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: auto;
+}
+
+.int.mc-focus-map-caption {
+  position: fixed;
+  z-index: 4;
+  left: 56px;
+  bottom: calc(var(--int-focus-map) + 44px);
+  display: none;
+  gap: 10px;
+  font-family: var(--int-font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.int.mc-focus-map-caption span {
+  padding: 0 6px;
+  background: var(--int-color-teal);
+  color: var(--int-color-space);
+}
+
+.int.mc-focus-map-caption b {
+  font-weight: 500;
+  color: var(--int-color-amber);
+}
+
+/* ---------- Release target, under the body, between the clock and the locks ---------- */
+
+.int.mc-focus-close {
+  position: fixed;
+  z-index: 4;
+  bottom: var(--int-gutter);
+  left: var(--int-focus-x, 50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 14px 0 18px;
+  border: 1px solid var(--int-color-cyan);
+  border-radius: 0;
+  background: rgba(5, 8, 7, 0.85);
+  color: var(--int-color-cyan);
+  font-family: var(--int-font-family-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.int.mc-focus-close kbd {
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+  font-family: inherit;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.int.mc-focus-close:hover {
+  background: var(--int-color-cyan);
+  color: var(--int-color-space);
+}
+
+.int.mc-focus-close:focus-visible {
+  outline: 2px solid var(--int-color-cyan);
+  outline-offset: 2px;
+}
+
+.int.mc-focus-status {
+  position: fixed;
+  z-index: 4;
+  bottom: calc(var(--int-gutter) + 14px);
+  left: var(--int-focus-x, 50%);
+  display: none;
+  justify-content: space-between;
+  width: 720px;
+  font-family: var(--int-font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--int-color-muted);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.is-focus-view .int.mc-focus-map-caption,
+.is-focus-view .int.mc-focus-status {
+  display: flex;
+}
+
+.int.mc-focus-status-flags {
+  display: flex;
+  gap: 20px;
+}
+
+/* Time held, Zoom locked */
+.int.mc-focus-status-lock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--int-color-amber);
+}
+
+.int.mc-focus-status-lock::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border: 1px solid currentColor;
+  background: repeating-linear-gradient(
+    45deg,
+    currentColor 0 1px,
+    transparent 1px 3px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .int.mc-focus-blink {
+    animation: none;
+  }
+}
+
+/* ---------- Narrow screens: the facts in a sheet at the bottom, the map top right ---------- */
+
+@media (max-width: 1023px) {
+  .int.mc-focus {
+    --int-focus-anchor: bottom;
+    --int-focus-reserve-top: 156;
+    --int-focus-size: 0.667;
+
+    top: auto;
+    right: 0;
+    width: auto;
+    max-height: 42vh;
+    padding: 20px var(--int-gutter) 20px 48px;
+    background: linear-gradient(
+      0deg,
+      rgba(5, 8, 7, 0.96) 0%,
+      rgba(5, 8, 7, 0.9) 85%,
+      rgba(5, 8, 7, 0) 100%
+    );
+    animation-name: mc-focus-up;
+  }
+
+  .int.mc-focus::before {
+    left: 24px;
+  }
+
+  .int.mc-focus-title {
+    font-size: 32px;
+  }
+
+  .int.mc-focus-facts > div::before {
+    display: none;
+  }
+
+  .is-focus-view .int.mc-focus-map-caption,
+  .is-focus-view .int.mc-focus-status {
+    display: none;
+  }
+
+  .is-focus-view #minimap {
+    top: calc(var(--int-header-height) + var(--int-gutter));
+    bottom: auto;
+    left: calc(100vw - 132px - var(--int-gutter));
+    width: 132px;
+    height: 132px;
+  }
+
+  .int.mc-focus-close {
+    top: calc(var(--int-header-height) + var(--int-gutter));
+    bottom: auto;
+    left: var(--int-gutter);
+    transform: none;
+  }
+
+  .int.mc-focus-close kbd {
+    display: none;
+  }
+}
+
+@keyframes mc-focus-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
