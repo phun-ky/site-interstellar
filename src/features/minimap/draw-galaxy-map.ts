@@ -11,6 +11,7 @@ import {
 import {
   FILL,
   getNeighbourReach,
+  placeLabel,
   toGalaxyMap,
   toNeighbourMap
 } from './utils/minimap-projection';
@@ -58,13 +59,17 @@ const mark = (
 
   if (!name || size < MIN_LABEL_SIZE) return;
 
-  const toRight = x < size / 2;
+  const text = name.toUpperCase();
 
   space.font = CANVAS_LABEL_FONT;
   space.textBaseline = 'middle';
-  space.textAlign = toRight ? 'left' : 'right';
+
+  // Inside the round minimap, wherever it fits
+  const place = placeLabel({ x, y }, space.measureText(text).width, size);
+
+  space.textAlign = place.align;
   space.fillStyle = CANVAS_COLORS.amber;
-  space.fillText(name.toUpperCase(), x + (toRight ? 10 : -10), y);
+  space.fillText(text, place.x, place.y);
 };
 
 /**

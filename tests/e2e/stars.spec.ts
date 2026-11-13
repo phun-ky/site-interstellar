@@ -136,3 +136,26 @@ for (const [locked, partner] of [
     expect(b.y).toBeLessThan(height - 64);
   });
 }
+
+for (const id of ['betelgeuse', 'vega', 'barnards-star']) {
+  test(`locking on ${id}, which orbits the Milky Way itself, frames the star, not the galaxy`, async ({
+    page
+  }) => {
+    await openApp(page);
+    await lockOn(page, id);
+
+    const star = (await readStars(page)).find((other) => other.id === id);
+    const { width, height } = page.viewportSize() ?? { width: 0, height: 0 };
+
+    // In the middle of the map, which starts 64 px down, under the header
+    expect(star, `${id} is drawn`).toBeDefined();
+    expect(Math.abs((star?.x ?? 0) - width / 2)).toBeLessThan(2);
+    expect(Math.abs((star?.y ?? 0) - (height - 64) / 2)).toBeLessThan(2);
+    // At a scale in km or au, not light years: the galaxy is not framed
+    await expect(page.locator('#scaleDisplay')).not.toContainText(/ly/i);
+    // So the minimap marks it in the Milky Way, one level up (#117)
+    await expect
+      .poll(() => page.locator('#minimap').getAttribute('data-view'))
+      .toBe('galaxy');
+  });
+}

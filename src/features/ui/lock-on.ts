@@ -200,9 +200,14 @@ const getFocusScale = (body: CelestialBodyType): number => {
   const aphelion = ({ orbit }: { orbit?: CelestialBodyType['orbit'] }) =>
     orbit ? convertDistanceUnit(orbit.a, 'au').value * (1 + orbit.e) : 0;
   // A star in a system, such as Sirius A, frames its partners too: the
-  // farthest each gets from it, both at the far ends of their orbits (#13)
+  // farthest each gets from it, both at the far ends of their orbits (#13).
+  // Only in a star system: a star that orbits the Milky Way itself, such as
+  // Betelgeuse, would otherwise frame every other such star, the galaxy wide
   const companions =
-    getBodyKind(body.id) === 'star' && body.orbit && body.parent
+    getBodyKind(body.id) === 'star' &&
+    body.orbit &&
+    body.parent &&
+    getBodyKind(body.parent) === 'system'
       ? getChildBodies(body.parent).filter(
           (other) => other.id !== body.id && other.orbit
         )
