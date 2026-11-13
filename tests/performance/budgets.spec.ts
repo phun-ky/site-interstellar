@@ -36,9 +36,12 @@ const BUDGETS: Record<string, Budget> = {
   // 3354 B before it, 3410 B with it. js raised from 47500 B for the
   // minimap (#117): 47326 B before it, 49111 B with it, as the system map
   // it shares with the focus view now loads with the page, which opens on
-  // the minimap
+  // the minimap. js lowered from 49500 B for @interstellar-tools/constants
+  // 3.0.0 (phun-ky/interstellar-tools#417): 49247 B before it, 44974 B with
+  // it, as the page imports only the stars' parameters, the planets' rings
+  // and the discoveries it shows, not every observation
   './': {
-    bytes: { html: 3500, js: 49_500, css: 5200, fonts: 46_000, images: 2300 },
+    bytes: { html: 3500, js: 45_500, css: 5200, fonts: 46_000, images: 2300 },
     lcpMs: 1300,
     cls: 0.02,
     inpMs: 150

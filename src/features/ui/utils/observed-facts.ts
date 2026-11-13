@@ -1,15 +1,27 @@
+import {
+  DISCOVERIES,
+  PLANET_RINGS,
+  STAR_PARAMETERS
+} from '@interstellar-tools/constants';
 import { convertTemporalUnit } from '@interstellar-tools/temporal';
-import { TemporalInterface } from '@interstellar-tools/types';
+import { MassInterface, TemporalInterface } from '@interstellar-tools/types';
 
 import { formatNumber, formatPeriod } from './format';
 
 /** A fact for the body info: its label and its value. */
 export type FactType = [label: string, value: string];
 
-/** What the facts read from a body's `observations`, as far as they need it. */
+/**
+ * What the facts read from a body, as far as they need it. What is measured
+ * about it (a star's temperature, a planet's rings, a discovery) is looked up
+ * by its id in the groups `@interstellar-tools/constants` keeps apart from the
+ * bodies, so the page loads only the groups it shows.
+ */
 type ObservedBodyType = {
-  /** A star's mass, in solar masses. */
-  mass?: number;
+  /** The body's id, which the measured groups are keyed by. */
+  id?: string;
+  /** A star's mass, such as `{ value: 1, unit: 'M_sun' }`. */
+  mass?: MassInterface;
   rotation?: {
     period: TemporalInterface;
     equatorialPeriod?: TemporalInterface;
@@ -18,23 +30,10 @@ type ObservedBodyType = {
     synchronous?: boolean;
     tumbling?: boolean;
   };
-  observations?: {
-    logSurfaceGravity?: { value: number };
-    metallicity?: { value: number };
-    spectralClassification?: { raw: string };
-    effectiveTemperature?: { value: number; unit: string };
-    luminosity?: { value: number; unit: string };
-    rings?: { rings: unknown[] };
-    discovery?: {
-      date?: Date | string;
-      discoverers?: string[];
-      facility?: string;
-    };
-  };
 };
 
 /** Units as the info shows them. */
-const UNITS: Record<string, string> = { L_sun: 'L☉' };
+const UNITS: Record<string, string> = { L_sun: 'L☉', M_sun: 'M☉' };
 const withUnit = ({ value, unit }: { value: number; unit: string }): string =>
   `${formatNumber(value)} ${UNITS[unit] ?? unit}`;
 /** A difference from the Sun's abundance, signed: `+0.24`, `-0.52`, `0.00`. */
@@ -43,6 +42,14 @@ const SIGNED = new Intl.NumberFormat('en', {
   maximumFractionDigits: 2,
   signDisplay: 'exceptZero'
 });
+/**
+ * A body's entry in a measured group, by its own id only, so an id such as
+ * `toString` never finds an inherited property.
+ */
+const lookUp = <T>(
+  group: Readonly<Record<string, T>>,
+  id: string | undefined
+): T | undefined => (id && Object.hasOwn(group, id) ? group[id] : undefined);
 /** Below this many days, a rotation reads better in hours. */
 const HOURS_BELOW_DAYS = 2;
 
@@ -80,15 +87,12 @@ export const formatRotation = (period: TemporalInterface): string => {
  * getStarFacts(sun); // [['Mass', '1 M☉'], ['Temperature', '5,772 K'], …]
  * ```
  */
-export const getStarFacts = ({
-  mass,
-  observations
-}: ObservedBodyType): FactType[] => {
+export const getStarFacts = ({ id, mass }: ObservedBodyType): FactType[] => {
   const facts: FactType[] = [];
   const { effectiveTemperature, luminosity, logSurfaceGravity, metallicity } =
-    observations ?? {};
+    lookUp(STAR_PARAMETERS, id) ?? {};
 
-  if (mass !== undefined) facts.push(['Mass', `${formatNumber(mass)} M☉`]);
+  if (mass) facts.push(['Mass', withUnit(mass)]);
 
   if (effectiveTemperature) {
     facts.push(['Temperature', withUnit(effectiveTemperature)]);
@@ -161,10 +165,10 @@ export const getRotationFacts = ({
  * ```
  */
 export const getTypeLabel = ({
-  type,
-  observations
+  id,
+  type
 }: ObservedBodyType & { type?: string }): string =>
-  type && type === observations?.spectralClassification?.raw
+  type && type === lookUp(STAR_PARAMETERS, id)?.spectralClassification?.raw
     ? 'Spectral class'
     : 'Type';
 
@@ -179,10 +183,8 @@ export const getTypeLabel = ({
  * getRingFacts(saturn); // [['Rings', '9']]
  * ```
  */
-export const getRingFacts = ({
-  observations
-}: ObservedBodyType): FactType[] => {
-  const count = observations?.rings?.rings.length ?? 0;
+export const getRingFacts = ({ id }: ObservedBodyType): FactType[] => {
+  const count = lookUp(PLANET_RINGS, id)?.rings?.rings.length ?? 0;
 
   return count ? [['Rings', String(count)]] : [];
 };
@@ -199,10 +201,9 @@ export const getRingFacts = ({
  * getDiscoveryFacts(oumuamua); // [['Discovered', '2017-10-19 · R. Weryk']]
  * ```
  */
-export const getDiscoveryFacts = ({
-  observations
-}: ObservedBodyType): FactType[] => {
-  const { date, discoverers, facility } = observations?.discovery ?? {};
+export const getDiscoveryFacts = ({ id }: ObservedBodyType): FactType[] => {
+  const { date, discoverers, facility } =
+    lookUp(DISCOVERIES, id)?.discovery ?? {};
 
   if (!date) return [];
 
@@ -210,7 +211,7 @@ export const getDiscoveryFacts = ({
     ? discoverers.join(', ')
     : facility?.split(',')[0].trim();
   // The date alone, as the telemetry shows dates: 2017-10-19
-  const day = new Date(date).toISOString().slice(0, 10);
+  const day = date.toISOString().slice(0, 10);
 
   return [['Discovered', [day, by].filter(Boolean).join(' · ')]];
 };
