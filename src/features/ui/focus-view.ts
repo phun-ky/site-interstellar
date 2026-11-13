@@ -27,6 +27,12 @@ import {
   updateLockStatus,
   updateSimulationStatus
 } from './update-simulation-status';
+import {
+  getBodyImage,
+  getCreditText,
+  getImageSources,
+  LICENCE_URLS
+} from './utils/body-images';
 import { getDesignation, getGauges, getPath } from './utils/focus-facts';
 
 /** The most of the clear height the focused body's disc may cover. */
@@ -39,6 +45,13 @@ const DURATION_MS = 900;
 const PARENT_MARGIN = 1.35;
 /** How many frames pass between updates of the live readouts. */
 const LIVE_EVERY = 6;
+/**
+ * Where the focus view is a sheet at the bottom (as in focus.css): the body's
+ * image goes in the sheet, under its name, rather than top right.
+ */
+const NARROW = '(max-width: 1023px)';
+/** How wide the image is drawn: the sheet's width, or the 240 px frame. */
+const IMAGE_SIZES = '(max-width: 1023px) calc(100vw - 72px), 240px';
 
 let animation: number | null = null;
 let liveLoop: number | null = null;
@@ -243,6 +256,74 @@ const make = <T extends HTMLElement = HTMLElement>(
 
   return element;
 };
+/** Makes a link, opening in the same tab, marked as leaving the site. */
+const makeLink = (text: string, href: string): HTMLAnchorElement => {
+  const link = make<HTMLAnchorElement>('a', text);
+  const arrow = make('span', '↗', 'mc-external');
+
+  link.href = href;
+  arrow.setAttribute('aria-hidden', 'true');
+  link.append(arrow);
+
+  return link;
+};
+/**
+ * Shows the body's image (#126), with its caption and credit, or hides the
+ * frame for a body without one. An artist's impression says so.
+ */
+const fillImage = (body: CelestialBodyType): void => {
+  const figure = document.getElementById('focusImage');
+  const img = document.getElementById(
+    'focusImageImg'
+  ) as HTMLImageElement | null;
+  const title = document.getElementById('focusImageTitle');
+  const credit = document.getElementById('focusImageCredit');
+  const image = getBodyImage(body.id);
+
+  if (!figure || !img || !title || !credit) return;
+
+  figure.hidden = !image;
+
+  if (!image) {
+    img.removeAttribute('src');
+    img.removeAttribute('srcset');
+
+    return;
+  }
+
+  const { src, srcset } = getImageSources(body.id, import.meta.env.BASE_URL);
+  const licenceUrl = LICENCE_URLS[image.licence];
+
+  img.width = image.width;
+  img.height = image.height;
+  img.alt = image.alt;
+  img.sizes = IMAGE_SIZES;
+  img.srcset = srcset;
+  img.src = src;
+  title.textContent = image.impression
+    ? `Artist's impression · ${image.title}`
+    : image.title;
+  credit.replaceChildren(
+    `${getCreditText(image)} · `,
+    licenceUrl ? makeLink(image.licence, licenceUrl) : image.licence,
+    ' · ',
+    makeLink('Source', image.source)
+  );
+};
+/**
+ * Puts the image where it belongs: top right, beside the map, in the map's
+ * `<main>` (so it is in a landmark), or on a narrow screen in the info
+ * sheet, under the body's name.
+ */
+const placeImage = (narrow: boolean): void => {
+  const figure = document.getElementById('focusImage');
+  const title = document.getElementById('focusTitle');
+
+  if (!figure || !title) return;
+
+  if (narrow) title.after(figure);
+  else (document.querySelector('main') ?? document.body).append(figure);
+};
 /** Fills the focus panel with the body's designation, name, path and facts. */
 const fillPanel = (body: CelestialBodyType): void => {
   const code = document.getElementById('focusCode');
@@ -269,6 +350,8 @@ const fillPanel = (body: CelestialBodyType): void => {
   if (live) live.hidden = !(body.orbit && parent);
 
   if (rangeLabel && parent) rangeLabel.textContent = `Range to ${parent.name}`;
+
+  fillImage(body);
 
   if (!facts) return;
 
@@ -390,6 +473,10 @@ export const closeFocusView = (): void => {
 
   if (close) close.hidden = true;
 
+  const image = document.getElementById('focusImage');
+
+  if (image) image.hidden = true;
+
   stopLive();
   returnFocus?.focus({ preventScroll: true });
   returnFocus = null;
@@ -462,9 +549,9 @@ const decorative = <T extends HTMLElement>(element: T): T => {
 };
 /**
  * Builds the focus view: the data column (designation, path, kind, name,
- * live readouts and facts), the system map's caption, the status strip
- * (clock, Time held, Zoom locked) and Release target. Hidden until a body
- * is clicked.
+ * live readouts and facts), the body's image, the system map's caption, the
+ * status strip (clock, Time held, Zoom locked) and Release target. Hidden
+ * until a body is clicked.
  */
 const createFocusView = (): void => {
   if (document.getElementById('focusView')) return;
@@ -488,6 +575,11 @@ const createFocusView = (): void => {
     'mc-focus-close',
     'focusClose'
   );
+  const image = make('figure', '', 'mc-focus-image', 'focusImage');
+  const imageTitle = make('figcaption', '', 'mc-focus-image-title');
+  const frame = make('span', '', 'mc-focus-image-frame');
+  const img = make<HTMLImageElement>('img', '', '', 'focusImageImg');
+  const narrow = globalThis.matchMedia(NARROW);
 
   panel.setAttribute('aria-labelledby', 'focusTitle');
   // A Tab stop, as a long list of facts scrolls, by keyboard too
@@ -522,7 +614,21 @@ const createFocusView = (): void => {
   close.setAttribute('aria-controls', 'focusView');
   close.append(make('span', 'Release target'), make('kbd', 'Esc'));
   close.addEventListener('click', closeFocusView);
-  document.body.append(panel, caption, status, close);
+  image.hidden = true;
+  imageTitle.append(
+    decorative(make('span', 'VIS', 'mc-focus-image-chip')),
+    make('span', '', '', 'focusImageTitle')
+  );
+  img.decoding = 'async';
+  frame.append(img);
+  image.append(
+    imageTitle,
+    frame,
+    make('p', '', 'mc-focus-image-credit', 'focusImageCredit')
+  );
+  document.body.append(panel, caption, status, close, image);
+  placeImage(narrow.matches);
+  narrow.addEventListener('change', (event) => placeImage(event.matches));
 };
 
 createFocusView();

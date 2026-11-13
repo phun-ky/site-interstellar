@@ -40,8 +40,10 @@ drawn flat, each turned to its real direction:
   the system around the locked body, the Milky Way with a marker where you are,
   or the Milky Way among its neighbours.
 - Click or tap a body to look at it up close: time holds, and a cockpit visor
-  shows its facts, its live range, bearing and speed, and where it is in its
-  system. Release target, or Escape, returns to its parent with it in view.
+  shows its facts, its live range, bearing and speed, where it is in its system
+  and, for the planets, large moons, black holes, galaxies and interstellar
+  visitors, a real image of it, credited. Release target, or Escape, returns to
+  its parent with it in view.
 - Start over the solar system, locked on the Sun, and jump to the whole galaxy
   and back from the views at the bottom of the map, or open Bodies to find any
   body in a table, sort and filter it, and lock on it.
