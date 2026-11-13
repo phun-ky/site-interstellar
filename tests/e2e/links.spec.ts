@@ -108,7 +108,9 @@ const sourceMapOf = async (
 
 /**
  * The site's own files a script names, such as the background sound it plays
- * on request: quoted paths relative to the site, resolved against `baseURL`.
+ * on request: quoted paths relative to the site, resolved against `baseURL`,
+ * and the scripts it imports by a path relative to itself (`./x.js`), as a
+ * lazily loaded module with no styles of its own is.
  */
 const filesNamedIn = async (
   request: APIRequestContext,
@@ -118,10 +120,15 @@ const filesNamedIn = async (
   const js = await (await request.get(script)).text();
 
   return [
-    ...js.matchAll(
-      /["'`]([a-z][\w-]*(?:\/[\w.-]+)+\.(?:webm|m4a|mp3|ogg|png|svg|jpg|webp|js|css))["'`]/g
+    ...[
+      ...js.matchAll(
+        /["'`]([a-z][\w-]*(?:\/[\w.-]+)+\.(?:webm|m4a|mp3|ogg|png|svg|jpg|webp|js|css))["'`]/g
+      )
+    ].map(([, path]) => new URL(path, baseURL).href),
+    ...[...js.matchAll(/import\(\s*["'`](\.\/[\w.-]+\.js)["'`]/g)].map(
+      ([, path]) => new URL(path, script).href
     )
-  ].map(([, path]) => new URL(path, baseURL).href);
+  ];
 };
 
 /** The test server's root, where the site's path starts. */

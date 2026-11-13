@@ -48,7 +48,9 @@ drawn flat, each turned to its real direction:
   and back from the views at the bottom of the map, or open Bodies to find any
   body in a table, sort and filter it, and lock on it.
 - Switch moons, asteroid belts, asteroids, comets, interstellar objects, the
-  starfield, arrows to off-screen bodies, labels and orbits on and off.
+  starfield, arrows to off-screen bodies, labels and orbits on and off. The
+  starfield has depth: faint far stars, some of them redshifted, and nearer ones
+  that drift a little more as you pan and zoom.
 - Hold the simulation, change its speed, or reset it to now.
 - Turn sounds on in Settings, from the menu at the top right: a background
   ambience, a click as each switch is flicked, and a tick as you zoom, each on

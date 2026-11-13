@@ -41,8 +41,7 @@ import { getBodyPosition } from '../features/celestial-bodies/utils/get-body-pos
 import { drawLabels, getLabelCandidates } from '../features/labels/draw';
 import { drawGalaxyLabel } from '../features/labels/draw-galaxy-label';
 import { type LabelCandidateType } from '../features/labels/utils/place-labels';
-import { drawStarfield } from '../features/starfield/draw-starfield';
-import { initializeStarfield } from '../features/starfield/initialize-starfield';
+import { getStarfield } from '../features/starfield/load-starfield';
 import {
   drawFocusOverlay,
   getFocusShift,
@@ -143,9 +142,12 @@ export const draw = async (props: DrawPropsType) => {
   // The canvas stays transparent so the blueprint grid on the page shows through
   space.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  if (OPTIONS_UI.starfield) {
-    await initializeStarfield(canvasWidth, canvasHeight, scale);
-    drawStarfield(space, canvasWidth, canvasHeight);
+  // The starfield loads on its own the first time it is switched on
+  const starfield = OPTIONS_UI.starfield ? getStarfield() : null;
+
+  if (starfield) {
+    await starfield.initializeStarfield(canvasWidth, canvasHeight);
+    starfield.drawStarfield(space, canvasWidth, canvasHeight);
   }
 
   // Only track the bodies drawn in this frame, so hidden ones don't linger

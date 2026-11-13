@@ -12,7 +12,7 @@ import { StarfieldStarInterface } from '../generate-star-field';
  * ```ts
  * import { starfield } from './starfield';
  *
- * starfield.value.push({ x: 100, y: 200, brightness: 0.8 });
+ * starfield.value = createStarfield(800, 600);
  * console.log(starfield.value.length); // Outputs the number of stars
  * ```
  */

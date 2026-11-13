@@ -64,7 +64,10 @@ declare global {
     NEAREST_BODIES: Record<string, NearestBodyType>;
     /** The body labels drawn in the current frame, none overlapping (#91). */
     LABEL_BOXES: LabelBoxType[];
-    STARFIELD_BITMAP: ImageBitmap;
+    /** The starfield's layers, far to near, each a tile that repeats. */
+    STARFIELD_LAYERS: ImageBitmap[];
+    /** How far the map has been panned and zoomed, for the starfield's parallax. */
+    STARFIELD_MOTION: { x: number; y: number; logZoom: number };
     LAST_CANVAS_SIZE: CanvasRectType;
   }
 
@@ -90,6 +93,9 @@ declare global {
   var NEAREST_BODIES: Record<string, NearestBodyType>;
   /** The body labels drawn in the current frame, none overlapping (#91). */
   var LABEL_BOXES: LabelBoxType[];
-  var STARFIELD_BITMAP: ImageBitmap;
+  /** The starfield's layers, far to near, each a tile that repeats. */
+  var STARFIELD_LAYERS: ImageBitmap[];
+  /** How far the map has been panned and zoomed, for the starfield's parallax. */
+  var STARFIELD_MOTION: { x: number; y: number; logZoom: number };
   var LAST_CANVAS_SIZE: CanvasRectType;
 }
