@@ -8,6 +8,10 @@ is deployed to the site. Rebuilt with `npm run changelog`.
 
 ### Features
 
+- 🎸 Pan while a body is locked, with Centre to bring it back ([#119](https://github.com/phun-ky/site-interstellar/pull/119))
+- 🎸 More facts: stars' mass, gravity and metallicity, and every body's rotation ([#121](https://github.com/phun-ky/site-interstellar/pull/121))
+- 🎸 The latest @interstellar-tools data, with stars' temperatures, rings and discoveries ([#120](https://github.com/phun-ky/site-interstellar/pull/120))
+- 🎸 Open the map on the Solar system view, and update the roadmap and changelog ([#115](https://github.com/phun-ky/site-interstellar/pull/115))
 - 🎸 Clicking a body opens a focus view, a cockpit visor round it ([#114](https://github.com/phun-ky/site-interstellar/pull/114))
 - 🎸 Solar system, Galaxy and Bodies views at the bottom of the map ([#113](https://github.com/phun-ky/site-interstellar/pull/113))
 - 🎸 A Changelog link and script, a Codecov badge, and katex patched ([#112](https://github.com/phun-ky/site-interstellar/pull/112))
@@ -65,6 +69,7 @@ is deployed to the site. Rebuilt with `npm run changelog`.
 
 ### Chores
 
+- 🤖 The README header as a nav chart, and a title card for sharing ([#116](https://github.com/phun-ky/site-interstellar/pull/116))
 - 🤖 Remove the assets nothing uses, test for them, and upload coverage ([#97](https://github.com/phun-ky/site-interstellar/pull/97))
 - 🤖 No robots.txt or sitemap.xml until the site has its own domain ([#85](https://github.com/phun-ky/site-interstellar/pull/85))
 - 🤖 Point the site and every link at site-interstellar ([#70](https://github.com/phun-ky/site-interstellar/pull/70))

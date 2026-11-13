@@ -43,6 +43,14 @@ The repository and the site were overhauled:
     ([#91](https://github.com/phun-ky/site-interstellar/issues/91))
   - stars in nested systems told apart at galaxy scale
     ([#13](https://github.com/phun-ky/site-interstellar/issues/13))
+  - panning while a body is locked, with Centre to bring it back
+    ([#118](https://github.com/phun-ky/site-interstellar/issues/118))
+  - a minimap one level up from the map: the system around the locked body, the
+    Milky Way with a marker, or the Milky Way among its neighbours
+    ([#117](https://github.com/phun-ky/site-interstellar/issues/117))
+  - what is measured about the bodies, from the latest Interstellar Tools data:
+    stars' class, mass, temperature, luminosity, gravity and metallicity, and
+    every body's rotation, rings and discovery
 
 ## Planned
 
