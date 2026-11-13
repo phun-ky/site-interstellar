@@ -84,7 +84,7 @@ const App = async (): Promise<void> => {
 
   const { canvas, space } = setupCanvas();
 
-  setupApp(canvas);
+  setupApp();
   // The map opens on the Solar system view: locked on the Sun, its planets framed
   showSolarSystem(false);
 

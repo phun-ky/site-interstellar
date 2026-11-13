@@ -11,11 +11,9 @@ import { CelestialBodyType } from '@interstellar-tools/types';
 import { offsetX, offsetY } from '../features/canvas/config/camera';
 import { timeStep } from '../features/canvas/config/time-step';
 import { generateTimeStep } from '../features/canvas/config/time-step/generate-time-step';
-import { getViewportSize } from '../features/canvas/get-viewport-size';
 import { getBodyPosition } from '../features/celestial-bodies/utils/get-body-position';
 import { precomputeInitialAngles } from '../features/celestial-bodies/utils/precompute-initial-angles';
 import { updatePositions } from '../features/celestial-bodies/utils/update-positions';
-import { generateStarfield } from '../features/starfield/generate-star-field';
 import { updateScaleDisplay } from '../features/ui/update-scale-display';
 import { distanceToPixels } from '../utils/distance/distance-to-pixels';
 import { getParentBodyOffset } from '../utils/offset/get-parent-body-offset';
@@ -31,15 +29,12 @@ import { setUIOptions } from './set-UI-options';
  * precomputes initial angles for celestial bodies, manages global state variables,
  * and updates orbital positions.
  *
- * @param {HTMLCanvasElement} canvas - The HTML canvas element used for rendering the simulation.
- *
  * @example
  * ```ts
- * const canvas = document.getElementById('simulationCanvas') as HTMLCanvasElement;
- * setupApp(canvas);
+ * setupApp();
  * ```
  */
-export const setupApp = (canvas: HTMLCanvasElement) => {
+export const setupApp = () => {
   const trajectoryCheckboxElement = document.getElementById(
     'toggleTrajectory'
   ) as HTMLInputElement;
@@ -98,10 +93,6 @@ export const setupApp = (canvas: HTMLCanvasElement) => {
     globalThis.BODIES_IN_VIEWPORT ?? new Set<string>();
 
   globalThis.LAST_CANVAS_SIZE = { width: 0, height: 0 };
-
-  const { width, height } = getViewportSize(canvas);
-
-  generateStarfield(width, height);
 
   if (globalThis.LOCKED_CELESTIAL_BODY !== null) {
     // Calculate the body's position in pixel coordinates

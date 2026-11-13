@@ -1,76 +1,77 @@
 import { TWO_PI } from '@interstellar-tools/constants';
-import { ValueInterface } from '@interstellar-tools/types';
 
 import { starfield } from './config';
+import { type StarfieldStarInterface } from './generate-star-field';
+
+/** Draws a star, and again across any edge it touches, so the tile repeats seamlessly. */
+const drawStar = (
+  space: OffscreenCanvasRenderingContext2D,
+  { x, y, size, color }: StarfieldStarInterface,
+  width: number,
+  height: number
+): void => {
+  const reach = size + 1;
+  const xs = [x, x < reach ? x + width : x > width - reach ? x - width : null];
+  const ys = [
+    y,
+    y < reach ? y + height : y > height - reach ? y - height : null
+  ];
+
+  space.fillStyle = color;
+
+  for (const atX of xs) {
+    for (const atY of ys) {
+      if (atX === null || atY === null) continue;
+
+      space.beginPath();
+      space.arc(atX, atY, size, 0, TWO_PI);
+      space.fill();
+    }
+  }
+};
 
 /**
- * Generates an offscreen canvas containing a starfield and converts it into an `ImageBitmap`.
+ * Draws the starfield's layers, each on a tile as large as the canvas that
+ * repeats seamlessly, so a layer can drift as the map pans and zooms (see
+ * `drawStarfield()`). Keeps them in `globalThis.STARFIELD_LAYERS`, far
+ * layer first. A tile has as many pixels as the screen shows, as the map's
+ * canvas does, so stars smaller than a CSS pixel stay sharp on a
+ * high-density screen.
  *
- * **Rendering Process:**
- * - Uses an **OffscreenCanvas** to improve performance.
- * - Iterates through the `starfield` array and renders each star based on:
- *   - **Size**: Proportional to `scale.value`, ensuring a minimum visible size.
- *   - **Parallax Factor**: Determines star brightness and color.
- *
- * **Star Color Mapping:**
- * - Stars are coloured based on their **parallax factor**, simulating depth perception:
- *   - $> 4.51$ → **Bright white** (`rgb(255,255,255)`).
- *   - $> 3.51$ → **Slightly bluish-white** (`rgb(220,220,255)`).
- *   - $> 2.51$ → **Light blue** (`rgb(200,200,255)`).
- *   - $> 1.51$ → **Deeper blue** (`rgb(170,170,255)`).
- *   - Else → **Faintest, furthest away** (`rgb(150,150,255)`).
- *
- * Once drawn, the canvas is converted into an `ImageBitmap` for efficient rendering.
- *
- * @async
- * @param {number} width - The width of the offscreen canvas.
- * @param {number} height - The height of the offscreen canvas.
- * @param {ValueInterface} scale - The scale factor for determining star sizes.
- * @returns {Promise<void>} A promise that resolves once the `ImageBitmap` is created.
+ * @param {number} width - The canvas's width, in CSS pixels.
+ * @param {number} height - The canvas's height, in CSS pixels.
+ * @param {number} [pixelRatio] - Screen pixels per CSS pixel; the screen's by default.
+ * @returns {Promise<void>} When the layers are ready.
  *
  * @example
  * ```ts
- * await generateStarfieldBitmap(1920, 1080, { value: 1 });
- * console.log(globalThis.STARFIELD_BITMAP); // Outputs the generated starfield bitmap
+ * await generateStarfieldBitmap(800, 600);
  * ```
- *
- * @see [OffscreenCanvas API](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)
  */
 export const generateStarfieldBitmap = async (
   width: number,
   height: number,
-  scale: ValueInterface
+  pixelRatio = globalThis.devicePixelRatio || 1
 ): Promise<void> => {
-  const offscreen = new OffscreenCanvas(width, height);
-  const space = offscreen.getContext('2d');
+  const layers: ImageBitmap[] = [];
 
-  if (!space) return;
+  for (const layer of [0, 1, 2]) {
+    const tile = new OffscreenCanvas(
+      Math.round(width * pixelRatio),
+      Math.round(height * pixelRatio)
+    );
+    const space = tile.getContext('2d');
 
-  space.clearRect(0, 0, width, height);
-  space.save();
+    if (!space) return;
 
-  for (const star of starfield.value) {
-    const starSize = Math.max(star.size * Math.min(scale.value, 1), 1);
+    space.scale(pixelRatio, pixelRatio);
 
-    if (star.parallaxFactor > 4.51) {
-      space.fillStyle = 'rgba(255,255,255,0.9)'; // Brightest, closest stars
-    } else if (star.parallaxFactor > 3.51) {
-      space.fillStyle = 'rgba(220,220,255,0.7)'; // Slightly bluish-white
-    } else if (star.parallaxFactor > 2.51) {
-      space.fillStyle = 'rgba(200,200,255,0.5)'; // Light blue
-    } else if (star.parallaxFactor > 1.51) {
-      space.fillStyle = 'rgba(170,170,255,0.3)'; // Deeper blue
-    } else {
-      space.fillStyle = 'rgba(150,150,255,0.1)'; // Faintest, furthest away
+    for (const star of starfield.value) {
+      if (star.layer === layer) drawStar(space, star, width, height);
     }
 
-    space.beginPath();
-    space.arc(star.x, star.y, starSize, 0, TWO_PI);
-    space.fill();
+    layers.push(await createImageBitmap(tile));
   }
 
-  space.restore();
-
-  // Convert to ImageBitmap
-  globalThis.STARFIELD_BITMAP = await createImageBitmap(offscreen);
+  globalThis.STARFIELD_LAYERS = layers;
 };

@@ -19,8 +19,10 @@ import {
 } from '../features/celestial-bodies/utils/body-catalog';
 import { getBodyPosition } from '../features/celestial-bodies/utils/get-body-position';
 import { playZoomTick } from '../features/sound/sound';
-import { generateStarfield } from '../features/starfield/generate-star-field';
-import { initializeStarfield } from '../features/starfield/initialize-starfield';
+import {
+  moveStarfield,
+  zoomStarfield
+} from '../features/starfield/starfield-motion';
 import { closeBodyInfo, toggleLockedBodyInfo } from '../features/ui/body-info';
 import { isFocusView, loadFocusView } from '../features/ui/focus-state';
 import {
@@ -38,7 +40,7 @@ import { getParentBodyOffset } from './offset/get-parent-body-offset';
 import { normalizeParentOffsetPrev } from './offset/normalize-parent-offset-prev';
 import { calculateScale } from './scale/calculate-scale';
 import { getPinchScale, getZoomOffset } from './scale/zoom-at';
-import { throttle, throttleAsync } from './throttle';
+import { throttle } from './throttle';
 
 /** How far the pointer may move between press and release for a click, in pixels. */
 const CLICK_TOLERANCE_PX = 5;
@@ -77,6 +79,8 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
 
     SCALE.value = newScale;
     playZoomTick(newScale > prevScale.value);
+    // The starfield's layers zoom a little with the map
+    zoomStarfield(newScale / prevScale.value);
 
     document.dispatchEvent(
       new CustomEvent('ZoomChanged', { detail: { SCALE } })
@@ -221,6 +225,9 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
       offsetY.value += y - lastMouseY;
     }
 
+    // The starfield's layers drift a little with the map
+    if (isDragging) moveStarfield(x - lastMouseX, y - lastMouseY);
+
     lastMouseX = x;
     lastMouseY = y;
   });
@@ -278,16 +285,6 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
       if (isFocusView()) {
         loadFocusView().then(({ refitFocusView }) => refitFocusView());
       }
-    })
-  );
-
-  globalThis.addEventListener(
-    'resize',
-    throttleAsync(async () => {
-      const { width, height } = getViewportSize(canvas);
-
-      generateStarfield(width, height);
-      await initializeStarfield(width, height, SCALE);
     })
   );
 

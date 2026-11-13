@@ -1,40 +1,30 @@
-import { ValueInterface } from '@interstellar-tools/types';
-
+import { generateStarfield } from './generate-star-field';
 import { generateStarfieldBitmap } from './generate-starfield-bitmap';
 
 /**
- * Initializes or updates the starfield when the window resizes.
+ * Makes the stars and draws the starfield's layers when there are none yet,
+ * or the canvas has changed size since they were drawn.
  *
- * **Initialization Logic:**
- * - If `globalThis.STARFIELD_BITMAP` **does not exist**, a new starfield is generated.
- * - If the **canvas size has changed**, the starfield is regenerated.
- * - The last known canvas size is stored in `globalThis.LAST_CANVAS_SIZE` to detect changes.
- *
- * @async
- * @param {number} canvasWidth - The width of the canvas in pixels.
- * @param {number} canvasHeight - The height of the canvas in pixels.
- * @param {ValueInterface} scale - The scale factor affecting star sizes.
- * @returns {Promise<void>} A promise that resolves once the starfield bitmap is created.
+ * @param {number} canvasWidth - The canvas's width, in pixels.
+ * @param {number} canvasHeight - The canvas's height, in pixels.
+ * @returns {Promise<void>} When the layers are ready.
  *
  * @example
  * ```ts
- * await initializeStarfield(1920, 1080, { value: 1 });
- * console.log(globalThis.STARFIELD_BITMAP); // Outputs the updated starfield bitmap
+ * await initializeStarfield(800, 600);
  * ```
- *
- * @see [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
  */
 export const initializeStarfield = async (
   canvasWidth: number,
-  canvasHeight: number,
-  scale: ValueInterface
+  canvasHeight: number
 ): Promise<void> => {
   if (
-    !globalThis.STARFIELD_BITMAP ||
+    !globalThis.STARFIELD_LAYERS?.length ||
     globalThis.LAST_CANVAS_SIZE.width !== canvasWidth ||
     globalThis.LAST_CANVAS_SIZE.height !== canvasHeight
   ) {
     globalThis.LAST_CANVAS_SIZE = { width: canvasWidth, height: canvasHeight };
-    await generateStarfieldBitmap(canvasWidth, canvasHeight, scale);
+    generateStarfield(canvasWidth, canvasHeight);
+    await generateStarfieldBitmap(canvasWidth, canvasHeight);
   }
 };
