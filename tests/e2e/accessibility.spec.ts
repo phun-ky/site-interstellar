@@ -112,7 +112,7 @@ test('axe finds no violations with a body locked, held and its info open', async
 test('axe finds no violations with the focus view open', async ({ page }) => {
   await lockOn(page, 'jupiter');
 
-  const canvas = await page.locator('canvas').boundingBox();
+  const canvas = await page.locator('#spaceCanvas').boundingBox();
 
   await page.mouse.click(
     (canvas?.x ?? 0) + (canvas?.width ?? 0) / 2,
@@ -169,7 +169,7 @@ test('Space switches a layer, and Escape closes the focus view', async ({
 
   await lockOn(page, 'sun');
 
-  const canvas = await page.locator('canvas').boundingBox();
+  const canvas = await page.locator('#spaceCanvas').boundingBox();
 
   await page.mouse.click(
     (canvas?.x ?? 0) + (canvas?.width ?? 0) / 2,

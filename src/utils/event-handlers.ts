@@ -1,4 +1,3 @@
-import { STARS } from '@interstellar-tools/constants';
 import { CelestialBodyType } from '@interstellar-tools/types';
 
 import { MAX_SCALE, MIN_SCALE, SCALE, ZOOM_FACTOR } from '../config/constants';
@@ -19,7 +18,6 @@ import {
   getBodyKind
 } from '../features/celestial-bodies/utils/body-catalog';
 import { getBodyPosition } from '../features/celestial-bodies/utils/get-body-position';
-import { updateMinimap } from '../features/minimap/update-minimap';
 import { playZoomTick } from '../features/sound/sound';
 import { generateStarfield } from '../features/starfield/generate-star-field';
 import { initializeStarfield } from '../features/starfield/initialize-starfield';
@@ -247,14 +245,11 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
   canvas.addEventListener('pointerup', endPointer);
   canvas.addEventListener('pointercancel', endPointer);
 
-  document.addEventListener('ZoomChanged', (event: Event) => {
-    const { SCALE: scale } = (event as CustomEvent).detail;
-
+  // The minimap follows the zoom from the animation loop (see App.ts)
+  document.addEventListener('ZoomChanged', () => {
     globalThis.IS_ZOOMING_OR_PANNING = true;
 
     if (globalThis.ZOOM_PAN_TIMEOUT) clearTimeout(globalThis.ZOOM_PAN_TIMEOUT); // Reset timer
-
-    updateMinimap(STARS, scale, offsetX, offsetY);
 
     globalThis.ZOOM_PAN_TIMEOUT = window.setTimeout(() => {
       globalThis.IS_ZOOMING_OR_PANNING = false; // Re-enable trails after zooming stops

@@ -50,7 +50,7 @@ const gesture = async (
 
 /** The middle of the canvas, in page pixels. */
 const canvasCentre = async (page: Page): Promise<Point> => {
-  const box = await page.locator('canvas').boundingBox();
+  const box = await page.locator('#spaceCanvas').boundingBox();
 
   return {
     x: (box?.x ?? 0) + (box?.width ?? 0) / 2,
@@ -80,7 +80,7 @@ test.describe('on a touch screen', () => {
 
     expect(
       await page
-        .locator('canvas')
+        .locator('#spaceCanvas')
         .evaluate((el) => getComputedStyle(el).touchAction)
     ).toBe('none');
   });

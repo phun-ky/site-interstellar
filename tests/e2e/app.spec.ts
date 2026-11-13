@@ -227,7 +227,7 @@ test('locking on a body names it and centres it', async ({ page }) => {
   await expect(page.locator('#lockStatusName')).toHaveText(/mars/i);
 
   const { x, y, width, height } = await readApp(page, (app) => {
-    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    const canvas = document.querySelector('#spaceCanvas') as HTMLCanvasElement;
 
     return {
       ...app.NEAREST_BODIES.mars,
@@ -254,7 +254,9 @@ for (const deviceScaleFactor of [1, 2]) {
       await lockOn(page, 'sun');
 
       const canvas = await readApp(page, (app) => {
-        const element = document.querySelector('canvas') as HTMLCanvasElement;
+        const element = document.querySelector(
+          '#spaceCanvas'
+        ) as HTMLCanvasElement;
 
         return {
           ratio: devicePixelRatio,

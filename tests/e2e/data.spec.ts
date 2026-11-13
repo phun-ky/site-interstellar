@@ -30,7 +30,7 @@ const drawn = async (page: Page, ids: string[]) => {
 };
 /** The middle of the canvas, where a locked body is drawn. */
 const centre = (page: Page) =>
-  page.locator('canvas').evaluate((canvas) => ({
+  page.locator('#spaceCanvas').evaluate((canvas) => ({
     x: canvas.clientWidth / 2,
     y: canvas.clientHeight / 2
   }));

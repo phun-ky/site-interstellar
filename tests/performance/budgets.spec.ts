@@ -33,9 +33,12 @@ const BUDGETS: Record<string, Budget> = {
   // before it, 47072 B with it, for the pan, zoom and C key wiring, and
   // Centre beside Lock and on the map. Room for the facts in #121 too,
   // about 270 B. html raised from 3400 B for Centre on the map (#118):
-  // 3354 B before it, 3410 B with it
+  // 3354 B before it, 3410 B with it. js raised from 47500 B for the
+  // minimap (#117): 47326 B before it, 49111 B with it, as the system map
+  // it shares with the focus view now loads with the page, which opens on
+  // the minimap
   './': {
-    bytes: { html: 3500, js: 47_500, css: 5200, fonts: 46_000, images: 2300 },
+    bytes: { html: 3500, js: 49_500, css: 5200, fonts: 46_000, images: 2300 },
     lcpMs: 1300,
     cls: 0.02,
     inpMs: 150

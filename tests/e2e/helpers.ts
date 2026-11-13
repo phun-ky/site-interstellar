@@ -30,7 +30,7 @@ declare global {
 
 /**
  * Records, before the app starts, the text each animation frame draws on the
- * canvas and every Content Security Policy violation.
+ * map's canvas and every Content Security Policy violation.
  *
  * @param page - The page to record.
  */
@@ -59,7 +59,8 @@ export const recordFrames = async (page: Page): Promise<void> => {
     const { fillText } = CanvasRenderingContext2D.prototype;
 
     CanvasRenderingContext2D.prototype.fillText = function (text, ...rest) {
-      current.push(String(text));
+      // The map's own text, not the minimap's (#117)
+      if (this.canvas.id === 'spaceCanvas') current.push(String(text));
 
       return fillText.call(this, text, ...rest);
     };
@@ -132,7 +133,7 @@ export const nextFrames = (page: Page): Promise<unknown> =>
  */
 export const canvasChecksum = (page: Page): Promise<number> =>
   page.evaluate(() => {
-    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    const canvas = document.querySelector('#spaceCanvas') as HTMLCanvasElement;
     const context = canvas.getContext('2d') as CanvasRenderingContext2D;
     const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
     let sum = 0;

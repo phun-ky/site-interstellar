@@ -11,7 +11,7 @@ const map = (page: Page) => page.locator('#mapCentre');
 const fromMiddle = async (page: Page, id: string): Promise<PointType> => {
   await nextFrames(page);
 
-  const box = await page.locator('canvas').boundingBox();
+  const box = await page.locator('#spaceCanvas').boundingBox();
   const body = await readApp(page, (app) => app.NEAREST_BODIES);
   const { x, y } = body[id];
 
@@ -22,7 +22,7 @@ const fromMiddle = async (page: Page, id: string): Promise<PointType> => {
 };
 /** Drags the mouse across the canvas from a point clear of the locked body. */
 const drag = async (page: Page, by: PointType): Promise<void> => {
-  const box = await page.locator('canvas').boundingBox();
+  const box = await page.locator('#spaceCanvas').boundingBox();
   const start = {
     x: (box?.x ?? 0) + (box?.width ?? 0) / 2 - 80,
     y: (box?.y ?? 0) + (box?.height ?? 0) / 2 + 200
@@ -119,7 +119,7 @@ test('locking on another body, or a view, starts it in the middle (#118)', async
 test('zooming while centred keeps the body in the middle (#118)', async ({
   page
 }) => {
-  const box = await page.locator('canvas').boundingBox();
+  const box = await page.locator('#spaceCanvas').boundingBox();
   const before = await page.locator('#zoomLevel').innerText();
 
   // Over the map, away from the Sun and clear of the panels

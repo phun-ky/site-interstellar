@@ -1,96 +1,111 @@
-import { StarsType, ValueInterface } from '@interstellar-tools/types';
-
+import { SCALE } from '../../config/constants';
+import { OrbitingBodyType } from '../../types/orbiting-bodies';
 import { distanceToPixels } from '../../utils/distance/distance-to-pixels';
+import { offsetX, offsetY } from '../canvas/config/camera';
+import { getViewportSize } from '../canvas/get-viewport-size';
 import { getAbsolutePosition } from '../celestial-bodies/utils/get-absolute-position';
+import { isFocusView } from '../ui/focus-state';
+
+import { drawGalaxyMap, drawNeighboursMap } from './draw-galaxy-map';
+import { drawSystemMap } from './draw-system-map';
+import {
+  getMinimapContext,
+  type MapPointType,
+  type MinimapContextType
+} from './utils/get-minimap-context';
+
+/** The minimap's own canvas, apart from the one the focus view puts there. */
+const CANVAS_CLASS = 'mc-minimap-canvas';
+/** The minimap's canvas, made, or put back after the focus view, as needed. */
+const getCanvas = (): HTMLCanvasElement | null => {
+  const minimap = document.getElementById('minimap');
+
+  if (!minimap) return null;
+
+  const current = minimap.firstElementChild;
+
+  if (
+    current instanceof HTMLCanvasElement &&
+    current.classList.contains(CANVAS_CLASS)
+  ) {
+    return current;
+  }
+
+  const canvas = document.createElement('canvas');
+
+  canvas.className = `int ${CANVAS_CLASS}`;
+  minimap.replaceChildren(canvas);
+
+  return canvas;
+};
+/** Where a body is, from the Milky Way's centre, in au. */
+const toMapPoint = (body: OrbitingBodyType): MapPointType => {
+  const { x, y } = getAbsolutePosition(body);
+
+  return { x: x.value, y: y.value };
+};
+/** What the map shows now: what is locked, and how much of space, in au. */
+const getView = () => {
+  const map = document.getElementById(
+    'spaceCanvas'
+  ) as HTMLCanvasElement | null;
+  const { width } = map
+    ? getViewportSize(map)
+    : { width: globalThis.innerWidth };
+  // Pixels per au at this scale
+  const perAu = distanceToPixels({ value: 1, unit: 'au' }, SCALE);
+  const locked = globalThis.LOCKED_CELESTIAL_BODY as OrbitingBodyType | null;
+
+  return {
+    locked,
+    halfWidthAu: width / 2 / perAu,
+    // The Milky Way's centre is drawn at the middle plus the offset
+    centreAu: { x: -offsetX.value / perAu, y: -offsetY.value / perAu },
+    lockedAu: locked ? toMapPoint(locked) : undefined
+  };
+};
+/** Draws a context on the minimap's canvas, and names it on the minimap (`data-view`). */
+const draw = (canvas: HTMLCanvasElement, context: MinimapContextType): void => {
+  canvas.parentElement?.setAttribute('data-view', context.kind);
+
+  if (context.kind === 'system') {
+    drawSystemMap(canvas, context.system);
+  } else if (context.kind === 'galaxy') {
+    drawGalaxyMap(canvas, context.marker, context.name);
+  } else {
+    drawNeighboursMap(canvas, context.focusId);
+  }
+};
 
 /**
- * Updates the minimap by rendering Sagittarius A* and nearby stars, positioning them relative to the viewport center.
+ * Updates the minimap (#117) to show one level up from what the map shows
+ * (see `getMinimapContext`): the locked body's system, the Milky Way with a
+ * marker where the map is, or the Milky Way among its neighbours.
  *
- * **Rendering Details:**
- * - The **minimap size** is read from the element (set in `styles/main.css`).
- * - **Sagittarius A*** is marked with a red dot and moves relative to the viewport center.
- * - **Stars** are rendered as coloured dots based on their real positions, adjusted to fit the minimap.
- * - The positions are offset using:
- * $$
- * x_{scaled} = \frac{x}{1000} \times 0.1 - \text{offsetXScaled}
- * $$
- * $$
- * y_{scaled} = \frac{y}{1000} \times 0.1 - \text{offsetYScaled}
- * $$
- * ensuring proper relative motion.
+ * While the focus view is open it draws its own system map there, so this
+ * leaves the minimap alone, but for a body with no system, which it shows
+ * in the Milky Way when given.
  *
- * @param {StarsType} stars - An array of stars with positional data.
- * @param {ValueInterface} scale - The scale factor for unit conversion.
- * @param {ValueInterface} offsetX - The x-offset relative to the viewport center.
- * @param {ValueInterface} offsetY - The y-offset relative to the viewport center.
- * @returns {void} This function does not return a value; it updates the minimap dynamically.
+ * @param {OrbitingBodyType} [body] - A body to mark in the Milky Way, for the focus view.
  *
  * @example
  * ```ts
- * const stars: StarsType = [
- *   { name: 'Star A', x: { value: 500, unit: 'ly' }, y: { value: -300, unit: 'ly' }, color: 'white' }
- * ];
- *
- * updateMinimap(stars, { value: 50 }, { value: 100 }, { value: 200 });
+ * updateMinimap(); // every few frames
+ * updateMinimap(betelgeuse); // the focus view, for a star with no planets
  * ```
- *
- * @see [Sagittarius A*](https://en.wikipedia.org/wiki/Sagittarius_A*)
  */
-export const updateMinimap = (
-  stars: StarsType,
-  scale: ValueInterface,
-  offsetX: ValueInterface,
-  offsetY: ValueInterface
-) => {
-  const minimap = document.getElementById('minimap');
+export const updateMinimap = (body?: OrbitingBodyType): void => {
+  if (isFocusView() && !body) return;
 
-  if (!minimap) return;
+  const canvas = getCanvas();
 
-  minimap.innerHTML = ''; // Clear previous stars
+  if (!canvas) return;
 
-  const minimapSize = minimap.clientWidth || 160;
-  const minimapCenterX = minimapSize / 2;
-  const minimapCenterY = minimapSize / 2;
-  // Sagittarius A* and stars should move relative to the viewport center
-  const offsetXScaled = (offsetX.value / 1000) * 0.1;
-  const offsetYScaled = (offsetY.value / 1000) * 0.1;
-  // Add Sagittarius A* marker (moves relative to viewport center)
-  const sagittariusX = minimapCenterX - offsetXScaled;
-  const sagittariusY = minimapCenterY - offsetYScaled;
-  const sagittarius = document.createElement('span');
+  if (body) {
+    drawGalaxyMap(canvas, toMapPoint(body), body.name);
 
-  sagittarius.style.display = 'block';
-  sagittarius.style.position = 'absolute';
-  sagittarius.style.left = `${sagittariusX - 3}px`; // Center the dot
-  sagittarius.style.top = `${sagittariusY - 3}px`;
-  sagittarius.style.width = '6px';
-  sagittarius.style.height = '6px';
-  sagittarius.style.backgroundColor = '#ff7a6e';
-  sagittarius.style.borderRadius = '50%';
-  minimap.appendChild(sagittarius);
+    return;
+  }
 
-  // Draw stars relative to viewport center
-  stars.forEach((star) => {
-    const { x, y } = getAbsolutePosition(star);
-    const starX =
-      minimapCenterX +
-      (distanceToPixels(x, scale) / 1000) * 0.1 -
-      offsetXScaled;
-    const starY =
-      minimapCenterY +
-      (distanceToPixels(y, scale) / 1000) * 0.1 -
-      offsetYScaled;
-    const starDot = document.createElement('span');
-
-    starDot.style.display = 'block';
-    starDot.style.position = 'absolute';
-    starDot.style.left = `${starX}px`;
-    starDot.style.top = `${starY}px`;
-    starDot.style.width = '4px';
-    starDot.style.height = '4px';
-    starDot.style.backgroundColor = star.display?.color ?? 'white';
-    starDot.style.borderRadius = '50%';
-
-    minimap.appendChild(starDot);
-  });
+  draw(canvas, getMinimapContext(getView()));
 };

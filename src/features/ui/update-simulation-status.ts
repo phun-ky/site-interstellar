@@ -27,8 +27,8 @@ export const updateSimulationStatus = (paused: boolean): void => {
 
 /**
  * Shows which body the camera is locked on in the header (`// Lock: Earth`),
- * or hides it when nothing is locked. The minimap is hidden while locked,
- * since the view then follows the body rather than a place in the galaxy.
+ * or hides it when nothing is locked. The minimap stays, showing what is
+ * around the locked body (#117).
  *
  * @param {string | null} name - The locked body's name, or `null` for no lock.
  *
@@ -46,8 +46,4 @@ export const updateLockStatus = (name: string | null): void => {
 
   nameElement.textContent = name ?? '';
   lockElement.hidden = name === null;
-
-  const minimapElement = document.getElementById('minimap');
-
-  if (minimapElement) minimapElement.hidden = name !== null;
 };

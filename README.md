@@ -29,9 +29,14 @@ system with its dwarf planets and the interstellar objects passing through it,
 and the galaxies around the Milky Way, moving in real time or faster. Orbits are
 drawn flat, each turned to its real direction:
 
-- Pan with the mouse or a finger, and zoom with the wheel or a pinch.
+- Pan with the mouse or a finger, and zoom with the wheel or a pinch, locked on
+  a body or not, and choose Centre, or press C, to bring a locked body back to
+  the middle.
 - Lock on any star, planet, moon, comet, asteroid, interstellar object or galaxy
   to follow it, and choose Info beside the Lock menu for its details.
+- Keep your bearings with the minimap, which shows one level up from the map:
+  the system around the locked body, the Milky Way with a marker where you are,
+  or the Milky Way among its neighbours.
 - Click or tap a body to look at it up close: time holds, and a cockpit visor
   shows its facts, its live range, bearing and speed, and where it is in its
   system. Release target, or Escape, returns to its parent with it in view.

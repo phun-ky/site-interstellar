@@ -273,7 +273,9 @@ test.describe('zooming with the wheel', () => {
       (deltaY) =>
         new Promise<number>((resolve) => {
           const startedAt = performance.now();
-          const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+          const canvas = document.querySelector(
+            '#spaceCanvas'
+          ) as HTMLCanvasElement;
           const { left, top, width, height } = canvas.getBoundingClientRect();
           let sent = 0;
           const timer = setInterval(() => {

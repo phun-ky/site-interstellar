@@ -52,7 +52,7 @@ test('the map opens on the Solar system view: locked on the Sun, its planets dra
   await nextFrames(page);
 
   const drawn = await readApp(page, (app) => app.NEAREST_BODIES);
-  const box = await page.locator('canvas').boundingBox();
+  const box = await page.locator('#spaceCanvas').boundingBox();
 
   for (const id of ['mercury', 'earth', 'jupiter', 'neptune']) {
     const body = drawn[id];
