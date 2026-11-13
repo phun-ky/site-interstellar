@@ -9,6 +9,11 @@ import {
   test
 } from '@playwright/test';
 
+import {
+  BODY_IMAGES,
+  getImageSources
+} from '../../src/features/ui/utils/body-images';
+
 import { recordFrames } from './helpers';
 
 /** The built site, as the tests serve it. */
@@ -126,8 +131,9 @@ const SERVER_ROOT = 'http://127.0.0.1:3000/';
  * Every file the built site asks for: the pages, what they link and load, what
  * their stylesheets, scripts and manifest load in turn (a script's source map
  * and the files it names, such as a script it loads later), the social card,
- * and the images in
- * `browserconfig.xml`, which browsers ask for by convention.
+ * the images in `browserconfig.xml`, which browsers ask for by convention,
+ * and the bodies' images, which the focus view asks for from its list
+ * (#126).
  */
 const reachableUrls = async (
   page: Page,
@@ -166,6 +172,14 @@ const reachableUrls = async (
     new URL('browserconfig.xml', baseURL).href
   )) {
     urls.add(url);
+  }
+
+  for (const id of Object.keys(BODY_IMAGES)) {
+    const { srcset } = getImageSources(id, '');
+
+    for (const candidate of srcset.split(', ')) {
+      urls.add(new URL(candidate.split(' ')[0], baseURL).href);
+    }
   }
 
   return urls;

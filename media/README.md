@@ -40,3 +40,42 @@ ffmpeg -i ambience-loop.wav -c:a aac -b:a 96k -movflags +faststart src/assets/au
 ```
 
 `OVERLAP` in the script sets how much of the end is mixed over the start.
+
+## Body images
+
+The focus view shows a picture of the body (#126): a photograph or image from a
+spacecraft or telescope, or a labelled artist's impression. Each is served from
+`src/assets/images/bodies/` at two sizes, `<id>-360.webp` and `<id>-720.webp`,
+the whole image fitted inside a square that many pixels wide (never cropped to
+it, so Saturn's rings and Andromeda's disc fit), and listed with its caption,
+description, credit, licence and source in
+`src/features/ui/utils/body-images.ts`.
+
+To add one:
+
+1. Find it on Wikimedia Commons, and check its licence: public domain, or a
+   Creative Commons licence that allows reuse (CC BY or CC BY-SA). An artist's
+   impression is allowed, marked `impression: true`; an image of another body is
+   not.
+2. Download it at about 1200 px wide, and crop away only borders, captions and
+   scale bars.
+3. Save it at both sizes, fitted inside the square, as WebP at quality 78, for
+   example with Pillow:
+
+   ```python
+   from PIL import Image
+
+   image = Image.open('saturn.jpg').convert('RGB')
+   for size in (720, 360):
+       copy = image.copy()
+       copy.thumbnail((size, size), Image.LANCZOS)
+       copy.save(f'src/assets/images/bodies/saturn-{size}.webp', 'WEBP',
+                 quality=78, method=6)
+   ```
+
+4. Add its entry, keyed by the body's id, with the 720 px file's width and
+   height. The tests check that every entry is a body, has both files at the
+   size it gives, and has a credit, a licence and a Commons source.
+
+An image under CC BY-SA is shared under the same licence after resizing, as its
+credit line says.
