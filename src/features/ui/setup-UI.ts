@@ -121,7 +121,7 @@ export const setupUI = () => {
         <option value="insane">1 000 days / frame</option>
       </select>
     </label>
-    <div class="int mc-field">
+    <div class="int mc-field mc-field-lock">
       <label class="int" for="lockOn">Lock</label>
       <span class="int mc-lock">
         <select id="lockOn" class="int">
@@ -136,6 +136,16 @@ export const setupUI = () => {
           disabled
         >
           Info
+        </button>
+        <button
+          type="button"
+          class="int mc-lock-info"
+          id="lockCentre"
+          aria-disabled="true"
+          aria-keyshortcuts="C"
+          title="Centre the locked body (C)"
+        >
+          Centre
         </button>
       </span>
     </div>

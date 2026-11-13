@@ -267,10 +267,12 @@ test.describe('zooming with the wheel', () => {
    * Spins the wheel fast for a second, over the middle of the map: a wheel
    * event every 16 ms, as a fast flick or a trackpad sends them.
    */
+  /** Spins the wheel: 60 events, 16 ms apart. Resolves with how long they took, in milliseconds. */
   const spinWheel = (page: Page, deltaY: number) =>
     page.evaluate(
       (deltaY) =>
-        new Promise<void>((resolve) => {
+        new Promise<number>((resolve) => {
+          const startedAt = performance.now();
           const canvas = document.querySelector('canvas') as HTMLCanvasElement;
           const { left, top, width, height } = canvas.getBoundingClientRect();
           let sent = 0;
@@ -287,7 +289,7 @@ test.describe('zooming with the wheel', () => {
 
             if (++sent === 60) {
               clearInterval(timer);
-              resolve();
+              resolve(performance.now() - startedAt);
             }
           }, 16);
         }),
@@ -302,13 +304,14 @@ test.describe('zooming with the wheel', () => {
     // Switch clicks are off: turning ticks on made no sound
     expect(await takeClicks(page)).toEqual([]);
 
-    await spinWheel(page, -100);
-
+    const spun = await spinWheel(page, -100);
     const ticks = await page.evaluate(() => window.__clicks.splice(0));
 
-    // 60 wheel events in a second, but a tick every 80 ms at most: tick tick tick
+    // 60 wheel events in about a second, but a tick every 80 ms at most:
+    // tick tick tick. On a busy machine the events take longer, so the most
+    // ticks there can be is counted from how long they took
     expect(ticks.length).toBeGreaterThanOrEqual(8);
-    expect(ticks.length).toBeLessThanOrEqual(14);
+    expect(ticks.length).toBeLessThanOrEqual(Math.floor(spun / 80) + 1);
     expect(ticks.every(({ frequency }) => frequency === TICK_IN)).toBe(true);
 
     // 80 ms apart when the tick is due; timed here as the sound starts, a

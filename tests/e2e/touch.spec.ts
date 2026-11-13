@@ -102,6 +102,33 @@ test.describe('on a touch screen', () => {
     await expect(page.locator('#lockStatus')).toBeHidden();
   });
 
+  test('one finger pans while a body is locked, and the camera keeps following it (#118)', async ({
+    page
+  }) => {
+    await openApp(page);
+
+    const centre = await canvasCentre(page);
+
+    // The map opens locked on the Sun; pan from a point clear of it
+    await gesture(
+      page,
+      [{ x: centre.x - 60, y: centre.y + 120 }],
+      [{ x: centre.x + 20, y: centre.y + 160 }]
+    );
+
+    await expect(page.locator('#mapCentre')).toBeVisible();
+    expect(
+      await page.evaluate(
+        () =>
+          (
+            globalThis as unknown as {
+              LOCKED_CELESTIAL_BODY: { id: string } | null;
+            }
+          ).LOCKED_CELESTIAL_BODY?.id
+      )
+    ).toBe('sun');
+  });
+
   test('two fingers pinch to zoom in and out', async ({ page }) => {
     await openApp(page);
 

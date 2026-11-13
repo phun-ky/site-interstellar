@@ -17,6 +17,7 @@ import {
   offsetX,
   offsetY
 } from '../canvas/config/camera';
+import { centreLocked } from '../canvas/config/camera/lock-pan';
 import { OPTIONS_UI } from '../canvas/config/hud';
 import {
   findBodyById,
@@ -105,6 +106,8 @@ export const lockOn = (body: CelestialBodyType | null): void => {
   ) as HTMLButtonElement | null;
 
   markZoomingOrPanning();
+  // Any lock, or none, starts with the body in the middle (#118)
+  centreLocked();
 
   // The Info button opens the locked body's info, so only while one is locked
   if (info) info.disabled = !body;
@@ -394,6 +397,7 @@ export const showLockedMoons = (): void => {
   const locked = globalThis.LOCKED_CELESTIAL_BODY;
 
   if (locked && needsMoonZoom(locked.id, SCALE.value)) {
+    centreLocked();
     zoomTo(getFocusScale(locked));
   }
 };

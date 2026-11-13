@@ -4,6 +4,12 @@ import { CelestialBodyType } from '@interstellar-tools/types';
 import { MAX_SCALE, MIN_SCALE, SCALE, ZOOM_FACTOR } from '../config/constants';
 import { setUIOptions } from '../config/set-UI-options';
 import { offsetX, offsetY } from '../features/canvas/config/camera';
+import {
+  centreLocked,
+  isOffCentre,
+  panLocked,
+  zoomLockPan
+} from '../features/canvas/config/camera/lock-pan';
 import { OPTIONS_UI } from '../features/canvas/config/hud';
 import { SPEED_MODE } from '../features/canvas/config/time-step';
 import { getViewportSize } from '../features/canvas/get-viewport-size';
@@ -38,6 +44,11 @@ import { throttle, throttleAsync } from './throttle';
 
 /** How far the pointer may move between press and release for a click, in pixels. */
 const CLICK_TOLERANCE_PX = 5;
+/** Whether a key goes into a field, where it is text rather than a shortcut. */
+const isTyping = (target: EventTarget | null): boolean =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable ||
+    ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName));
 
 let isDragging = false;
 // Whether the user held the simulation, so showing the tab again doesn't resume it
@@ -74,6 +85,20 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
     );
 
     if (globalThis.LOCKED_CELESTIAL_BODY) {
+      // Panned away from the locked body, the point under the pointer stays
+      // put; centred, the body stays in the middle (#118). The canvas is
+      // only measured then, as measuring makes the browser lay out the page
+      if (isOffCentre()) {
+        const { left, top } = canvas.getBoundingClientRect();
+        const { width, height } = getViewportSize(canvas);
+
+        zoomLockPan(
+          SCALE.value / prevScale.value,
+          clientX - left - width / 2,
+          clientY - top - height / 2
+        );
+      }
+
       // The locked body's position in pixels, before and after
       const { x, y } = getBodyPosition(globalThis.LOCKED_CELESTIAL_BODY);
 
@@ -121,8 +146,9 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
   });
 
   // **Panning and pinching**, with a mouse, a finger or a pen. One pointer
-  // pans (unless locked); two pinch to zoom around their middle, and pan
-  // with it
+  // pans; two pinch to zoom around their middle, and pan with it. While a
+  // body is locked, panning moves the view off it and the camera keeps
+  // following it (#118); the focus view keeps it where it is
   const pointers = new Map<number, { x: number; y: number }>();
 
   let pinch: { distance: number; scale: number } | null = null;
@@ -163,11 +189,11 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
       pinch = { distance, scale: SCALE.value };
       lastMouseX = x;
       lastMouseY = y;
-      isDragging = !isLocked();
+      isDragging = !isFocusView();
     } else if (pointers.size === 1) {
       lastMouseX = event.clientX;
       lastMouseY = event.clientY;
-      isDragging = !isLocked();
+      isDragging = !isFocusView();
     }
   });
 
@@ -190,7 +216,9 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
       );
     }
 
-    if (isDragging && !isLocked()) {
+    if (isDragging && isLocked()) {
+      panLocked(x - lastMouseX, y - lastMouseY);
+    } else if (isDragging) {
       offsetX.value += x - lastMouseX;
       offsetY.value += y - lastMouseY;
     }
@@ -269,6 +297,20 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
   );
 
   document.addEventListener('keydown', (event) => {
+    // C puts the locked body back in the middle, unless typing in a field
+    if (
+      event.key.toLowerCase() === 'c' &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      !isTyping(event.target) &&
+      isLocked() &&
+      !isFocusView() &&
+      isOffCentre()
+    ) {
+      centreLocked(true);
+    }
+
     if (event.key === 'Escape') {
       if (isFocusView()) {
         loadFocusView().then(({ closeFocusView }) => closeFocusView());
@@ -296,6 +338,8 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
 
     document.dispatchEvent(zoomEvent);
     SCALE.value *= ZOOM_FACTOR;
+    // Round the middle of the map, panned off a locked body or not
+    zoomLockPan(ZOOM_FACTOR, 0, 0);
     playZoomTick(true);
   };
   const zoomOut = () => {
@@ -303,6 +347,7 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
 
     document.dispatchEvent(zoomEvent);
     SCALE.value /= ZOOM_FACTOR;
+    zoomLockPan(1 / ZOOM_FACTOR, 0, 0);
     playZoomTick(false);
   };
   const trajectoryTypeDropdown = document.getElementById(

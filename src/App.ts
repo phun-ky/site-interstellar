@@ -31,6 +31,7 @@ import { updatePositions } from './features/celestial-bodies/utils/update-positi
 import { initializeMinimap } from './features/minimap/initialize-minimap';
 import { updateMinimap } from './features/minimap/update-minimap';
 import { setupSound } from './features/sound/sound';
+import { setupLockCentre } from './features/ui/lock-centre';
 import { showSolarSystem } from './features/ui/lock-on';
 import { setupMainMenu } from './features/ui/main-menu';
 import { setupSettings } from './features/ui/settings';
@@ -77,6 +78,7 @@ const App = async (): Promise<void> => {
   setupSettings();
   setupSystemsSheet();
   setupViews();
+  setupLockCentre();
   setupSound();
 
   const { canvas, space } = setupCanvas();

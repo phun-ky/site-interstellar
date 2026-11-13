@@ -28,9 +28,14 @@ const BUDGETS: Record<string, Budget> = {
   // raised from 37700 B for @interstellar-tools/constants 2.14.0: 37558 B
   // before it, 46459 B with it, as the stars', rings' and interstellar
   // objects' observations ship inside the bodies. To come down again once
-  // they can be imported apart (phun-ky/interstellar-tools#417)
+  // they can be imported apart (phun-ky/interstellar-tools#417). js raised
+  // from 47000 B for panning while locked, with Centre (#118): 46459 B
+  // before it, 47072 B with it, for the pan, zoom and C key wiring, and
+  // Centre beside Lock and on the map. Room for the facts in #121 too,
+  // about 270 B. html raised from 3400 B for Centre on the map (#118):
+  // 3354 B before it, 3410 B with it
   './': {
-    bytes: { html: 3400, js: 47_000, css: 5200, fonts: 46_000, images: 2300 },
+    bytes: { html: 3500, js: 47_500, css: 5200, fonts: 46_000, images: 2300 },
     lcpMs: 1300,
     cls: 0.02,
     inpMs: 150
