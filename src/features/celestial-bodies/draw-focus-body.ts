@@ -355,27 +355,31 @@ const drawVisor = (
     alpha: on
   });
 
-  // Range on the right, orbital speed on the left, like altitude and airspeed
+  // Range on the right, orbital speed on the left, like altitude and airspeed.
+  // A body with no orbit, such as the Sun, has neither: a zero would give a
+  // tape with no step
   const tall = r * 0.85;
   const rangeStep = 10 ** Math.floor(Math.log10(range * 0.002));
 
-  drawTape(space, {
-    spine: Math.min(x + r * 1.35, width - 90),
-    middle: y,
-    half: tall,
-    value: range,
-    step: rangeStep,
-    perStep: 10,
-    labelEvery: 10,
-    format: (value) => value.toFixed(Math.max(0, -Math.log10(rangeStep))),
-    readout: (value) => value.toFixed(Math.max(0, 2 - Math.log10(rangeStep))),
-    side: 1,
-    vertical: true,
-    title: 'RNG AU',
-    alpha: on
-  });
+  if (range > 0) {
+    drawTape(space, {
+      spine: Math.min(x + r * 1.35, width - 90),
+      middle: y,
+      half: tall,
+      value: range,
+      step: rangeStep,
+      perStep: 10,
+      labelEvery: 10,
+      format: (value) => value.toFixed(Math.max(0, -Math.log10(rangeStep))),
+      readout: (value) => value.toFixed(Math.max(0, 2 - Math.log10(rangeStep))),
+      side: 1,
+      vertical: true,
+      title: 'RNG AU',
+      alpha: on
+    });
+  }
 
-  if (speed !== null && !compact) {
+  if (speed !== null && speed > 0 && !compact) {
     const speedStep = 10 ** Math.floor(Math.log10(speed * 0.004));
 
     drawTape(space, {
