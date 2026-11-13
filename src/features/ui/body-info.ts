@@ -3,6 +3,7 @@ import {
   InterstellarObjectInterface
 } from '@interstellar-tools/types';
 
+import { type BlackHoleBodyType } from '../celestial-bodies/utils/black-hole-bodies';
 import {
   BODY_KIND_LABELS,
   findBodyById,
@@ -12,7 +13,12 @@ import {
 import { type GalaxyBodyType } from '../celestial-bodies/utils/galaxy-bodies';
 import { isOpenOrbit } from '../celestial-bodies/utils/orbit-orientation';
 
-import { formatDistance, formatNumber, formatPeriod } from './utils/format';
+import {
+  formatDistance,
+  formatLargeNumber,
+  formatNumber,
+  formatPeriod
+} from './utils/format';
 import {
   getDiscoveryFacts,
   getRingFacts,
@@ -23,10 +29,15 @@ import {
 
 const html = String.raw;
 
-/** What the info popup can describe: a body, an interstellar object or a galaxy. */
+/** What the info popup can describe: a body, an interstellar object, a galaxy or a black hole. */
 type InfoBodyType =
-  CelestialBodyType | InterstellarObjectInterface | GalaxyBodyType;
+  | CelestialBodyType
+  | InterstellarObjectInterface
+  | GalaxyBodyType
+  | BlackHoleBodyType;
 
+/** Mass units as the info shows them. */
+const MASS_UNITS: Record<string, string> = { M_sun: 'M☉' };
 const escapeHTML = (text: string): string =>
   text.replace(
     /[&<>"']/g,
@@ -57,6 +68,30 @@ const capitalize = (text: string): string =>
 export const getBodyFacts = (
   body: InfoBodyType
 ): [label: string, value: string][] => {
+  // A black hole sits at its galaxy's heart: how heavy, how big its event
+  // horizon, and the stars seen orbiting it
+  if (body.category === 'black hole') {
+    const stars = getChildBodies(body.id).length;
+    const facts: [string, string][] = [
+      ['Type', body.type],
+      [
+        'Galaxy',
+        findBodyById(body.parent)?.name ??
+          (body.parent === 'milky-way' ? 'Milky Way' : body.parent)
+      ],
+      ['Distance', formatDistance(body.distance)],
+      [
+        'Mass',
+        `${formatLargeNumber(body.mass.value)} ${MASS_UNITS[body.mass.unit] ?? body.mass.unit}`
+      ],
+      ['Event horizon', formatDistance(body.radius)]
+    ];
+
+    if (stars > 0) facts.push(['Orbited by', `${stars} stars`]);
+
+    return facts;
+  }
+
   // A galaxy has no orbit: where it is, and how big
   if (body.category === 'galaxy') {
     return [

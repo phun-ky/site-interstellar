@@ -9,7 +9,10 @@ import {
   SYSTEMS
 } from '@interstellar-tools/constants';
 
-import { GALAXY_BODIES } from '../../celestial-bodies/utils/body-catalog';
+import {
+  BLACK_HOLE_BODIES,
+  GALAXY_BODIES
+} from '../../celestial-bodies/utils/body-catalog';
 import {
   type BodyRowType,
   countByKind,
@@ -24,7 +27,8 @@ const ROWS = getBodyRows([
   ...PLANETS,
   ...MOONS,
   ...INTERSTELLAR_OBJECTS,
-  ...GALAXY_BODIES
+  ...GALAXY_BODIES,
+  ...BLACK_HOLE_BODIES
 ]);
 const row = (id: string) => ROWS.find((r) => r.id === id) as BodyRowType;
 
@@ -55,6 +59,15 @@ describe('getBodyRows', () => {
     assert.equal(andromeda.kind, 'galaxy');
     assert.equal(andromeda.orbits, '');
     assert.equal(andromeda.a, null);
+  });
+
+  test('lists a black hole, in its galaxy', () => {
+    const m87 = row('m87-star');
+
+    assert.equal(m87.kind, 'blackHole');
+    assert.equal(m87.type, 'Supermassive black hole');
+    assert.equal(m87.orbits, 'Messier 87');
+    assert.equal(row('sagittarius-a-star').orbits, 'Milky Way');
   });
 
   test('leaves star systems out', () => {

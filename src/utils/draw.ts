@@ -33,6 +33,7 @@ import { drawLockReticle } from '../features/celestial-bodies/draw-lock-reticle'
 import { drawStars } from '../features/celestial-bodies/draw-stars';
 import { drawOrbits } from '../features/celestial-bodies/orbits/draw';
 import {
+  BLACK_HOLE_BODIES,
   GALAXY_BODIES,
   getBodyKind
 } from '../features/celestial-bodies/utils/body-catalog';
@@ -76,8 +77,6 @@ export type DrawPropsType = {
   /** The interstellar objects, on open orbits round the Sun (#105). */
   interstellarObjects: InterstellarObjectsType;
   scale: ValueInterface;
-  referenceX: number;
-  referenceY: number;
   canvasWidth: number;
   canvasHeight: number;
   offsetX: ValueInterface;
@@ -116,8 +115,6 @@ export type DrawPropsType = {
  *   asteroids,
  *   comets,
  *   scale: { value: 50 },
- *   referenceX: 500,
- *   referenceY: 500,
  *   canvasWidth: 1024,
  *   canvasHeight: 768,
  *   offsetX: { value: 0 },
@@ -136,8 +133,6 @@ export const draw = async (props: DrawPropsType) => {
     comets,
     interstellarObjects,
     scale,
-    referenceX,
-    referenceY,
     offsetX,
     offsetY,
     canvasWidth,
@@ -211,30 +206,38 @@ export const draw = async (props: DrawPropsType) => {
   /** Every body label that could be drawn, placed together once the bodies are */
   const labels: LabelCandidateType[] = [];
 
-  // draw galaxy center
+  // The Milky Way's centre, Sagittarius A*, where this frame's camera puts
+  // it, as the bodies round it are
   drawGalaxy({
     galaxy: galaxies[0],
     scale,
-    referenceX,
-    referenceY,
+    referenceX: galacticReferenceX,
+    referenceY: galacticReferenceY,
     space,
     minSize: MIN_BLACK_HOLE_SIZE
   });
 
-  const galaxyLabelBoxes = drawGalaxyLabel({
-    scale,
-    space,
-    referenceX,
-    referenceY,
-    galaxy: galaxies[0]
-  });
+  // Looked at in the focus view, Sagittarius A* is named in its panel, so
+  // the Milky Way's label (and its name under it) would only cover it
+  const galaxyLabelBoxes =
+    globalThis.FOCUSED_CELESTIAL_BODY &&
+    globalThis.FOCUSED_CELESTIAL_BODY.id === galaxies[0].blackHole?.id
+      ? []
+      : drawGalaxyLabel({
+          scale,
+          space,
+          referenceX: galacticReferenceX,
+          referenceY: galacticReferenceY,
+          galaxy: galaxies[0]
+        });
   // The other galaxies, round the Milky Way (#105)
   const galaxyLabels = drawGalaxies({
     space,
     referenceX: galacticReferenceX,
     referenceY: galacticReferenceY,
     scale,
-    galaxies: GALAXY_BODIES
+    galaxies: GALAXY_BODIES,
+    blackHoles: BLACK_HOLE_BODIES
   });
 
   if (OPTIONS_UI.labels) labels.push(...galaxyLabels);

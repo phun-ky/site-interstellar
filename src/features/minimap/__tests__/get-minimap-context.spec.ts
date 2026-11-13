@@ -115,6 +115,21 @@ describe('getMinimapContext', () => {
       focusId: 'andromeda'
     });
   });
+
+  test("another galaxy's black hole is marked as its galaxy, among the neighbours", () => {
+    assert.deepEqual(context('m87-star', 1), {
+      kind: 'neighbours',
+      focusId: 'm87'
+    });
+  });
+
+  test('Sagittarius A* shows the S-stars round it, and then the Milky Way', () => {
+    assert.equal(
+      system(context('sagittarius-a-star', 100)).centre,
+      'sagittarius-a-star'
+    );
+    assert.equal(context('sagittarius-a-star', 1e6).kind, 'galaxy');
+  });
 });
 
 describe('the Milky Way on the minimap', () => {

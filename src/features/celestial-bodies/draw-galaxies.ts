@@ -2,11 +2,15 @@ import { TWO_PI } from '@interstellar-tools/constants';
 import { convertDistanceUnit } from '@interstellar-tools/equations';
 import { ValueInterface } from '@interstellar-tools/types';
 
+import { MIN_BLACK_HOLE_SIZE } from '../../config/constants';
 import { distanceToPixels } from '../../utils/distance/distance-to-pixels';
 import { type LabelCandidateType } from '../labels/utils/place-labels';
 
+import { drawBlackHole } from './draw-galaxy';
+import { type BlackHoleBodyType } from './utils/black-hole-bodies';
 import { type GalaxyBodyType } from './utils/galaxy-bodies';
 import { getBodyPosition } from './utils/get-body-position';
+import { isInside } from './utils/is-inside-galaxy';
 
 /** The radius of a galaxy's core dot, in pixels: what is clicked and pointed at. */
 const CORE_SIZE = 3;
@@ -22,6 +26,29 @@ export type DrawGalaxiesPropsType = {
   referenceY: number;
   scale: ValueInterface;
   galaxies: GalaxyBodyType[];
+  /** Their central black holes, each by its galaxy (its `parent`). */
+  blackHoles?: BlackHoleBodyType[];
+};
+
+/** Whether a body is the one locked on (or looked at in the focus view). */
+const isLocked = (id: string): boolean =>
+  globalThis.LOCKED_CELESTIAL_BODY?.id === id;
+/** Keeps a body where it is drawn on the canvas, for clicks and arrows. */
+const track = (
+  { id, name, category }: { id: string; name: string; category: string },
+  x: number,
+  y: number,
+  size: number
+): void => {
+  globalThis.NEAREST_BODIES[id] = {
+    id,
+    x,
+    y,
+    size,
+    name,
+    category,
+    parent: undefined
+  };
 };
 
 /**
@@ -30,7 +57,13 @@ export type DrawGalaxiesPropsType = {
  * on the canvas (in `globalThis.NEAREST_BODIES`), for clicks and arrows, so a
  * disc filling the view doesn't swallow every click.
  *
- * @param {DrawGalaxiesPropsType} props - The canvas, where the Milky Way's centre is, the scale and the galaxies.
+ * Inside a galaxy (its disc wider than the canvas), or locked on its black
+ * hole, the core is its black hole instead: drawn as Sagittarius A* is
+ * (`drawBlackHole()`), and
+ * clicked, labelled and pointed at as itself. A galaxy still locked on from
+ * there keeps its place too, behind the black hole, for its lock reticle.
+ *
+ * @param {DrawGalaxiesPropsType} props - The canvas, where the Milky Way's centre is, the scale, the galaxies and their black holes.
  * @returns {LabelCandidateType[]} A label for each galaxy, above its core, ranked by its size
  * in km, as other labels are.
  *
@@ -44,7 +77,8 @@ export const drawGalaxies = ({
   referenceX,
   referenceY,
   scale,
-  galaxies
+  galaxies,
+  blackHoles = []
 }: DrawGalaxiesPropsType): LabelCandidateType[] => {
   space.save();
 
@@ -53,16 +87,7 @@ export const drawGalaxies = ({
     const xPX = referenceX + distanceToPixels(x, scale);
     const yPX = referenceY + distanceToPixels(y, scale);
     const radius = distanceToPixels(galaxy.radius, scale);
-
-    globalThis.NEAREST_BODIES[galaxy.id] = {
-      id: galaxy.id,
-      x: xPX,
-      y: yPX,
-      size: CORE_SIZE,
-      name: galaxy.name,
-      category: galaxy.category,
-      parent: undefined
-    };
+    const blackHole = blackHoles.find(({ parent }) => parent === galaxy.id);
 
     space.fillStyle = galaxy.display.color;
 
@@ -74,6 +99,35 @@ export const drawGalaxies = ({
       space.globalAlpha = 1;
     }
 
+    if (
+      blackHole &&
+      (isInside(space, xPX, yPX, radius) || isLocked(blackHole.id))
+    ) {
+      const size = Math.max(
+        distanceToPixels(blackHole.radius, scale),
+        MIN_BLACK_HOLE_SIZE
+      );
+
+      // The black hole first: a click on the core finds it, not the galaxy
+      track(blackHole, xPX, yPX, size);
+
+      if (isLocked(galaxy.id)) track(galaxy, xPX, yPX, CORE_SIZE);
+
+      drawBlackHole(space, xPX, yPX, size);
+
+      return {
+        id: blackHole.id,
+        text: blackHole.name.toUpperCase(),
+        x: xPX,
+        y: yPX,
+        bottom: yPX - size - LABEL_GAP,
+        priority: isLocked(blackHole.id)
+          ? Infinity
+          : convertDistanceUnit(blackHole.radius, 'km').value
+      };
+    }
+
+    track(galaxy, xPX, yPX, CORE_SIZE);
     space.beginPath();
     space.arc(xPX, yPX, CORE_SIZE, 0, TWO_PI);
     space.fill();
@@ -84,10 +138,9 @@ export const drawGalaxies = ({
       x: xPX,
       y: yPX,
       bottom: yPX - CORE_SIZE - LABEL_GAP,
-      priority:
-        globalThis.LOCKED_CELESTIAL_BODY?.id === galaxy.id
-          ? Infinity
-          : convertDistanceUnit(galaxy.radius, 'km').value
+      priority: isLocked(galaxy.id)
+        ? Infinity
+        : convertDistanceUnit(galaxy.radius, 'km').value
     };
   });
 

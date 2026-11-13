@@ -12,6 +12,10 @@ import { CelestialBodyType } from '@interstellar-tools/types';
 
 import { OrbitingBodyType } from '../../../types/orbiting-bodies';
 
+import {
+  type BlackHoleBodyType,
+  getBlackHoleBodies
+} from './black-hole-bodies';
 import { type GalaxyBodyType, getGalaxyBodies } from './galaxy-bodies';
 import { getFlatPosition } from './orbit-orientation';
 
@@ -24,7 +28,8 @@ export type BodyKindType =
   | 'comet'
   | 'asteroid'
   | 'interstellar'
-  | 'galaxy';
+  | 'galaxy'
+  | 'blackHole';
 
 /** What each kind of body is called, in the HUD. */
 export const BODY_KIND_LABELS: Record<BodyKindType, string> = {
@@ -35,7 +40,8 @@ export const BODY_KIND_LABELS: Record<BodyKindType, string> = {
   comet: 'Comet',
   asteroid: 'Asteroid',
   interstellar: 'Interstellar object',
-  galaxy: 'Galaxy'
+  galaxy: 'Galaxy',
+  blackHole: 'Black hole'
 };
 
 const solarSystem = SYSTEMS.find(({ id }) => id === 'solar-system');
@@ -57,6 +63,14 @@ export const GALAXY_BODIES: GalaxyBodyType[] = solarSystem?.orbit
     })()
   : [];
 
+/**
+ * The galaxies' central black holes, each on its galaxy: Sagittarius A* at
+ * the Milky Way's centre, M31*, M87* and Centaurus A* at their galaxies'
+ * cores.
+ */
+export const BLACK_HOLE_BODIES: BlackHoleBodyType[] =
+  getBlackHoleBodies(GALAXIES);
+
 const BODIES_BY_ID = new Map<string, OrbitingBodyType>(
   [
     ...SYSTEMS,
@@ -66,7 +80,8 @@ const BODIES_BY_ID = new Map<string, OrbitingBodyType>(
     ...COMETS,
     ...ASTEROIDS,
     ...INTERSTELLAR_OBJECTS,
-    ...GALAXY_BODIES
+    ...GALAXY_BODIES,
+    ...BLACK_HOLE_BODIES
   ].map((body) => [body.id, body])
 );
 const KIND_BY_ID = new Map<string, BodyKindType>([
@@ -77,7 +92,8 @@ const KIND_BY_ID = new Map<string, BodyKindType>([
   ...COMETS.map(({ id }) => [id, 'comet'] as const),
   ...ASTEROIDS.map(({ id }) => [id, 'asteroid'] as const),
   ...INTERSTELLAR_OBJECTS.map(({ id }) => [id, 'interstellar'] as const),
-  ...GALAXY_BODIES.map(({ id }) => [id, 'galaxy'] as const)
+  ...GALAXY_BODIES.map(({ id }) => [id, 'galaxy'] as const),
+  ...BLACK_HOLE_BODIES.map(({ id }) => [id, 'blackHole'] as const)
 ]);
 
 /**

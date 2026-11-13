@@ -47,7 +47,8 @@ export const toRoman = (value: number): string => {
 /**
  * A catalogue-style designation: what the body orbits and its place out
  * from it among the bodies on the system map, as in Sun III for Earth or
- * Mars I for Phobos. Falls back to the body's id.
+ * Mars I for Phobos. A black hole goes by its name (Sagittarius A*); any
+ * other body falls back to its id.
  *
  * @param {CelestialBodyType} body - The body.
  * @returns {string} Its designation.
@@ -58,6 +59,8 @@ export const toRoman = (value: number): string => {
  * ```
  */
 export const getDesignation = (body: CelestialBodyType): string => {
+  if (getBodyKind(body.id) === 'blackHole') return body.name.toUpperCase();
+
   const parent = findBodyById(body.parent);
   const system = getSystemMap(body);
   const order = system?.rings.findIndex(({ id }) => id === body.id) ?? -1;
@@ -72,7 +75,8 @@ export const getDesignation = (body: CelestialBodyType): string => {
 /**
  * Where a body is: the chain of what it orbits, from the Milky Way in,
  * leaving out star systems (Alpha Centauri A is in Milky Way, not Milky
- * Way, Alpha Centauri).
+ * Way, Alpha Centauri). A body in another galaxy starts from that galaxy
+ * (M87* is in M87).
  *
  * @param {OrbitingBodyType} body - The body.
  * @returns {string[]} The names, outermost first.
@@ -80,20 +84,26 @@ export const getDesignation = (body: CelestialBodyType): string => {
  * @example
  * ```ts
  * getPath(phobos); // ["Milky Way", "Sun", "Mars"]
+ * getPath(m87Star); // ["M87"]
  * ```
  */
 export const getPath = (body: OrbitingBodyType): string[] => {
   const names: string[] = [];
 
   let current = findBodyById(body.parent);
+  let outermost: OrbitingBodyType | undefined;
 
   while (current) {
     if (getBodyKind(current.id) !== 'system') names.unshift(current.name);
 
+    outermost = current;
     current = findBodyById(current.parent);
   }
 
-  return ['Milky Way', ...names];
+  // A body in another galaxy (M87's black hole) is placed in it, not ours
+  return outermost && getBodyKind(outermost.id) === 'galaxy'
+    ? names
+    : ['Milky Way', ...names];
 };
 
 const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));

@@ -39,9 +39,11 @@ const BUDGETS: Record<string, Budget> = {
   // the minimap. js lowered from 49500 B for @interstellar-tools/constants
   // 3.0.0 (phun-ky/interstellar-tools#417): 49247 B before it, 44974 B with
   // it, as the page imports only the stars' parameters, the planets' rings
-  // and the discoveries it shows, not every observation
+  // and the discoveries it shows, not every observation. js raised from
+  // 45500 B for the black holes as bodies: 44974 B before, 45585 B with
+  // them, for their catalogue entries, drawing, facts and Lock menu group
   './': {
-    bytes: { html: 3500, js: 45_500, css: 5200, fonts: 46_000, images: 2300 },
+    bytes: { html: 3500, js: 46_000, css: 5200, fonts: 46_000, images: 2300 },
     lcpMs: 1300,
     cls: 0.02,
     inpMs: 150

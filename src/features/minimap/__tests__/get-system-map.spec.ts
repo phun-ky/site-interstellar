@@ -47,6 +47,17 @@ describe('getSystemMap', () => {
     assert.equal(system?.rings.length, 8);
   });
 
+  test('puts the S-stars round Sagittarius A*', () => {
+    const system = getSystemMap(body('s2'));
+
+    assert.equal(system?.centre.id, 'sagittarius-a-star');
+    assert.equal(system?.name, 'Sagittarius A* system');
+    assert.equal(system?.rings.length, 7);
+    assert.equal(getSystemMap(body('sagittarius-a-star'))?.rings.length, 7);
+    // Another galaxy's black hole has nothing seen orbiting it
+    assert.equal(getSystemMap(body('m87-star')), null);
+  });
+
   test('leaves dwarf planets out, but for the focused one', () => {
     assert.ok(!ringIds('earth')?.includes('pluto'));
     assert.ok(ringIds('pluto')?.includes('pluto'));

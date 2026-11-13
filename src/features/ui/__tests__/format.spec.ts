@@ -4,6 +4,7 @@ import { describe, test } from 'node:test';
 import {
   formatAu,
   formatDistance,
+  formatLargeNumber,
   formatNumber,
   formatPeriod
 } from '../utils/format';
@@ -13,6 +14,16 @@ describe('formatNumber', () => {
     assert.equal(formatNumber(365.256), '365.3');
     assert.equal(formatNumber(12_345), '12,350');
     assert.equal(formatNumber(1_234_567), '1.23M');
+  });
+});
+
+describe('formatLargeNumber', () => {
+  test('writes millions and billions in words, and smaller numbers as formatNumber', () => {
+    assert.equal(formatLargeNumber(4_299_600), '4.3 million');
+    assert.equal(formatLargeNumber(1.4e8), '140 million');
+    assert.equal(formatLargeNumber(6.5e9), '6.5 billion');
+    assert.equal(formatLargeNumber(999_999), formatNumber(999_999));
+    assert.equal(formatLargeNumber(2.135), '2.135');
   });
 });
 
