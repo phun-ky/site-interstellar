@@ -3,32 +3,49 @@ import { describe, test } from 'node:test';
 
 import {
   INTERSTELLAR_OBJECTS,
+  MOONS,
   PLANETS,
   STARS
 } from '@interstellar-tools/constants';
 
 import { getBodyFacts } from '../body-info';
 import {
+  formatRotation,
   getDiscoveryFacts,
   getRingFacts,
+  getRotationFacts,
   getStarFacts,
   getTypeLabel
 } from '../utils/observed-facts';
 
 const star = (id: string) => STARS.find((body) => body.id === id)!;
 const planet = (id: string) => PLANETS.find((body) => body.id === id)!;
+const moon = (id: string) => MOONS.find((body) => body.id === id)!;
 const visitor = (id: string) =>
   INTERSTELLAR_OBJECTS.find((body) => body.id === id)!;
 
 describe('getStarFacts', () => {
-  test("lists a star's temperature and luminosity", () => {
+  test("lists a star's mass, temperature, luminosity, gravity and metallicity", () => {
     assert.deepEqual(getStarFacts(star('sun')), [
+      ['Mass', '1 M☉'],
       ['Temperature', '5,772 K'],
-      ['Luminosity', '1 L☉']
+      ['Luminosity', '1 L☉'],
+      ['Surface gravity', 'log g 4.438'],
+      ['Metallicity', '[Fe/H] 0.00']
     ]);
     assert.deepEqual(getStarFacts(star('proxima-centauri')), [
+      ['Mass', '0.1221 M☉'],
       ['Temperature', '2,980 K'],
-      ['Luminosity', '0.00151 L☉']
+      ['Luminosity', '0.00151 L☉'],
+      ['Surface gravity', 'log g 5.02'],
+      ['Metallicity', '[Fe/H] -0.07']
+    ]);
+  });
+
+  test('signs a metallicity above the Sun’s', () => {
+    assert.deepEqual(getStarFacts(star('alpha-centauri-a')).at(-1), [
+      'Metallicity',
+      '[Fe/H] +0.24'
     ]);
   });
 
@@ -36,11 +53,11 @@ describe('getStarFacts', () => {
     // Vega's temperature and Polaris's luminosity aren't given
     assert.deepEqual(
       getStarFacts(star('vega')).map(([label]) => label),
-      ['Luminosity']
+      ['Mass', 'Luminosity', 'Surface gravity']
     );
     assert.deepEqual(
       getStarFacts(star('polaris')).map(([label]) => label),
-      ['Temperature']
+      ['Mass', 'Temperature', 'Surface gravity', 'Metallicity']
     );
     assert.deepEqual(getStarFacts(planet('earth')), []);
   });
@@ -59,6 +76,52 @@ describe('getTypeLabel', () => {
       }),
       'Type'
     );
+  });
+});
+
+describe('getRotationFacts', () => {
+  test('gives the period, in hours below two days', () => {
+    assert.deepEqual(getRotationFacts(planet('earth')), [
+      ['Rotation', '23.93 h']
+    ]);
+    assert.equal(formatRotation({ value: 1.99, unit: 'd' }), '47.76 h');
+    assert.equal(formatRotation({ value: 2, unit: 'd' }), '2 d');
+    assert.equal(formatRotation({ value: 30.56, unit: 'h' }), '30.56 h');
+  });
+
+  test('says how it turns: backwards, locked or tumbling', () => {
+    assert.deepEqual(getRotationFacts(planet('venus')), [
+      ['Rotation', '243 d · retrograde']
+    ]);
+    assert.deepEqual(getRotationFacts(moon('moon')), [
+      ['Rotation', '27.32 d · tidally locked']
+    ]);
+    assert.deepEqual(
+      getRotationFacts({
+        rotation: {
+          period: { value: 30.56, unit: 'h' },
+          retrograde: true,
+          tumbling: true
+        }
+      }),
+      [['Rotation', '30.56 h · retrograde · tumbling']]
+    );
+  });
+
+  test("gives the Sun's period at its equator and its poles", () => {
+    assert.deepEqual(getRotationFacts(star('sun')), [
+      ['Rotation', '25.38 d'],
+      ['At the equator', '24.47 d'],
+      ['At the poles', '34.16 d']
+    ]);
+  });
+
+  test('tells a tumbling body, and gives nothing without a rotation', () => {
+    // ʻOumuamua has no fixed axis
+    assert.deepEqual(getRotationFacts(visitor('1i-oumuamua')), [
+      ['Rotation', '8.67 h · tumbling']
+    ]);
+    assert.deepEqual(getRotationFacts({}), []);
   });
 });
 
@@ -100,8 +163,14 @@ describe('getBodyFacts', () => {
       ['Spectral class', 'G2V'],
       ['Orbits', 'Solar System'],
       ['Radius', '696K km'],
+      ['Mass', '1 M☉'],
       ['Temperature', '5,772 K'],
-      ['Luminosity', '1 L☉']
+      ['Luminosity', '1 L☉'],
+      ['Surface gravity', 'log g 4.438'],
+      ['Metallicity', '[Fe/H] 0.00'],
+      ['Rotation', '25.38 d'],
+      ['At the equator', '24.47 d'],
+      ['At the poles', '34.16 d']
     ]);
   });
 

@@ -16,6 +16,7 @@ import { formatDistance, formatNumber, formatPeriod } from './utils/format';
 import {
   getDiscoveryFacts,
   getRingFacts,
+  getRotationFacts,
   getStarFacts,
   getTypeLabel
 } from './utils/observed-facts';
@@ -79,8 +80,9 @@ export const getBodyFacts = (
     [getTypeLabel(body), capitalize(type ?? category)],
     ['Orbits', parentName],
     ['Radius', formatDistance(radius)],
-    // What is measured about a star: its temperature and luminosity
-    ...getStarFacts(body)
+    // A star's mass, and what is measured about it
+    ...getStarFacts(body),
+    ...getRotationFacts(body)
   ];
 
   if (orbit && isOpenOrbit(orbit)) {
