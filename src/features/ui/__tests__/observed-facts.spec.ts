@@ -8,6 +8,7 @@ import {
   STARS
 } from '@interstellar-tools/constants';
 
+import { BLACK_HOLE_BODIES } from '../../celestial-bodies/utils/body-catalog';
 import { getBodyFacts } from '../body-info';
 import {
   formatRotation,
@@ -21,6 +22,8 @@ import {
 const star = (id: string) => STARS.find((body) => body.id === id)!;
 const planet = (id: string) => PLANETS.find((body) => body.id === id)!;
 const moon = (id: string) => MOONS.find((body) => body.id === id)!;
+const blackHole = (id: string) =>
+  BLACK_HOLE_BODIES.find((body) => body.id === id)!;
 const visitor = (id: string) =>
   INTERSTELLAR_OBJECTS.find((body) => body.id === id)!;
 
@@ -178,6 +181,24 @@ describe('getBodyFacts', () => {
       ),
       ['Excess speed', '26.39 km/s · retrograde']
     );
+  });
+
+  test("gives a black hole's galaxy, distance, mass and event horizon", () => {
+    assert.deepEqual(getBodyFacts(blackHole('sagittarius-a-star')), [
+      ['Type', 'Supermassive black hole'],
+      ['Galaxy', 'Milky Way'],
+      ['Distance', '26,990 ly'],
+      ['Mass', '4.3 million M☉'],
+      ['Event horizon', '0.08488 au'],
+      ['Orbited by', '7 stars']
+    ]);
+    assert.deepEqual(getBodyFacts(blackHole('m87-star')), [
+      ['Type', 'Supermassive black hole'],
+      ['Galaxy', 'Messier 87'],
+      ['Distance', '54.8M ly'],
+      ['Mass', '6.5 billion M☉'],
+      ['Event horizon', '128.3 au']
+    ]);
   });
 
   test('ends with the rings, or the discovery', () => {

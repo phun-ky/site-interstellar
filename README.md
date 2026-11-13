@@ -32,8 +32,10 @@ drawn flat, each turned to its real direction:
 - Pan with the mouse or a finger, and zoom with the wheel or a pinch, locked on
   a body or not, and choose Centre, or press C, to bring a locked body back to
   the middle.
-- Lock on any star, planet, moon, comet, asteroid, interstellar object or galaxy
-  to follow it, and choose Info beside the Lock menu for its details.
+- Lock on any star, planet, moon, comet, asteroid, interstellar object, galaxy
+  or black hole to follow it, and choose Info beside the Lock menu for its
+  details. Sagittarius A\* is at the Milky Way's centre; M31\*, M87\* and
+  Centaurus A\* take over their galaxy's core once you zoom inside it.
 - Keep your bearings with the minimap, which shows one level up from the map:
   the system around the locked body, the Milky Way with a marker where you are,
   or the Milky Way among its neighbours.

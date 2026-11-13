@@ -20,7 +20,6 @@ import {
 } from './config/constants';
 import { setupApp } from './config/setup-app';
 import { offsetX, offsetY } from './features/canvas/config/camera';
-import { getReference } from './features/canvas/config/camera/get-reference';
 import { OPTIONS_UI } from './features/canvas/config/hud';
 import { timeStep } from './features/canvas/config/time-step';
 import { generateTimeStep } from './features/canvas/config/time-step/generate-time-step';
@@ -100,7 +99,6 @@ const App = async (): Promise<void> => {
     // CSS pixels, the space everything is drawn in (not the device-pixel buffer size)
     const { width: canvasWidth, height: canvasHeight } =
       getViewportSize(canvas);
-    const { referenceX, referenceY } = getReference(canvas);
 
     // Open orbits are placed by date, the simulation's, every frame
     updateOpenOrbits(INTERSTELLAR_OBJECTS, SIMULATION_DATE, SUN_MU);
@@ -116,8 +114,6 @@ const App = async (): Promise<void> => {
       moons: MOONS,
       comets: COMETS,
       interstellarObjects: INTERSTELLAR_OBJECTS,
-      referenceX,
-      referenceY,
       canvasHeight,
       canvasWidth,
       offsetX,

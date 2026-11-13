@@ -135,6 +135,15 @@ export const getMinimapContext = ({
     return { kind: 'neighbours', focusId: locked.id };
   }
 
+  // Another galaxy's black hole is shown as its galaxy, among its neighbours
+  if (
+    locked?.parent &&
+    getBodyKind(locked.id) === 'blackHole' &&
+    getBodyKind(locked.parent) === 'galaxy'
+  ) {
+    return { kind: 'neighbours', focusId: locked.parent };
+  }
+
   if (locked) {
     const system = getSystemLadder(locked).find(
       (rung) => getReach(rung) > halfWidthAu

@@ -50,7 +50,8 @@ export const LISTED_KINDS: BodyKindType[] = [
   'asteroid',
   'comet',
   'interstellar',
-  'galaxy'
+  'galaxy',
+  'blackHole'
 ];
 
 const capitalize = (text: string): string =>

@@ -11,7 +11,10 @@ import { CelestialBodyType } from '@interstellar-tools/types';
 import { Button } from '../../components/actions/Button';
 import { ToggleBox } from '../../components/ToggleBox';
 import { OPTIONS_UI } from '../canvas/config/hud';
-import { GALAXY_BODIES } from '../celestial-bodies/utils/body-catalog';
+import {
+  BLACK_HOLE_BODIES,
+  GALAXY_BODIES
+} from '../celestial-bodies/utils/body-catalog';
 
 export const setupUI = () => {
   const toggleTrajectoriesBox = ToggleBox({
@@ -165,6 +168,7 @@ export const setupUI = () => {
     ['Comets', COMETS],
     ['Interstellar objects', INTERSTELLAR_OBJECTS],
     ['Galaxies', GALAXY_BODIES],
+    ['Black holes', BLACK_HOLE_BODIES],
     ['Asteroids', ASTEROIDS]
   ];
 

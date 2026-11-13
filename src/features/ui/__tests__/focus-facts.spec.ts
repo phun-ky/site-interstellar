@@ -49,6 +49,15 @@ describe('getDesignation', () => {
   test('falls back to the id for a body that orbits nothing in the catalogue', () => {
     assert.equal(getDesignation(body('sun')), 'SUN');
   });
+
+  test('names a black hole by its name, not its id', () => {
+    assert.equal(getDesignation(body('sagittarius-a-star')), 'SAGITTARIUS A*');
+    assert.equal(getDesignation(body('m87-star')), 'M87*');
+  });
+
+  test('numbers the S-stars out from Sagittarius A*', () => {
+    assert.match(getDesignation(body('s2')), /^Sagittarius A\* [IVX]+$/);
+  });
 });
 
 describe('getPath', () => {
@@ -59,6 +68,16 @@ describe('getPath', () => {
 
   test('leaves star systems out', () => {
     assert.deepEqual(getPath(body('alpha-centauri-a')), ['Milky Way']);
+  });
+
+  test('puts the S-stars round Sagittarius A*, in the Milky Way', () => {
+    assert.deepEqual(getPath(body('sagittarius-a-star')), ['Milky Way']);
+    assert.deepEqual(getPath(body('s2')), ['Milky Way', 'Sagittarius A*']);
+  });
+
+  test("starts another galaxy's black hole from its galaxy", () => {
+    assert.deepEqual(getPath(body('m87-star')), ['Messier 87']);
+    assert.deepEqual(getPath(body('m31-star')), ['Andromeda']);
   });
 });
 

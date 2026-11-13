@@ -4,7 +4,6 @@ import { describe, test } from 'node:test';
 import {
   ASTEROIDS,
   COMETS,
-  GALAXIES,
   MOONS,
   PLANETS,
   STARS,
@@ -22,12 +21,11 @@ const BODIES = [
   ...COMETS,
   ...ASTEROIDS
 ];
-/** What a body can orbit outside the catalog: a galaxy, or its black hole. */
-const OUTSIDE_THE_CATALOG = new Set(
-  GALAXIES.flatMap(({ id, blackHole }) =>
-    blackHole?.id ? [id, blackHole.id] : [id]
-  )
-);
+/**
+ * What a body can orbit outside the catalog: only the Milky Way, which the
+ * map is placed round. Its black hole, Sagittarius A*, is in the catalog.
+ */
+const OUTSIDE_THE_CATALOG = new Set(['milky-way']);
 
 describe('the body catalog (#103)', () => {
   test('knows every body, and the parent of each', () => {

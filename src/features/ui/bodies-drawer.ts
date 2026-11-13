@@ -10,6 +10,7 @@ import { CelestialBodyType } from '@interstellar-tools/types';
 
 import '../../styles/bodies.css';
 import {
+  BLACK_HOLE_BODIES,
   type BodyKindType,
   findBodyById,
   GALAXY_BODIES
@@ -47,7 +48,8 @@ const KIND_FILTERS: Record<BodyKindType | 'all', string> = {
   asteroid: 'Asteroids',
   comet: 'Comets',
   interstellar: 'Interstellar',
-  galaxy: 'Galaxies'
+  galaxy: 'Galaxies',
+  blackHole: 'Black holes'
 };
 const NONE = '-';
 /** Makes an element with the `int` class, as everything in the HUD has. */
@@ -135,7 +137,8 @@ export const createBodiesDrawer = (toggle: HTMLElement): SetBodiesOpenType => {
     ...ASTEROIDS,
     ...COMETS,
     ...INTERSTELLAR_OBJECTS,
-    ...GALAXY_BODIES
+    ...GALAXY_BODIES,
+    ...BLACK_HOLE_BODIES
   ]);
   const counts = countByKind(rows);
 

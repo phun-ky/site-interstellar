@@ -4,6 +4,7 @@ import type {
   SystemInterface
 } from '@interstellar-tools/types';
 
+import type { BlackHoleBodyType } from '../features/celestial-bodies/utils/black-hole-bodies';
 import type { GalaxyBodyType } from '../features/celestial-bodies/utils/galaxy-bodies';
 
 /**
@@ -16,6 +17,7 @@ export type OrbitingBodyType =
   | CelestialBodyType
   | SystemInterface
   | InterstellarObjectInterface
-  | GalaxyBodyType;
+  | GalaxyBodyType
+  | BlackHoleBodyType;
 
 export type OrbitingBodiesType = OrbitingBodyType[];

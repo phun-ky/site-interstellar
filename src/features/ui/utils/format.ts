@@ -11,6 +11,11 @@ const COMPACT = new Intl.NumberFormat('en', {
   notation: 'compact',
   maximumSignificantDigits: 3
 });
+const LONG = new Intl.NumberFormat('en', {
+  notation: 'compact',
+  compactDisplay: 'long',
+  maximumSignificantDigits: 3
+});
 /** Below this many au, a distance reads better in km. */
 const KM_BELOW_AU = 0.01;
 
@@ -28,6 +33,21 @@ const KM_BELOW_AU = 0.01;
  */
 export const formatNumber = (value: number): string =>
   Math.abs(value) >= 1e5 ? COMPACT.format(value) : NUMBER.format(value);
+
+/**
+ * Formats a large number in words, from a million up, where `M` would read
+ * as a unit: a black hole's mass in solar masses.
+ *
+ * @param {number} value - The number.
+ * @returns {string} Such as `4.3 million`, or as `formatNumber` below it.
+ *
+ * @example
+ * ```ts
+ * formatLargeNumber(6.5e9); // "6.5 billion"
+ * ```
+ */
+export const formatLargeNumber = (value: number): string =>
+  Math.abs(value) >= 1e6 ? LONG.format(value) : formatNumber(value);
 
 /**
  * Formats a distance in its own unit.
