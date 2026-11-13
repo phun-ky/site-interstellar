@@ -6,7 +6,8 @@ import {
   nextFrames,
   openApp,
   readApp,
-  recordFrames
+  recordFrames,
+  toggle
 } from './helpers';
 
 const view = (page: Page) => page.locator('#focusView');
@@ -234,6 +235,29 @@ test.describe('the Sun', () => {
       await readApp(page, (app) => app.__lastFrameText.join(' '))
     ).not.toContain('RNG AU');
   });
+});
+
+test.describe('an interstellar object', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  for (const id of ['1i-oumuamua', '2i-borisov', '3i-atlas']) {
+    test(`${id}, on its open orbit, opens without errors`, async ({ page }) => {
+      const errors = collectErrors(page);
+
+      await toggle(page, 'toggleInterstellar');
+      await lockOn(page, id);
+      await nextFrames(page);
+      await clickBody(page, id);
+      await expect(view(page)).toBeVisible();
+      await page.waitForTimeout(1100);
+      await nextFrames(page);
+
+      expect(errors).toEqual([]);
+      expect(await readApp(page, (app) => app.FOCUSED_CELESTIAL_BODY?.id)).toBe(
+        id
+      );
+    });
+  }
 });
 
 test.describe('on a short desktop', () => {

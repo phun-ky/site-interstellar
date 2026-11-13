@@ -8,6 +8,7 @@ import {
   getBodyKind
 } from '../../celestial-bodies/utils/body-catalog';
 import { SIZE_BANDS } from '../../celestial-bodies/utils/get-drawn-size';
+import { isOpenOrbit } from '../../celestial-bodies/utils/orbit-orientation';
 import { getOrbitSize, getSystemMap } from '../../minimap/utils/get-system-map';
 
 const ROMAN: [value: number, numeral: string][] = [
@@ -133,10 +134,13 @@ export const getGauges = (body: CelestialBodyType): Record<string, number> => {
   };
   const { orbit } = body;
 
-  if (!orbit || !('a' in orbit)) return gauges;
+  // An open orbit, an interstellar object's, has a semi-major axis (a
+  // negative one) but no period, and an eccentricity above 1: nothing to
+  // measure against a closed orbit's
+  if (!orbit || isOpenOrbit(orbit)) return gauges;
 
   const siblings = (getSystemMap(body)?.rings ?? [body]).filter(
-    (sibling) => sibling.orbit && 'a' in sibling.orbit
+    (sibling) => sibling.orbit && !isOpenOrbit(sibling.orbit)
   );
   const days = (sibling: CelestialBodyType) =>
     sibling.orbit ? convertTemporalUnit(sibling.orbit.period, 'd').value : 1;
