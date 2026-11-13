@@ -46,6 +46,8 @@ import { draw } from './utils/draw';
 import { attachEventHandlers } from './utils/event-handlers';
 import { waitFor } from './utils/wait-for';
 
+/** How often the minimap is redrawn, in milliseconds (#117). */
+const MINIMAP_EVERY_MS = 250;
 /** The Sun's gravitational parameter, in m³/s², for the open orbits round it. */
 const SUN_MU = STARS.find(({ id }) => id === 'sun')?.mu ?? 0;
 /**
@@ -88,6 +90,9 @@ const App = async (): Promise<void> => {
   showSolarSystem(false);
 
   const simDateDisplayElement = document.getElementById('simDate');
+
+  let minimapAt = 0;
+
   // Animation function
   const update = () => {
     if (!space) throw Error('Required space context not found');
@@ -154,6 +159,15 @@ const App = async (): Promise<void> => {
     // Update the HUD
     updateCoordinates(SCALE, offsetX.value, offsetY.value);
     updateZoom(SCALE);
+
+    // The minimap a few times a second: it shows a wider view, which moves slowly
+    const now = performance.now();
+
+    if (now - minimapAt >= MINIMAP_EVERY_MS) {
+      minimapAt = now;
+      updateMinimap();
+    }
+
     requestAnimationFrame(update);
   };
 
@@ -165,7 +179,7 @@ const App = async (): Promise<void> => {
   initializeMinimap();
   update();
   await waitFor(0);
-  updateMinimap(STARS, SCALE, offsetX, offsetY);
+  updateMinimap();
 
   updateBodiesInView({
     scale: SCALE,

@@ -1,4 +1,3 @@
-import { STARS } from '@interstellar-tools/constants';
 import { convertDistanceUnit } from '@interstellar-tools/equations';
 import { CelestialBodyType } from '@interstellar-tools/types';
 
@@ -191,7 +190,7 @@ const startLive = (body: OrbitingBodyType): void => {
     canvas.className = 'int mc-system-map';
     minimap.replaceChildren(canvas);
   } else {
-    updateMinimap(STARS, SCALE, offsetX, offsetY);
+    updateMinimap(body);
   }
 
   let frame = 0;
@@ -395,7 +394,7 @@ export const closeFocusView = (): void => {
   returnFocus?.focus({ preventScroll: true });
   returnFocus = null;
 
-  const finish = () => updateMinimap(STARS, SCALE, offsetX, offsetY);
+  const finish = () => updateMinimap();
 
   if (!parent || !body.orbit || !canvas) {
     finish();

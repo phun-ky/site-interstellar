@@ -77,8 +77,9 @@ body:has(#toggleStarfield:checked) {
 }
 
 /* Below the header from the first paint, where setupCanvas() puts it, so the
-   canvas does not shift when the script runs */
-canvas {
+   canvas does not shift when the script runs. The map's canvas only: the
+   minimap draws on one too (#117) */
+#spaceCanvas {
   position: fixed;
   top: var(--int-header-height);
   left: 0;
@@ -801,6 +802,13 @@ select.int:focus-visible,
   background: rgba(5, 8, 7, 0.85);
   box-shadow: 0 0 12px rgba(71, 184, 190, 0.4) inset;
   pointer-events: none;
+}
+
+/* What the minimap draws on (#117) */
+#minimap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* ---------- Bottom bar: narrow screens only ---------- */

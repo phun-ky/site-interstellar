@@ -1,6 +1,13 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { lockOn, nextFrames, openApp, readApp, recordFrames } from './helpers';
+import {
+  collectErrors,
+  lockOn,
+  nextFrames,
+  openApp,
+  readApp,
+  recordFrames
+} from './helpers';
 
 const view = (page: Page) => page.locator('#focusView');
 const release = (page: Page) => page.locator('#focusClose');
@@ -205,6 +212,27 @@ test.describe('on a desktop', () => {
       expect(phobos?.x).toBeCloseTo(width / 2, 0);
       expect(phobos?.y).toBeCloseTo(height / 2, 0);
     }
+  });
+});
+
+test.describe('the Sun', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test('with no orbit, it opens without errors, and without range or speed tapes', async ({
+    page
+  }) => {
+    const errors = collectErrors(page);
+
+    // The map opens locked on the Sun
+    await clickBody(page, 'sun');
+    await expect(view(page)).toBeVisible();
+    await page.waitForTimeout(1100);
+    await nextFrames(page);
+
+    expect(errors).toEqual([]);
+    expect(
+      await readApp(page, (app) => app.__lastFrameText.join(' '))
+    ).not.toContain('RNG AU');
   });
 });
 
