@@ -103,4 +103,12 @@ describe('getGauges', () => {
   test('has only a radius gauge for a body without an orbit', () => {
     assert.deepEqual(Object.keys(getGauges(body('sun'))), ['Radius']);
   });
+
+  test('has only a radius gauge for a body on an open orbit', () => {
+    // An interstellar object's orbit has a (negative) semi-major axis, but
+    // no period, and its eccentricity is above 1
+    for (const id of ['1i-oumuamua', '2i-borisov', '3i-atlas']) {
+      assert.deepEqual(Object.keys(getGauges(body(id))), ['Radius'], id);
+    }
+  });
 });
