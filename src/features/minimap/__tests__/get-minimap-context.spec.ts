@@ -11,7 +11,11 @@ import {
   MILKY_WAY_RADIUS_AU,
   type MinimapContextType
 } from '../utils/get-minimap-context';
-import { toGalaxyMap, toNeighbourMap } from '../utils/minimap-projection';
+import {
+  placeLabel,
+  toGalaxyMap,
+  toNeighbourMap
+} from '../utils/minimap-projection';
 
 const body = (id: string): OrbitingBodyType => {
   const found = findBodyById(id);
@@ -148,5 +152,31 @@ describe('the neighbours on the minimap', () => {
 
     assert.ok(Math.abs(x - 80) < 1e-9);
     assert.ok(y < 80);
+  });
+});
+
+describe('placeLabel', () => {
+  test('puts a name on the side facing the middle when it fits', () => {
+    assert.deepEqual(placeLabel({ x: 40, y: 80 }, 60, 160), {
+      x: 50,
+      y: 80,
+      align: 'left'
+    });
+    assert.deepEqual(placeLabel({ x: 120, y: 80 }, 60, 160), {
+      x: 110,
+      y: 80,
+      align: 'right'
+    });
+  });
+
+  test('tries the other side, then under the marker, near the narrow top', () => {
+    // Betelgeuse, near the top: neither side has room for its name
+    assert.deepEqual(placeLabel({ x: 81, y: 37 }, 70, 160), {
+      x: 81,
+      y: 51,
+      align: 'center'
+    });
+    // Near the bottom it goes over the marker instead
+    assert.equal(placeLabel({ x: 81, y: 130 }, 140, 160).y, 116);
   });
 });
