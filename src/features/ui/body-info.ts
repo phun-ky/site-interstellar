@@ -92,7 +92,7 @@ export const getBodyFacts = (
       ['Eccentricity', orbit.e.toFixed(4)],
       [
         'Excess speed',
-        `${formatNumber(orbit.excessSpeed)} km/s${orbit.retrograde ? ' · retrograde' : ''}`
+        `${formatNumber(orbit.excessSpeed.value)} ${orbit.excessSpeed.unit}${orbit.retrograde ? ' · retrograde' : ''}`
       ]
     );
   } else if (orbit) {

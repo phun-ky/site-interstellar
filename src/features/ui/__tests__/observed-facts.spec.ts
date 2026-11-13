@@ -69,13 +69,7 @@ describe('getTypeLabel', () => {
     assert.equal(getTypeLabel(star('betelgeuse')), 'Spectral class');
     assert.equal(getTypeLabel(planet('earth')), 'Type');
     // A type that isn't the measured class stays a type
-    assert.equal(
-      getTypeLabel({
-        type: 'Main sequence',
-        observations: { spectralClassification: { raw: 'G2V' } }
-      }),
-      'Type'
-    );
+    assert.equal(getTypeLabel({ id: 'sun', type: 'Main sequence' }), 'Type');
   });
 });
 
@@ -146,14 +140,17 @@ describe('getDiscoveryFacts', () => {
     ]);
   });
 
-  test('takes a date as a string too, and nothing without one', () => {
-    assert.deepEqual(
-      getDiscoveryFacts({
-        observations: { discovery: { date: '2019-08-30T00:00:00.000Z' } }
-      }),
-      [['Discovered', '2019-08-30']]
-    );
+  test('gives nothing without a discovery', () => {
     assert.deepEqual(getDiscoveryFacts(planet('earth')), []);
+    assert.deepEqual(getDiscoveryFacts({}), []);
+  });
+});
+
+describe('looking up the measured groups', () => {
+  test('finds a body by its own id only', () => {
+    // An id that names an inherited property finds nothing
+    assert.deepEqual(getStarFacts({ id: 'toString' }), []);
+    assert.deepEqual(getRingFacts({ id: 'constructor' }), []);
   });
 });
 
@@ -172,6 +169,15 @@ describe('getBodyFacts', () => {
       ['At the equator', '24.47 d'],
       ['At the poles', '34.16 d']
     ]);
+  });
+
+  test("gives an interstellar object's excess speed in its unit", () => {
+    assert.deepEqual(
+      getBodyFacts(visitor('1i-oumuamua')).find(
+        ([label]) => label === 'Excess speed'
+      ),
+      ['Excess speed', '26.39 km/s · retrograde']
+    );
   });
 
   test('ends with the rings, or the discovery', () => {
