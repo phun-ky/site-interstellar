@@ -19,7 +19,11 @@ import {
   type Matrix3Type
 } from '../orbit-orientation';
 
-const close = (actual: number[], expected: number[], tolerance = 1e-9) =>
+const close = (
+  actual: readonly number[],
+  expected: readonly number[],
+  tolerance = 1e-9
+) =>
   actual.forEach((value, k) =>
     assert.ok(
       Math.abs(value - expected[k]) <= tolerance,

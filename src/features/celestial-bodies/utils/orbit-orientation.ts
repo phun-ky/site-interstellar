@@ -1,8 +1,19 @@
 import {
+  applyMatrix3,
   convertDistanceUnit,
-  orbitFrameToIcrf
+  matMul3,
+  orbitFrameToIcrf,
+  rot1,
+  rot3,
+  toRad,
+  transpose3
 } from '@interstellar-tools/equations';
-import { OpenOrbitInterface, OrbitInterface } from '@interstellar-tools/types';
+import {
+  Matrix3x3Type,
+  OpenOrbitInterface,
+  OrbitInterface,
+  Vector3DTupleType
+} from '@interstellar-tools/types';
 
 /** A closed orbit, or an open one (an interstellar object's). */
 export type AnyOrbitType = OrbitInterface | OpenOrbitInterface;
@@ -23,58 +34,23 @@ export const isOpenOrbit = (orbit: AnyOrbitType): orbit is OpenOrbitInterface =>
   'periapsisTime' in orbit;
 
 /** A 3D vector, in au. */
-export type Vector3Type = [x: number, y: number, z: number];
+export type Vector3Type = Vector3DTupleType;
 
 /** A 3x3 matrix, by rows. */
-export type Matrix3Type = [Vector3Type, Vector3Type, Vector3Type];
+export type Matrix3Type = Matrix3x3Type;
 
-const DEGREES = Math.PI / 180;
 /** The J2000 obliquity of the ecliptic, 84 381.448″, as equations uses it. */
-const OBLIQUITY = (84_381.448 / 3600) * DEGREES;
-const multiply = (a: Matrix3Type, b: Matrix3Type): Matrix3Type =>
-  a.map((row) =>
-    [0, 1, 2].map((column) =>
-      row.reduce((sum, value, k) => sum + value * b[k][column], 0)
-    )
-  ) as Matrix3Type;
-const transpose = (m: Matrix3Type): Matrix3Type =>
-  [0, 1, 2].map((row) => m.map((column) => column[row])) as Matrix3Type;
+const OBLIQUITY = toRad(84_381.448 / 3600);
 
 /**
- * Applies a matrix to a vector.
- *
- * @param {Matrix3Type} m - The matrix.
- * @param {Vector3Type} v - The vector.
- * @returns {Vector3Type} `m` times `v`.
+ * Applies a matrix to a vector: equations' `applyMatrix3`.
  *
  * @example
  * ```ts
  * applyMatrix(getOrbitRotation(orbit), [1, 0, 0]); // the direction of periapsis
  * ```
  */
-export const applyMatrix = (m: Matrix3Type, v: Vector3Type): Vector3Type =>
-  m.map((row) => row[0] * v[0] + row[1] * v[1] + row[2] * v[2]) as Vector3Type;
-
-/** A turn about the x axis, by an angle in radians. */
-const aboutX = (angle: number): Matrix3Type => {
-  const [c, s] = [Math.cos(angle), Math.sin(angle)];
-
-  return [
-    [1, 0, 0],
-    [0, c, -s],
-    [0, s, c]
-  ];
-};
-/** A turn about the z axis, by an angle in radians. */
-const aboutZ = (angle: number): Matrix3Type => {
-  const [c, s] = [Math.cos(angle), Math.sin(angle)];
-
-  return [
-    [c, -s, 0],
-    [s, c, 0],
-    [0, 0, 1]
-  ];
-};
+export const applyMatrix = applyMatrix3;
 
 /**
  * The inclination of an orbit, in degrees: its `i`, or, without one, 180°
@@ -116,9 +92,9 @@ export const getOrbitRotation = (
   const inclination = getInclination(orbit);
   const i = flat ? (inclination > 90 ? 180 : 0) : inclination;
 
-  return multiply(
-    multiply(aboutZ((orbit.om ?? 0) * DEGREES), aboutX(i * DEGREES)),
-    aboutZ((orbit.w ?? 0) * DEGREES)
+  return matMul3(
+    matMul3(rot3(toRad(orbit.om ?? 0)), rot1(toRad(i))),
+    rot3(toRad(orbit.w ?? 0))
   );
 };
 
@@ -186,9 +162,9 @@ export const getEclipticPosition = (
     return null;
   }
 
-  const toEcliptic = multiply(
-    transpose(aboutX(OBLIQUITY)),
-    orbitFrameToIcrf(frame) as Matrix3Type
+  const toEcliptic = matMul3(
+    transpose3(rot1(OBLIQUITY)),
+    orbitFrameToIcrf(frame)
   );
 
   return applyMatrix(toEcliptic, getOrbitPosition3D(orbit));
