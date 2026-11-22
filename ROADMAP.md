@@ -57,6 +57,12 @@ The repository and the site were overhauled:
 - **A Step button**
   ([#15](https://github.com/phun-ky/site-interstellar/issues/15)) to advance one
   frame while the simulation is held.
+- **Active galaxies and the nearest quasars.** Mark Centaurus A and Messier 87
+  as radio galaxies in the Interstellar Tools data (`activeNucleus`), and show
+  the class in the body info. Then add the nearest quasars, Markarian 231
+  (about 580 million light-years) and 3C 273 (about 2.4 billion light-years),
+  as galaxies with their black holes, which puts the edge of the map about 10
+  and 45 times farther out than Messier 87.
 
 ## Later
 
