@@ -1,9 +1,9 @@
 # Security Policy
 
 Interstellar is a static website: a canvas simulation that runs entirely in your
-browser. It has four runtime dependencies, all from
-[`@interstellar-tools`](https://github.com/phun-ky/interstellar-tools) and
-bundled into the site at build time. How dependencies are chosen, tracked and
+browser. It has five runtime dependencies, bundled into the site at build time:
+four from [`@interstellar-tools`](https://github.com/phun-ky/interstellar-tools)
+and the IBM Plex Sans Condensed font. How dependencies are chosen, tracked and
 kept clear of known vulnerabilities is described under
 [Dependencies](#dependencies).
 
@@ -131,3 +131,8 @@ run, read-only unless a job asks for more. Deploying needs no secret.
   available to workflows run from forks.
 - **Rotation:** at least once a year, and immediately if one may have been
   exposed.
+
+## Assurance Case
+
+Why these expectations hold, where they don't hold yet, and the threat model and
+trust boundaries behind them are set out in the [assurance case](ASSURANCE.md).

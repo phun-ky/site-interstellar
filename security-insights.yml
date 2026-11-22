@@ -55,12 +55,12 @@ repository:
   security:
     assessments:
       self:
-        evidence: https://github.com/phun-ky/site-interstellar/blob/main/SECURITY.md#security-expectations
-        date: '2026-11-05'
+        evidence: https://github.com/phun-ky/site-interstellar/blob/main/ASSURANCE.md
+        date: '2026-11-22'
         comment: |
-          SECURITY.md sets out what the site does and doesn't do (no data
-          collection, no outside input, no third parties, a Content Security
-          Policy) and the known gaps.
+          The assurance case: what is protected, the threat model, trust
+          boundaries, secure design principles, the weaknesses countered and
+          the known gaps, behind the security expectations in SECURITY.md.
     tools:
       - name: CodeQL
         type: SAST

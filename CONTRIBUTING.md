@@ -33,7 +33,9 @@ forward to your contributions. 🎉
       - [How Do I Submit a Good Enhancement Suggestion?](#how-do-i-submit-a-good-enhancement-suggestion)
     - [Your First Code Contribution](#your-first-code-contribution)
       - [Set up](#set-up)
+      - [Architecture](#architecture)
       - [Scripts](#scripts)
+      - [Coding style](#coding-style)
       - [Tests](#tests)
       - [Commits](#commits)
       - [Pull requests](#pull-requests)
@@ -197,6 +199,35 @@ npm run dev
 The dev server runs on <http://localhost:3000/site-interstellar/>. `npm ci` also
 turns on the repository's Git hooks (see [Commits](#commits)).
 
+#### Architecture
+
+The site is one static page, built with [Vite](https://vite.dev/) into plain
+HTML, CSS and JavaScript, and served by GitHub Pages. It has no server and loads
+nothing from other hosts.
+
+- **`index.html`** is the page: the header, the canvas, the panels and the
+  views. **`404.html`** is the page GitHub Pages serves for unknown paths.
+  **`public/`** is copied to the build as it is: the manifest and the social
+  card.
+- **`src/main.ts`** loads the fonts and styles and starts **`src/App.ts`**,
+  which sets up the interface and the canvas and runs the simulation loop with
+  `requestAnimationFrame`.
+- **`src/config/`** holds the start-up settings and the Content Security Policy
+  (`csp.ts`), which the build adds to every page.
+- **`src/features/`** holds what is drawn and how you use it: `canvas`,
+  `celestial-bodies` (stars, planets, moons, asteroids, galaxies and their
+  orbits), `starfield`, `labels`, `arrows` to bodies off screen, the `minimap`,
+  `sound`, and `ui` (the controls, the lock, the body info, the focus view and
+  the Bodies drawer).
+- **`src/components/`** holds small pieces of interface shared by the features,
+  and **`src/utils/`** the maths for scale, distance and offsets.
+- **The bodies and their orbital mechanics** come from the
+  [`@interstellar-tools`](https://github.com/phun-ky/interstellar-tools)
+  packages, bundled at build time. **`src/assets/`** holds the icons, the body
+  images and the background sound, copied to the build as they are.
+- **`tests/e2e/`** and **`tests/performance/`** hold the Playwright checks of
+  the built site; unit tests sit next to the code they test.
+
 #### Scripts
 
 | Script                        | What it does                                                                                                                                          |
@@ -219,6 +250,16 @@ turns on the repository's Git hooks (see [Commits](#commits)).
 | `npm run check:bestpractices` | Checks `.bestpractices.json`, and that every file and heading it and `security-insights.yml` link to exists.                                          |
 | `npm run bestpractices:url`   | Prints bestpractices.dev links that propose the answers in `.bestpractices.json` the project doesn't have yet, for the maintainer to review and save. |
 | `npm run changelog`           | Rebuilds `CHANGELOG.md` from what has landed on `main`, month by month. Run it after `git fetch`, and commit the result in a pull request.            |
+
+#### Coding style
+
+Code follows the project's [ESLint](https://eslint.org/) configuration
+([`eslint-config-phun-ky`](https://www.npmjs.com/package/eslint-config-phun-ky)),
+[Prettier](https://prettier.io/) formatting and TypeScript in strict mode.
+ESLint also lints the Markdown. A contribution must pass `npm run lint` (no
+warnings allowed), `npm run format:check` and `npm run typecheck`. All of them
+run in CI on every pull request, and a pull request that fails them can't be
+merged.
 
 #### Tests
 
