@@ -1,8 +1,8 @@
 # Roadmap
 
-What Interstellar intends to do, and not do. It's a plan, not a promise:
-priorities can change, and changes to this file are made in pull requests like
-any other. Individual pieces of work are tracked as
+What Interstellar intends to do, and not do, until November 2027. It's a plan,
+not a promise: priorities can change, and changes to this file are made in pull
+requests like any other. Individual pieces of work are tracked as
 [GitHub issues](https://github.com/phun-ky/site-interstellar/issues), grouped in
 [milestones](https://github.com/phun-ky/site-interstellar/milestones).
 
