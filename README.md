@@ -24,37 +24,20 @@ view information and follow all known celestial bodies, including calculating
 trajectories of asteroids.
 
 Today it is a 2D map of the Milky Way's centre with the S-stars round
-Sagittarius A*, nearby and bright stars, TRAPPIST-1 and its planets, the solar
-system with its dwarf planets and the interstellar objects passing through it,
-and the galaxies around the Milky Way, moving in real time or faster. Orbits are
-drawn flat, each turned to its real direction:
+Sagittarius A\*, nearby stars, TRAPPIST-1, the solar system with its dwarf
+planets and interstellar visitors, and the galaxies around the Milky Way, moving
+in real time or faster.
 
-- Pan with the mouse or a finger, and zoom with the wheel or a pinch, locked on
-  a body or not, and choose Centre, or press C, to bring a locked body back to
-  the middle.
-- Lock on any star, planet, moon, comet, asteroid, interstellar object, galaxy
-  or black hole to follow it, and choose Info beside the Lock menu for its
-  details. Sagittarius A\* is at the Milky Way's centre; M31\*, M87\* and
-  Centaurus A\* take over their galaxy's core once you zoom inside it.
-- Keep your bearings with the minimap, which shows one level up from the map:
-  the system around the locked body, the Milky Way with a marker where you are,
-  or the Milky Way among its neighbours.
-- Click or tap a body to look at it up close: time holds, and a cockpit visor
-  shows its facts, its live range, bearing and speed, where it is in its system
-  and, for the planets, large moons, black holes, galaxies and interstellar
-  visitors, a real image of it, credited. Release target, or Escape, returns to
-  its parent with it in view.
-- Start over the solar system, locked on the Sun, and jump to the whole galaxy
-  and back from the views at the bottom of the map, or open Bodies to find any
-  body in a table, sort and filter it, and lock on it.
-- Switch moons, asteroid belts, asteroids, comets, interstellar objects, the
-  starfield, arrows to off-screen bodies, labels and orbits on and off. The
-  starfield has depth: faint far stars, some of them redshifted, and nearer ones
-  that drift a little more as you pan and zoom.
-- Hold the simulation, change its speed, or reset it to now.
-- Turn sounds on in Settings, from the menu at the top right: a background
-  ambience, a click as each switch is flicked, and a tick as you zoom, each on
-  its own. They are off on every visit.
+- Pan by dragging with the mouse or a finger, and zoom with the wheel or a
+  pinch.
+- Lock on any star, planet, moon, comet, asteroid, galaxy or black hole to
+  follow it and read its details, or find it in the Bodies table.
+- Click or tap a body to look at it up close, with its facts, live range and,
+  for many, a real image.
+- Keep your bearings with a minimap one level up from the map.
+- Switch layers such as moons, comets, labels and orbits on and off, and hold,
+  speed up or reset the simulation.
+- Turn on sounds in Settings. They are off on every visit.
 
 The orbital mechanics come from
 [Interstellar Tools](https://phun-ky.net/interstellar-tools/).
@@ -83,41 +66,21 @@ See the [roadmap](ROADMAP.md) for what is planned next, and what is not.
 
 ## Known issues
 
-- Orbits are drawn flat: inclination is ignored until the map is 3D (see the
-  [timeline](#timeline)).
+- Orbits are drawn flat, each turned to its real direction: inclination is
+  ignored until the map is 3D (see the [timeline](#timeline)).
 
 ## Development
 
-Requires Node 22.13 or later on 22, or Node 24 or later, and npm 11 or later.
-
 ```sh
 npm ci
-# Run the dev server on http://localhost:3000/site-interstellar/
-npm run dev
-# Build to dist/, then serve the build as GitHub Pages does
-npm run build
-npm run preview
-# Lint, check formatting and typecheck
-npm run lint
-npm run format:check
-npm run typecheck
-# Fix formatting
-npm run format
-# Validate the built HTML (after a build)
-npm run lint:html
-# Unit tests, with or without the coverage floor
+npm run dev # http://localhost:3000/site-interstellar/
 npm test
-npm run test:coverage
-# End-to-end tests (builds first)
+npm run build
 npm run test:e2e
-# Performance budgets on a throttled phone (after a build)
-npm run test:performance
-# Rebuild CHANGELOG.md from main (after git fetch)
-npm run changelog
 ```
 
-The end-to-end tests and the performance budgets use the installed Google
-Chrome.
+The [contributing guide](CONTRIBUTING.md#your-first-code-contribution) has the
+requirements, the architecture, every script and the tests.
 
 ## Contributing
 
