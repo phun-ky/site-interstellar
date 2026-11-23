@@ -72,7 +72,8 @@
     "test:performance": "playwright test -c playwright.performance.config.mjs",
     "check:bestpractices": "node scripts/check-bestpractices.mjs",
     "bestpractices:url": "node scripts/bestpractices-url.mjs",
-    "changelog": "node scripts/changelog.mjs"
+    "changelog": "node scripts/changelog.mjs",
+    "banners": "node scripts/banners/render.mjs"
   },
   "config": {
     "commitizen": {
