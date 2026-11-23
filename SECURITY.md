@@ -95,10 +95,18 @@ Advisory Database:
 exploited through this project may be allowed in dependency review, with the
 reason listed here. There are none.
 
+**Advisories that don't affect the site.** A known vulnerability in a dependency
+that can't reach the site, such as one in a development tool, is recorded with
+the reason in [`vex.openvex.json`](vex.openvex.json), an
+[OpenVEX](https://openvex.dev/) document, and in `osv-scanner.toml`, until an
+update clears it.
+
 ## Code Scanning
 
 CodeQL (GitHub default setup) analyses JavaScript and TypeScript on every pull
-request and every push to `main`.
+request and every push to `main`. An error or a high or critical security alert
+blocks merging (see the ruleset below); other alerts are fixed within 90 days,
+or dismissed in GitHub with the reason they can't be exploited.
 [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/phun-ky/site-interstellar)
 scores the repository's practices weekly and on every push to `main`, and
 publishes the result. The answers to the
