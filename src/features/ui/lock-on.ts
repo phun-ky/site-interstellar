@@ -155,7 +155,7 @@ const OUTER_GROUP_RATIO = 3;
  * moons together, so the outer group is left to the arrows.
  */
 const getCoreExtent = (distances: number[]): number => {
-  const sorted = [...distances].sort((a, b) => a - b);
+  const sorted = distances.toSorted((a, b) => a - b);
 
   let extent = sorted[0];
 
