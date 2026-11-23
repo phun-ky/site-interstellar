@@ -149,8 +149,8 @@ export const drawDirectionalArrows = (
   space.save();
 
   // A stable sort, so labels moved by as much keep the nearest-first order
-  [...groups]
-    .sort((a, b) => nudgedBefore(a) - nudgedBefore(b))
+  groups
+    .toSorted((a, b) => nudgedBefore(a) - nudgedBefore(b))
     .forEach((group) => {
       const { angle, names } = group;
       const [first, ...rest] = names;

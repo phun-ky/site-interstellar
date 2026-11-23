@@ -128,7 +128,7 @@ export const placeLabels = (
     placed.label = `${placed.text} +${placed.hidden}`;
     placed.box = boxFor(placed, placed.label);
   };
-  const sorted = [...candidates].sort(
+  const sorted = candidates.toSorted(
     (a, b) => b.priority - a.priority || (a.id < b.id ? -1 : 1)
   );
   const placed: PlacedLabelType[] = [];

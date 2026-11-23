@@ -124,7 +124,7 @@ export const sortRows = (
 ): BodyRowType[] => {
   const sign = direction === 'ascending' ? 1 : -1;
 
-  return [...rows].sort((x, y) => {
+  return rows.toSorted((x, y) => {
     const [a, b] = [x[key], y[key]];
 
     if (a === null || a === '') return b === null || b === '' ? 0 : 1;

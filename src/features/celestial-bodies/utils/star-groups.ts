@@ -98,7 +98,7 @@ export const groupBySystem = (
 
   let current = markers;
 
-  for (const system of [...systems].sort((a, b) => depth(b) - depth(a))) {
+  for (const system of systems.toSorted((a, b) => depth(b) - depth(a))) {
     const inside = current.filter(
       ({ systems: chain }) => chain[0] === system.id
     );
