@@ -79,3 +79,10 @@ To add one:
 
 An image under CC BY-SA is shared under the same licence after resizing, as its
 credit line says.
+
+## Release banners
+
+`interstellar-v<major>{,-og,-square,-portrait}{,@2x}.png`: the release banners
+for each major, for links from elsewhere. They are not part of the build. To
+render a set, put its content in `scripts/banners/<release>.mjs` and run
+`npm run banners -- <release>`, for example `npm run banners -- 1.0`.
