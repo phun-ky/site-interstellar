@@ -100,6 +100,10 @@ The surface map of Mars, `src/assets/textures/mars.jpg`, is by
 [Solar System Scope](https://www.solarsystemscope.com/textures/), under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
+The surface map of the Moon, `src/assets/textures/moon.jpg`, is from NASA's
+Scientific Visualization Studio [CGI Moon Kit](https://svs.gsfc.nasa.gov/4720),
+made from Lunar Reconnaissance Orbiter data.
+
 ## Changelog
 
 See the

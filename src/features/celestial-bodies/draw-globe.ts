@@ -14,7 +14,9 @@ import {
  */
 const SURFACE_MAPS: Record<string, string> = {
   // Solar System Scope, CC BY 4.0: https://www.solarsystemscope.com/textures/
-  mars: 'textures/mars.jpg'
+  mars: 'textures/mars.jpg',
+  // NASA SVS CGI Moon Kit, from LRO data: https://svs.gsfc.nasa.gov/4720
+  moon: 'textures/moon.jpg'
 };
 /** The largest globe drawn, in device pixels, to bound the canvas's memory. */
 const MAX_SIZE = 2048;

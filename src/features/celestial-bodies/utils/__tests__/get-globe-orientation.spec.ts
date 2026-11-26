@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
-import { PLANETS, STARS } from '@interstellar-tools/constants';
+import { MOONS, PLANETS, STARS } from '@interstellar-tools/constants';
 import {
   applyMatrix3,
   rot1,
@@ -10,9 +10,16 @@ import {
 } from '@interstellar-tools/equations';
 
 import { getGlobeOrientation, getSpinPerFrame } from '../get-globe-orientation';
-import { OBLIQUITY, type Vector3Type } from '../orbit-orientation';
+import {
+  getEclipticPosition,
+  OBLIQUITY,
+  type Vector3Type
+} from '../orbit-orientation';
+import { precomputeInitialAngles } from '../precompute-initial-angles';
 
 const mars = PLANETS.find((planet) => planet.id === 'mars')!;
+const earth = PLANETS.find((planet) => planet.id === 'earth')!;
+const moon = MOONS.find(({ id }) => id === 'moon')!;
 const date = new Date('2026-06-20T23:58:50.816Z');
 const DEG = 180 / Math.PI;
 
@@ -68,5 +75,51 @@ describe('getGlobeOrientation', () => {
 
   test('keeps the sun direction of length 1', () => {
     assert.ok(Math.abs(Math.hypot(...orientation!.sun) - 1) < 1e-12);
+  });
+});
+
+describe('getGlobeOrientation, for the Moon', () => {
+  // Where the app puts them at the date, as it does when it starts
+  precomputeInitialAngles([moon, earth], date);
+
+  const orientation = getGlobeOrientation(moon, date)!;
+
+  test('lights it from the Sun, where Earth is, not from Earth', () => {
+    const fromEarth = getGlobeOrientation(earth, date)!.sun;
+    const angle = Math.acos(
+      fromEarth.reduce(
+        (sum, value, axis) => sum + value * orientation.sun[axis],
+        0
+      )
+    );
+
+    // The Moon is 0.0026 au from Earth: the Sun is within 0.2° of Earth's
+    assert.ok(angle * DEG < 0.2, `${angle * DEG}°`);
+  });
+
+  test("lights the place equations' subsolarPoint puts the Sun over", () => {
+    const { toView, sun } = orientation;
+    const [x, y, z] = applyMatrix3(transpose3(toView), sun);
+    const sunIcrf = applyMatrix3(rot1(OBLIQUITY), sun) as Vector3Type;
+    const expected = subsolarPoint(moon.rotation!.iau!, sunIcrf, date);
+    const longitude = (Math.atan2(y, x) * DEG + 360) % 360;
+
+    assert.ok(Math.abs(Math.asin(z) * DEG - expected.latitude) < 1e-9);
+    assert.ok(Math.abs(longitude - expected.longitude) < 1e-9);
+  });
+
+  test('turns its near side, round 0° longitude, towards Earth', () => {
+    const [x, y, z] = getEclipticPosition(moon.orbit)!;
+    const length = Math.hypot(x, y, z);
+    const [bx, by, bz] = applyMatrix3(transpose3(orientation.toView), [
+      -x / length,
+      -y / length,
+      -z / length
+    ]);
+
+    // Within its libration, about 8°, give or take the simulation's
+    // Keplerian Moon
+    assert.ok(Math.abs(Math.atan2(by, bx) * DEG) < 10);
+    assert.ok(Math.abs(Math.asin(bz) * DEG) < 10);
   });
 });
