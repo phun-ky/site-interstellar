@@ -23,10 +23,7 @@ import { getBodyFacts, hideBodyInfo } from './body-info';
 import { getFocusShift, setFocusOverlay, setFocusShift } from './focus-state';
 import { enableLayersFor, LOCK_CHANGE, markZoomingOrPanning } from './lock-on';
 import { updateScaleDisplay } from './update-scale-display';
-import {
-  updateLockStatus,
-  updateSimulationStatus
-} from './update-simulation-status';
+import { updateLockStatus } from './update-simulation-status';
 import {
   getBodyImage,
   getCreditText,
@@ -55,8 +52,6 @@ const IMAGE_SIZES = '(max-width: 1023px) calc(100vw - 72px), 240px';
 
 let animation: number | null = null;
 let liveLoop: number | null = null;
-/** Whether time was held before the focus view held it, to restore on close. */
-let wasPaused = false;
 /** What had keyboard focus before the view opened, to return it on close. */
 let returnFocus: HTMLElement | null = null;
 
@@ -383,7 +378,7 @@ const fillPanel = (body: CelestialBodyType): void => {
 
 /**
  * Opens the focus view on a body: what clicking it does (locking is the
- * Lock menu's). Time holds, the camera centres on the body and zooms until
+ * Lock menu's). Time keeps running, the camera centres on the body and zooms until
  * its disc covers about half the height (2/3 on a narrow screen), the HUD
  * panels slide out, and arrows and zooming are off. A panel describes the
  * body, a visor of tapes reads its bearing, range and speed, and the
@@ -419,10 +414,6 @@ export const openFocusView = (body: CelestialBodyType): void => {
 
   if (info) info.disabled = true;
 
-  // Time holds, so the body stays put while it is looked at
-  wasPaused = globalThis.PAUSE;
-  globalThis.PAUSE = true;
-  updateSimulationStatus(true);
   fillPanel(body);
   panel.hidden = false;
   close.hidden = false;
@@ -440,8 +431,8 @@ export const openFocusView = (body: CelestialBodyType): void => {
 };
 
 /**
- * Closes the focus view: the panels, arrows and zooming come back, time
- * runs again (unless it was held before), and the camera zooms out and pans
+ * Closes the focus view: the panels, arrows and zooming come back, and the
+ * camera zooms out and pans
  * to the clicked body's parent (the Sun for Earth, Earth for the Moon),
  * close enough that the body is still in view. The camera is left free,
  * not locked.
@@ -464,8 +455,6 @@ export const closeFocusView = (): void => {
 
   globalThis.FOCUSED_CELESTIAL_BODY = null;
   globalThis.LOCKED_CELESTIAL_BODY = null;
-  globalThis.PAUSE = wasPaused;
-  updateSimulationStatus(wasPaused);
   document.documentElement.classList.remove('is-focus-view');
   document.dispatchEvent(new Event(LOCK_CHANGE));
 
@@ -550,7 +539,7 @@ const decorative = <T extends HTMLElement>(element: T): T => {
 /**
  * Builds the focus view: the data column (designation, path, kind, name,
  * live readouts and facts), the body's image, the system map's caption, the
- * status strip (clock, Time held, Zoom locked) and Release target. Hidden
+ * status strip (clock, Zoom locked) and Release target. Hidden
  * until a body is clicked.
  */
 const createFocusView = (): void => {
@@ -604,10 +593,7 @@ const createFocusView = (): void => {
     make('dl', '', 'mc-focus-facts', 'focusFacts')
   );
   caption.append(make('span', 'NAV'), make('b', '', '', 'focusMapCaption'));
-  flags.append(
-    make('span', 'Time held', 'mc-focus-status-lock'),
-    make('span', 'Zoom locked', 'mc-focus-status-lock')
-  );
+  flags.append(make('span', 'Zoom locked', 'mc-focus-status-lock'));
   status.append(make('span', '', '', 'focusClock'), flags);
   close.type = 'button';
   close.hidden = true;

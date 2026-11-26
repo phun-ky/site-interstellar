@@ -131,12 +131,11 @@ test.describe('on a desktop', () => {
     expect(text).toEqual(expect.arrayContaining(['BRG', 'RNG AU', 'VEL KM/S']));
   });
 
-  test('time holds and zooming is off while it is open', async ({ page }) => {
+  test('time runs and zooming is off while it is open', async ({ page }) => {
     await focusEarth(page);
-    await expect(page.locator('#simStatus')).toHaveText('◌ hold');
-    expect(await readApp(page, (app) => app.PAUSE)).toBe(true);
+    await expect(page.locator('#simStatus')).toHaveText('● nominal');
+    expect(await readApp(page, (app) => app.PAUSE)).toBe(false);
 
-    const date = await page.locator('#simDate').textContent();
     const zoom = await page.locator('#zoomLevel').textContent();
     const canvas = await page.locator('#spaceCanvas').boundingBox();
 
@@ -149,7 +148,23 @@ test.describe('on a desktop', () => {
     await page.waitForTimeout(600);
 
     await expect(page.locator('#zoomLevel')).toHaveText(zoom ?? '');
-    await expect(page.locator('#simDate')).toHaveText(date ?? '');
+  });
+
+  test('time held while the tab is hidden runs again when it comes back', async ({
+    page
+  }) => {
+    await focusEarth(page);
+
+    for (const hidden of [true, false]) {
+      await page.evaluate((value) => {
+        Object.defineProperty(document, 'hidden', {
+          value,
+          configurable: true
+        });
+        document.dispatchEvent(new Event('visibilitychange'));
+      }, hidden);
+      expect(await readApp(page, (app) => app.PAUSE)).toBe(hidden);
+    }
   });
 
   test('Release target brings the HUD and time back, framing the parent with the body in view', async ({
@@ -181,7 +196,7 @@ test.describe('on a desktop', () => {
     expect(earth?.y).toBeLessThan(height);
   });
 
-  test('time held before the view stays held after it', async ({ page }) => {
+  test('time held before the view stays held through it', async ({ page }) => {
     await page.locator('#pause').click();
     await focusEarth(page);
     await page.keyboard.press('Escape');
