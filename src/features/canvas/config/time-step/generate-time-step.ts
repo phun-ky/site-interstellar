@@ -2,25 +2,24 @@ import { MILLISECONDS_PER_DAY } from '@interstellar-tools/constants';
 
 import { lastTimestamp, SPEED_MODE, timeStep } from '.';
 
+/** The longest frame counted in real time, in milliseconds. */
+const MAX_FRAME_MS = 250;
+
 /**
  * Generates a time step value based on the selected speed mode while accounting for different monitor refresh rates.
  *
  * This function updates `timeStep.value` and `timeStep.unit` to adjust the
  * simulation speed. The speed mode is determined by the `SPEED_MODE` value.
- * If no mode is explicitly set, the function calculates the time step based on
- * real-time elapsed milliseconds (`deltaTime`), normalized to account for variations in frame rates
- * (e.g., 60Hz vs. 144Hz) to ensure consistent simulation speed across different monitors.
+ * If no mode is explicitly set, the time step is the real time elapsed since
+ * the last frame, so the simulation runs at real time on any refresh rate
+ * (60Hz, 144Hz or a dropped frame alike).
  *
  * The function supports the following modes:
  * - `'quarterFramePerDay'`: Each frame corresponds to 0.25 day.
  * - `'framePerDay'`: Each frame corresponds to 1 day.
  * - `'spedUp'`: Each frame corresponds to 10 days.
  * - `'insane'`: Each frame corresponds to 1000 days.
- * - Default: Uses real-time elapsed time for smooth scaling, normalized for FPS variations.
- *
- * **Frame Rate Normalization:**
- * The default mode scales `deltaTime` using an expected frame duration (assumed 60 FPS) to prevent
- * higher refresh rate monitors (e.g., 144Hz) from running the simulation too fast.
+ * - Default: the real time elapsed, at most `MAX_FRAME_MS` a frame.
  *
  * @returns {void}
  *
@@ -69,10 +68,8 @@ export const generateTimeStep = (): void => {
     return;
   }
 
-  const EXPECTED_FPS = 60;
-  const expectedFrameDuration = 1000 / EXPECTED_FPS;
-  const fpsNormalizedDelta = deltaTime / expectedFrameDuration;
-
-  timeStep.value = (fpsNormalizedDelta * deltaTime) / MILLISECONDS_PER_DAY;
+  // The frame's own length is already the time that passed, at any refresh
+  // rate. Capped, so a hold or a stalled tab does not jump on when it resumes
+  timeStep.value = Math.min(deltaTime, MAX_FRAME_MS) / MILLISECONDS_PER_DAY;
   timeStep.unit = 'd';
 };

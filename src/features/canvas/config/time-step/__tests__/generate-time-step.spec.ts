@@ -25,37 +25,28 @@ describe('generateTimeStep', () => {
     timeStep.unit = 'd';
   });
 
-  test('Normal FPS (60Hz)', () => {
-    mockNow = 16.67; // ~16.67ms per frame (60Hz)
-    generateTimeStep();
+  test("real time is the frame's own length, at any refresh rate", () => {
+    SPEED_MODE.value = 'realTime';
 
-    const expectedTimeStep =
-      (mockNow / (1000 / 60)) * (mockNow / MILLISECONDS_PER_DAY);
+    // 60Hz, 144Hz and 30Hz frames: a second of frames is a second of time
+    for (const frame of [1000 / 60, 1000 / 144, 1000 / 30]) {
+      lastTimestamp.value = 0;
+      mockNow = frame;
+      generateTimeStep();
 
-    assert.strictEqual(timeStep.unit, 'd');
-    assert.strictEqual(timeStep.value.toFixed(8), expectedTimeStep.toFixed(8));
+      assert.strictEqual(timeStep.unit, 'd');
+      assert.ok(
+        Math.abs((timeStep.value * MILLISECONDS_PER_DAY) / frame - 1) < 1e-12
+      );
+    }
   });
 
-  test('High FPS (144Hz)', () => {
-    mockNow = 6.94; // ~6.94ms per frame (144Hz)
+  test('a long gap, after a hold or a stalled tab, counts as 250 ms', () => {
+    SPEED_MODE.value = 'realTime';
+    mockNow = 60_000;
     generateTimeStep();
 
-    const expectedTimeStep =
-      (mockNow / (1000 / 60)) * (mockNow / MILLISECONDS_PER_DAY);
-
-    assert.strictEqual(timeStep.unit, 'd');
-    assert.strictEqual(timeStep.value.toFixed(8), expectedTimeStep.toFixed(8));
-  });
-
-  test('Low FPS (30Hz)', () => {
-    mockNow = 33.33; // ~33.33ms per frame (30Hz)
-    generateTimeStep();
-
-    const expectedTimeStep =
-      (mockNow / (1000 / 60)) * (mockNow / MILLISECONDS_PER_DAY);
-
-    assert.strictEqual(timeStep.unit, 'd');
-    assert.strictEqual(timeStep.value.toFixed(8), expectedTimeStep.toFixed(8));
+    assert.strictEqual(timeStep.value, 250 / MILLISECONDS_PER_DAY);
   });
 
   test('Speed Modes', () => {
