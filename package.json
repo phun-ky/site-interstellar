@@ -86,7 +86,7 @@
     "@types/node": "^22.13.1",
     "cssnano": "^9.9.0",
     "eslint": "^10.14.0",
-    "eslint-config-phun-ky": "^2.0.10",
+    "eslint-config-phun-ky": "^3.0.0",
     "fast-check": "^4.10.3",
     "git-cz": "^4.9.0",
     "globals": "^17.14.0",
