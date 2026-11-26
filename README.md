@@ -96,6 +96,10 @@ This project is licensed under a
 [LICENSE](https://github.com/phun-ky/site-interstellar/blob/main/LICENSE) file
 for details.
 
+The surface map of Mars, `src/assets/textures/mars.jpg`, is by
+[Solar System Scope](https://www.solarsystemscope.com/textures/), under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
 ## Changelog
 
 See the

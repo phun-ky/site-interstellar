@@ -266,7 +266,7 @@ export const attachEventHandlers = (props: AttachEventHandlersPropsType) => {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       globalThis.PAUSE = true; // Pause simulation when tab is hidden
-    } else if (!isHeldByUser && !isFocusView()) {
+    } else if (!isHeldByUser) {
       globalThis.PAUSE = false; // Resume simulation when tab is visible
     }
   });

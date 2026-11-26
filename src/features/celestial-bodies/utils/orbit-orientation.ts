@@ -40,7 +40,7 @@ export type Vector3Type = Vector3DTupleType;
 export type Matrix3Type = Matrix3x3Type;
 
 /** The J2000 obliquity of the ecliptic, 84 381.448″, as equations uses it. */
-const OBLIQUITY = toRad(84_381.448 / 3600);
+export const OBLIQUITY = toRad(84_381.448 / 3600);
 
 /**
  * Applies a matrix to a vector: equations' `applyMatrix3`.

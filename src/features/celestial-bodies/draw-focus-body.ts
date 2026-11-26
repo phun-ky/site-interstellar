@@ -4,6 +4,7 @@ import { OrbitingBodyType } from '../../types/orbiting-bodies';
 import { prefersReducedMotion } from '../../utils/prefers-reduced-motion';
 import { CANVAS_COLORS, CANVAS_LABEL_FONT } from '../canvas/config/ui';
 
+import { drawGlobe } from './draw-globe';
 import { findBodyById, getBodyKind } from './utils/body-catalog';
 import { getAbsolutePosition } from './utils/get-absolute-position';
 import { getOrbitState } from './utils/get-orbit-state';
@@ -401,8 +402,9 @@ const drawVisor = (
 };
 
 /**
- * Dresses up the body in the focus view, over its plain disc: shaded from
- * its star, with the visor round it (see `drawVisor()`).
+ * Dresses up the body in the focus view, over its plain disc: a globe where
+ * it has a surface map (see `drawGlobe()`), or else shaded from its star,
+ * with the visor round it (see `drawVisor()`).
  *
  * @param {CanvasRenderingContext2D} space - The canvas.
  *
@@ -418,11 +420,25 @@ export const drawFocusBody = (space: CanvasRenderingContext2D): void => {
   if (!body || !tracked || tracked.size < MIN_RADIUS) return;
 
   const { x, y, size } = tracked;
-  const light = getLightAngle(body);
+  const globe = drawGlobe(space, x, y, size, body);
 
-  if (light !== null) drawShading(space, x, y, size, light);
+  if (!globe) {
+    const light = getLightAngle(body);
+
+    if (light !== null) drawShading(space, x, y, size, light);
+  }
 
   space.save();
   drawVisor(space, x, y, size, body);
+
+  // Time runs too fast for the turn to be shown: say so under the body
+  if (globe === 'held') {
+    space.font = SMALL_FONT;
+    space.textAlign = 'center';
+    space.textBaseline = 'top';
+    space.fillStyle = MUTED;
+    space.fillText('ROTATION NOT SHOWN AT THIS SPEED', x, y + size + 14);
+  }
+
   space.restore();
 };
