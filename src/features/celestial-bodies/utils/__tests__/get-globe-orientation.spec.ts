@@ -123,3 +123,18 @@ describe('getGlobeOrientation, for the Moon', () => {
     assert.ok(Math.abs(Math.asin(bz) * DEG) < 10);
   });
 });
+
+test('gives every body with a surface map an orientation', () => {
+  const bodies = [...PLANETS, ...MOONS];
+  const mapped = [
+    ...['mercury', 'venus', 'earth', 'mars', 'ceres', 'moon'],
+    ...['io', 'europa', 'ganymede', 'callisto'],
+    ...['mimas', 'enceladus', 'tethys', 'dione', 'rhea', 'iapetus', 'titan']
+  ];
+
+  for (const id of mapped) {
+    const body = bodies.find((candidate) => candidate.id === id)!;
+
+    assert.ok(getGlobeOrientation(body, date), id);
+  }
+});

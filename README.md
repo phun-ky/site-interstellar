@@ -96,13 +96,30 @@ This project is licensed under a
 [LICENSE](https://github.com/phun-ky/site-interstellar/blob/main/LICENSE) file
 for details.
 
-The surface map of Mars, `src/assets/textures/mars.jpg`, is by
-[Solar System Scope](https://www.solarsystemscope.com/textures/), under
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The surface maps in `src/assets/textures/`, downscaled to 2048×1024:
 
-The surface map of the Moon, `src/assets/textures/moon.jpg`, is from NASA's
-Scientific Visualization Studio [CGI Moon Kit](https://svs.gsfc.nasa.gov/4720),
-made from Lunar Reconnaissance Orbiter data.
+| Body      | Source                                                                                                                                                   | Credit and licence                                                            |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Mercury   | USGS [MESSENGER MDIS global color mosaic](https://astrogeology.usgs.gov/search/map/mercury_messenger_mdis_global_color_mosaic_665m), made grayscale      | MESSENGER Team, NASA/JHUAPL/CIW; USGS Astrogeology; public domain             |
+| Venus     | USGS [Magellan C3-MDIR synthetic color mosaic](https://astrogeology.usgs.gov/search/map/venus_magellan_global_c3_mdir_synthetic_color_mosaic_4641m)      | NASA/JPL Magellan; USGS Astrogeology; public domain. The colour is simulated  |
+| Earth     | [Blue Marble: Next Generation](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/), July 2004, with topography and bathymetry | NASA Earth Observatory                                                        |
+| Moon      | NASA SVS [CGI Moon Kit](https://svs.gsfc.nasa.gov/4720), from Lunar Reconnaissance Orbiter data                                                          | NASA's Scientific Visualization Studio                                        |
+| Mars      | [Solar System Scope](https://www.solarsystemscope.com/textures/)                                                                                         | Solar System Scope, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| Ceres     | USGS [Dawn FC global mosaic](https://astrogeology.usgs.gov/search/map/ceres_dawn_fc_global_mosaic_400m)                                                  | NASA/JPL-Caltech/UCLA/MPS/DLR/IDA                                             |
+| Io        | USGS [Galileo SSI/Voyager color merged mosaic](https://astrogeology.usgs.gov/search/map/io_galileo_ssi_voyager_color_merged_global_mosaic_1km)           | NASA/JPL; USGS Astrogeology; public domain                                    |
+| Europa    | USGS [Voyager/Galileo SSI global mosaic](https://astrogeology.usgs.gov/search/map/europa_voyager_galileo_ssi_global_mosaic_500m)                         | NASA/JPL; USGS Astrogeology                                                   |
+| Ganymede  | USGS [Voyager/Galileo SSI global mosaic](https://astrogeology.usgs.gov/search/map/ganymede_voyager_galileo_ssi_global_mosaic_1km)                        | NASA/JPL; USGS Astrogeology; public domain                                    |
+| Callisto  | USGS [Galileo/Voyager global mosaic](https://astrogeology.usgs.gov/search/map/callisto_galileo_voyager_global_mosaic_1km)                                | NASA/JPL; USGS Astrogeology; public domain                                    |
+| Mimas     | [PIA17214](https://science.nasa.gov/photojournal/mimas-global-map-june-2017/)                                                                            | NASA/JPL-Caltech/Space Science Institute                                      |
+| Enceladus | USGS [Cassini global mosaic](https://astrogeology.usgs.gov/search/map/enceladus_cassini_global_mosaic_110m)                                              | NASA/JPL/Space Science Institute; USGS Astrogeology; public domain            |
+| Tethys    | USGS [Cassini global mosaic](https://astrogeology.usgs.gov/search/map/tethys_cassini_global_mosaic_293m)                                                 | T. Roatsch et al.; NASA/JPL/Space Science Institute; public domain            |
+| Dione     | USGS [Cassini/Voyager global mosaic](https://astrogeology.usgs.gov/search/map/dione_cassini_voyager_global_mosaic_154m)                                  | NASA/JPL/Space Science Institute; USGS Astrogeology; public domain            |
+| Rhea      | USGS [Cassini/Voyager global mosaic](https://astrogeology.usgs.gov/search/map/rhea_cassini_voyager_global_mosaic_417m)                                   | T. Roatsch et al.; NASA/JPL/Space Science Institute; public domain            |
+| Iapetus   | USGS [Cassini/Voyager global mosaic](https://astrogeology.usgs.gov/search/map/iapetus_cassini_voyager_global_mosaic_803m)                                | NASA/JPL/Space Science Institute; USGS Astrogeology; public domain            |
+| Titan     | USGS [Cassini ISS global mosaic](https://astrogeology.usgs.gov/search/map/titan_cassini_iss_global_mosaic_4005m), 938 nm (PIA19658)                      | Cassini ISS Team, NASA/JPL-Caltech/SSI                                        |
+
+Gaps in the Europa, Ganymede, Callisto and Ceres mosaics are filled with the
+mean of their latitude, and the Ganymede and Callisto mosaics are brightened.
 
 ## Changelog
 
