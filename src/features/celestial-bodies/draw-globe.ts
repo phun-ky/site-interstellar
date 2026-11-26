@@ -13,10 +13,24 @@ import {
  * right, as `src/assets` copies it to the web root.
  */
 const SURFACE_MAPS: Record<string, string> = {
-  // Solar System Scope, CC BY 4.0: https://www.solarsystemscope.com/textures/
+  // Sources and credits are in the README
+  mercury: 'textures/mercury.jpg',
+  venus: 'textures/venus.jpg',
+  earth: 'textures/earth.jpg',
+  moon: 'textures/moon.jpg',
   mars: 'textures/mars.jpg',
-  // NASA SVS CGI Moon Kit, from LRO data: https://svs.gsfc.nasa.gov/4720
-  moon: 'textures/moon.jpg'
+  ceres: 'textures/ceres.jpg',
+  io: 'textures/io.jpg',
+  europa: 'textures/europa.jpg',
+  ganymede: 'textures/ganymede.jpg',
+  callisto: 'textures/callisto.jpg',
+  mimas: 'textures/mimas.jpg',
+  enceladus: 'textures/enceladus.jpg',
+  tethys: 'textures/tethys.jpg',
+  dione: 'textures/dione.jpg',
+  rhea: 'textures/rhea.jpg',
+  iapetus: 'textures/iapetus.jpg',
+  titan: 'textures/titan.jpg'
 };
 /** The largest globe drawn, in device pixels, to bound the canvas's memory. */
 const MAX_SIZE = 2048;
